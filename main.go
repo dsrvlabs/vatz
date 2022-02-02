@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	servName = "Sample Node manager"
+	servName = "Node Manager (Pilot)"
 )
 
 func main() {
-	log.Println("Start ", servName)
+	log.Println("Starting ...", servName)
 
 	manager.RunManager()
 	err := manager.RunManager().Start()
