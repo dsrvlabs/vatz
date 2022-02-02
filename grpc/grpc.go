@@ -111,7 +111,7 @@ func StartServer() error {
 		return err
 	}
 
-	log.Println("listen ", addr)
+	log.Println("Listening Port", addr)
 
 	go func() {
 		if err := s.Serve(l); err != nil {
