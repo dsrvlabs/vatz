@@ -118,6 +118,6 @@ func StartServer() error {
 			log.Panic(err)
 		}
 	}()
-
+	log.Println("Node Manager (Pilot) started")
 	return nil
 }
