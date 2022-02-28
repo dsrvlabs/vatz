@@ -1,32 +1,25 @@
-package grpc
+package api
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"net"
-
 	structpb "github.com/golang/protobuf/ptypes/struct"
 	manager_pluginpb "github.com/xellos00/silver-bentonville/dist/proto/dsrv/api/node_manager/plugin"
 	managerpb "github.com/xellos00/silver-bentonville/dist/proto/dsrv/api/node_manager/v1"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"pilot-manager/manager"
-)
-
-const (
-	grpcPort = 9090
+	"log"
+	manager_presenter "pilot-manager/src/dsrv/node_manager/manager"
 )
 
 var (
-	ManagerInstance manager.Manager
+	ManagerInstance manager_presenter.Manager
+	ExecutableRPC   GrpcService
 )
 
-type grpcService struct {
+type GrpcService struct {
 	managerpb.UnimplementedNodeManagerServer
 }
 
-func (s *grpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest) (*managerpb.ExecuteResponse, error) {
+func (s *GrpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest) (*managerpb.ExecuteResponse, error) {
 
 	opts := grpc.WithInsecure()
 	cc, err := grpc.Dial("localhost:9091", opts)
@@ -59,65 +52,34 @@ func (s *grpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest)
 	return &resp, nil
 }
 
-func (s *grpcService) Init(ctx context.Context, in *managerpb.InitRequest) (*managerpb.InitResponse, error) {
-	// TODO: Check already running.
-
+func (s *GrpcService) Init(ctx context.Context, in *managerpb.InitRequest) (*managerpb.InitResponse, error) {
+	// TODO: Check already running, if not it requires to start plugins
 	err := ManagerInstance.Start()
 	if err != nil {
 		return &managerpb.InitResponse{Result: managerpb.CommandStatus_FAIL}, nil
 	}
-
 	return &managerpb.InitResponse{Result: managerpb.CommandStatus_SUCCESS}, nil
 }
 
-func (s *grpcService) End(ctx context.Context, in *managerpb.EndRequest) (*managerpb.EndResponse, error) {
-	// TODO: Check running.
-
+func (s *GrpcService) End(ctx context.Context, in *managerpb.EndRequest) (*managerpb.EndResponse, error) {
+	// TODO: Kill the Process if there's running plugins.
 	err := ManagerInstance.Stop()
 	if err != nil {
 		return &managerpb.EndResponse{Result: managerpb.CommandStatus_FAIL}, nil
 	}
-
 	return &managerpb.EndResponse{Result: managerpb.CommandStatus_SUCCESS}, nil
 }
 
-func (s *grpcService) Verify(ctx context.Context, in *managerpb.VerifyRequest) (*managerpb.VerifyInfo, error) {
-	// TODO: Update config and refresh service.
-	// Check how to verify this connection or API call is valid.
+func (s *GrpcService) Verify(ctx context.Context, in *managerpb.VerifyRequest) (*managerpb.VerifyInfo, error) {
+	// Currently, I do not know whether it requires verifying initialized plugin is up and running.
 	return nil, nil
 }
 
-func (s *grpcService) UpdateConfig(ctx context.Context, in *managerpb.UpdateRequest) (*managerpb.UpdateResponse, error) {
-	// TODO: Update config and refresh service.
+func (s *GrpcService) UpdateConfig(ctx context.Context, in *managerpb.UpdateRequest) (*managerpb.UpdateResponse, error) {
+	// TODO: Update conf and refresh service.
 	return nil, nil
 }
 
 func init() {
-	ManagerInstance = manager.RunManager()
-}
-
-// StartServer try to start grpc service.
-func StartServer() error {
-	s := grpc.NewServer()
-	serv := grpcService{}
-
-	managerpb.RegisterNodeManagerServer(s, &serv)
-	reflection.Register(s)
-
-	addr := fmt.Sprintf(":%d", grpcPort)
-	l, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Panic(err)
-		return err
-	}
-
-	log.Println("Listening Port", addr)
-
-	go func() {
-		if err := s.Serve(l); err != nil {
-			log.Panic(err)
-		}
-	}()
-	log.Println("Node Manager (Pilot) started")
-	return nil
+	ManagerInstance = manager_presenter.RunManager()
 }

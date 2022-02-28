@@ -1,0 +1,6 @@
+---
+port: "9090"
+identifier: "node_manager"
+protocol:
+  protocol_identifier: "near"
+  protocol_interval: "10"

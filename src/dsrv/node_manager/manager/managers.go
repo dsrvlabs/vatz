@@ -1,6 +1,7 @@
 package manager
 
 import (
+	worker_presenter "pilot-manager/src/dsrv/node_manager/worker"
 	"time"
 )
 
@@ -11,5 +12,5 @@ type Manager interface {
 }
 
 func RunManager() Manager {
-	return &managerWorker{CheckInterval: time.Second * 5}
+	return &worker_presenter.managerWorker{CheckInterval: time.Second * 5}
 }
