@@ -54,7 +54,7 @@ func (s *GrpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest)
 
 func (s *GrpcService) Init(ctx context.Context, in *managerpb.InitRequest) (*managerpb.InitResponse, error) {
 	// TODO: Check already running, if not it requires to start plugins
-	err := ManagerInstance.Start()
+	err := ManagerInstance.Init()
 	if err != nil {
 		return &managerpb.InitResponse{Result: managerpb.CommandStatus_FAIL}, nil
 	}
@@ -63,7 +63,7 @@ func (s *GrpcService) Init(ctx context.Context, in *managerpb.InitRequest) (*man
 
 func (s *GrpcService) End(ctx context.Context, in *managerpb.EndRequest) (*managerpb.EndResponse, error) {
 	// TODO: Kill the Process if there's running plugins.
-	err := ManagerInstance.Stop()
+	err := ManagerInstance.End()
 	if err != nil {
 		return &managerpb.EndResponse{Result: managerpb.CommandStatus_FAIL}, nil
 	}
@@ -76,8 +76,13 @@ func (s *GrpcService) Verify(ctx context.Context, in *managerpb.VerifyRequest) (
 }
 
 func (s *GrpcService) UpdateConfig(ctx context.Context, in *managerpb.UpdateRequest) (*managerpb.UpdateResponse, error) {
-	// TODO: Update conf and refresh service.
-	return nil, nil
+	// TODO: Set the Proto for Updatefor
+
+	res, err := manager_presenter.RunManager().UpdateConfig(ctx, in)
+	if err != nil {
+		return &managerpb.UpdateResponse{}, nil
+	}
+	return res, nil
 }
 
 func init() {
