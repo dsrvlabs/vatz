@@ -1,6 +1,6 @@
 ---
-port: "9090"
+port: 9090
 identifier: "node_manager"
 protocol:
-  protocol_identifier: "near"
+  protocol_identifier: "cosmos"
   protocol_interval: "10"
