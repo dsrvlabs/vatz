@@ -4,19 +4,19 @@ import (
 	"fmt"
 )
 
-type health struct {
+type healthCheck struct {
 }
 
-func (h health) HealthCheck() (string, error) {
+func (h healthCheck) HealthCheck() (string, error) {
 	fmt.Println("this is sending Notification")
 	//TODO: Set Client to Plugin
 	return "UP", nil
 }
 
-type Health interface {
+type HealthCheck interface {
 	HealthCheck() (string, error)
 }
 
-func NewHealthChecker() Health {
-	return &health{}
+func NewHealthChecker() HealthCheck {
+	return &healthCheck{}
 }
