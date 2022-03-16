@@ -1,0 +1,17 @@
+---
+name: "vatz"
+port: 9090
+default_interval: 30
+protocol_info:
+  protocol_identifier: "near"
+plugins_info:
+  plugin_name: "near"
+  plugin_port: 9091
+  default_interval: 30
+  executable_apis:
+    - method_name: "is_up"
+      api_interval: 45
+    - method_name: "is_2nd_up"
+      api_interval: 30
+
+
