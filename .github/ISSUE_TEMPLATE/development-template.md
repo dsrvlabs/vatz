@@ -9,7 +9,7 @@ assignees: ''
 
 # [Development] 
 
-> Please, Fill out briefly, following table
+> Please, Fill out table briefly.
 
 Type | Expected Output | Referenced items |  Comment
 :--|:--|:--|:--
