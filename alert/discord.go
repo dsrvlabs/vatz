@@ -1,0 +1,98 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+type discordMsg struct {
+	Username  string `json:"username,omitempty"`
+	AvatarURL string `json:"avatar_url,omitempty"`
+	Content   string `json:"content,omitempty"`
+	Embeds    []struct {
+		Author struct {
+			Name    string `json:"name,omitempty"`
+			URL     string `json:"url,omitempty"`
+			IconURL string `json:"icon_url,omitempty"`
+		} `json:"author,omitempty"`
+		Title       string `json:"title"`
+		URL         string `json:"url,omitempty"`
+		Description string `json:"description"`
+		Color       int    `json:"color"`
+		Fields      []struct {
+			Name   string `json:"name,omitempty"`
+			Value  string `json:"value,omitempty"`
+			Inline bool   `json:"inline,omitempty"`
+		} `json:"fields,omitempty"`
+		Thumbnail struct {
+			URL string `json:"url,omitempty"`
+		} `json:"thumbnail,omitempty"`
+		Image struct {
+			URL string `json:"ur,omitemptyl"`
+		} `json:"image,omitempty"`
+		Footer struct {
+			Text    string `json:"text,omitempty"`
+			IconURL string `json:"icon_url,omitempty"`
+		} `json:"foote,omitemptyr"`
+	} `json:"embeds"`
+}
+
+type reqMsg struct {
+	FuncName     string `json:"func_name"`
+	State        string `json:"state"`
+	Msg          string `json:"msg"`
+	Severity     string `json:"severity"`
+	ResourceType string `json:"resource_type"`
+}
+
+var (
+	webhookURL string
+	rMsg       reqMsg
+	sMsg       discordMsg
+
+	format      string
+	failRequest string
+	succRequest string
+)
+
+func init() {
+	webhookURL = "https://discord.com/api/webhooks/955326233057566750/e-Tkq6mvxXYsx3Rqi3ttxDes76UXPpgk76Bnz5jF8_DwWgdNF-iNf7ZWdqi1nQnHO-zC"
+	format = `{"embeds": [{}]}`
+}
+
+func discord(request string) bool {
+	message := makeForm(failRequest)
+	sendMsg(message)
+}
+
+func makeForm(request string) string {
+	err := json.Unmarshal([]byte(request), &rMsg)
+	if err != nil {
+		fmt.Println("[ERR] format is incorrect")
+	}
+
+	if rMsg.State == "FAIL" {
+		json.Unmarshal([]byte(format), &sMsg)
+		sMsg.Embeds[0].Title = rMsg.Severity
+		sMsg.Embeds[0].Description = rMsg.Msg
+		sMsg.Embeds[0].Color = 15258703
+	} else if rMsg.State == "SUCCESS" {
+		fmt.Println("SUCCESS")
+	}
+
+	sendMsg, _ := json.Marshal(sMsg)
+	return string(sendMsg)
+}
+
+func sendMsg(msg string) {
+	req, _ := http.NewRequest("POST", webhookURL, bytes.NewBufferString(msg))
+	req.Header.Set("Content-Type", "application/json")
+	c := &http.Client{}
+	_, err := c.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("SEND SUCCESS")
+}
