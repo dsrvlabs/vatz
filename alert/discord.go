@@ -65,6 +65,7 @@ func init() {
 func discord(request string) bool {
 	message := makeForm(request)
 	sendMsg(message)
+	return true
 }
 
 func makeForm(request string) string {
