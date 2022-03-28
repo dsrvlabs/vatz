@@ -49,9 +49,11 @@ type discordMsg struct {
 	Embeds    []embed `json:"embeds"`
 }
 
+type alertStatus struct{}
+
 const (
-	Fail    = "FAIL"
-	Success = "SUCCESS"
+	Fail    alertStatus = "FAIL"
+	Success alertStatus = "SUCCESS"
 )
 
 var (
