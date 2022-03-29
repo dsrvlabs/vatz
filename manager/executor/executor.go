@@ -2,7 +2,7 @@ package executor
 
 import (
 	"context"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	pluginpb "github.com/hqueue/vatz-secret/dist/proto/vatz/plugin/v1"
 )
 
 type executor struct {

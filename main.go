@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
+	managerpb "github.com/hqueue/vatz-secret/dist/proto/vatz/manager/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"gopkg.in/yaml.v2"
