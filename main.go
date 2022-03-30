@@ -6,16 +6,15 @@ import (
 	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
 	"time"
 	"vatz/manager/api"
+	config "vatz/manager/config"
 	"vatz/manager/executor"
-	manager2 "vatz/manager/healthcheck"
-	"vatz/manager/notification"
+	health "vatz/manager/healthcheck"
+	notification "vatz/manager/notification"
 )
 
 const (
@@ -23,64 +22,36 @@ const (
 )
 
 var (
-	defaultConf     = getConf()
-	healthManager   = manager2.HManager
+	defaultConf     = config.CManager.GetYMLData("default.yaml", true)
+	grpcClient      = config.CManager.GetGRPCClient()
+	healthManager   = health.HManager
 	dispatchManager = notification.DManager
+	configManager   = config.CManager
 	executeManager  = executor.EManager
 )
 
-func getConf() map[interface{}]interface{} {
-	wd, _ := os.Getwd()
-	confPath := fmt.Sprintf("%s/default.yaml", wd)
-
-	yamlFile, err := ioutil.ReadFile(confPath)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	data := make(map[interface{}]interface{})
-	err2 := yaml.Unmarshal(yamlFile, &data)
-
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-
-	return data
-}
-
+//This Merge yaml file
 func preLoad() error {
-	//TODOs: Check the Configs and return dict as global variable.
+	retrievedConf := configManager.GetConfigFromURL()
+	for k, v := range retrievedConf {
+		defaultConf[k] = v
+	}
 	return nil
 }
 
-func initiateServer(ch <-chan os.Signal) error {
+func runningProcess(pluginInfo interface{}, ch <-chan os.Signal) {
+	verifyInterval := pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
+	executeInterval := pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
 
-	log.Println("Initialize Servers:", serviceName)
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	executeTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
+	verifyTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
 
-	s := grpc.NewServer()
-	serv := api.GrpcService{}
-
-	managerpb.RegisterManagerServer(s, &serv)
-	reflection.Register(s)
-	grpcPort := defaultConf["port"]
-	addr := fmt.Sprintf(":%d", grpcPort)
-
-	listener, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Println(err)
-	}
-
-	log.Println("Listening Port", addr)
-
-	executeTicker := time.NewTicker(1 * time.Second)
-	verifyTicker := time.NewTicker(2 * time.Second)
 	isOkayToSend := false
+
 	go func() {
 		for {
 			select {
+
 			case <-verifyTicker.C:
 				live, _ := healthManager.HealthCheck()
 				if live == "UP" {
@@ -91,6 +62,7 @@ func initiateServer(ch <-chan os.Signal) error {
 				if isOkayToSend == true {
 					executeManager.Execute()
 				}
+
 			case <-ch:
 				executeTicker.Stop()
 				return
@@ -98,8 +70,34 @@ func initiateServer(ch <-chan os.Signal) error {
 		}
 	}()
 
-	log.Println("Node Manager Started")
+}
 
+func initiateServer(ch <-chan os.Signal) error {
+
+	log.Println("Initialize Servers:", serviceName)
+	_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	s := grpc.NewServer()
+	serv := api.GrpcService{}
+	managerpb.RegisterManagerServer(s, &serv)
+	reflection.Register(s)
+
+	//Isn't there any better way to parse it? This isn't good to coverUp all yaml
+	protocolInfo := configManager.Parse("PROTOCOL", defaultConf)
+	pluginInfo := configManager.Parse("PLUGIN", defaultConf)
+
+	addr := fmt.Sprintf(":%d", protocolInfo.(map[interface{}]interface{})["port"])
+
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("Listening Port", addr)
+
+	runningProcess(pluginInfo, ch)
+	log.Println("Node Manager Started")
 	if err := s.Serve(listener); err != nil {
 		log.Panic(err)
 	}

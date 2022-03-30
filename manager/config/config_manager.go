@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 )
 
 var (
@@ -16,7 +16,19 @@ func init() {
 type config_manager struct {
 }
 
-func (c *config_manager) Parse() error {
-	fmt.Println("this is a config Parser ")
-	return nil
+func (c *config_manager) Parse(retrievalInfo string, data map[interface{}]interface{}) interface{} {
+	return configInstance.parse(retrievalInfo, data)
+}
+
+func (c *config_manager) GetYMLData(str string, isDefault bool) map[interface{}]interface{} {
+	return configInstance.getYMLData(str, isDefault)
+}
+
+func (c *config_manager) GetConfigFromURL() map[interface{}]interface{} {
+	return configInstance.getConfigFromURL()
+}
+
+func (c *config_manager) GetGRPCClient() pluginpb.PluginClient {
+	client := configInstance.getClient()
+	return client
 }
