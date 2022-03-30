@@ -64,10 +64,9 @@ func init() {
 	webhookURL = "https://discord.com/api/webhooks/955326233057566750/e-Tkq6mvxXYsx3Rqi3ttxDes76UXPpgk76Bnz5jF8_DwWgdNF-iNf7ZWdqi1nQnHO-zC"
 }
 
-func discord(request string) bool {
+func discord(request string) {
 	message := makeForm(request)
 	sendMsg(message)
-	return true
 }
 
 func makeForm(request string) string {
