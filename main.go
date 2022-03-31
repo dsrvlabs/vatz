@@ -51,7 +51,6 @@ func runningProcess(pluginInfo interface{}, ch <-chan os.Signal) {
 	go func() {
 		for {
 			select {
-
 			case <-verifyTicker.C:
 				live, _ := healthManager.HealthCheck()
 				if live == "UP" {
