@@ -25,7 +25,7 @@ func (s *GrpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest)
 	//client := pluginpb.NewPluginClient(cc)
 	//request := &pluginpb.ExecuteRequest{ExecuteInfo: in.TargetInfo, Options: in.Command}
 	//aresp, _ := client.Execute(context.Background(), request)
-
+	//
 	//data := make(map[interface{}]interface{})
 	//
 	//resp := managerpb.ExecuteResponse{
