@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-type notification struct {
-	//duration time.Duration
-	//notificationChannel string
-	//message string
+type field struct {
+	Name   string `json:"name,omitempty"`
+	Value  string `json:"value,omitempty"`
+	Inline bool   `json:"inline,omitempty"`
 }
 
 type embed struct {
@@ -19,16 +19,12 @@ type embed struct {
 		URL     string `json:"url,omitempty"`
 		IconURL string `json:"icon_url,omitempty"`
 	} `json:"author,omitempty"`
-	Title       string `json:"title"`
-	URL         string `json:"url,omitempty"`
-	Description string `json:"description"`
-	Color       int    `json:"color"`
-	Fields      []struct {
-		Name   string `json:"name,omitempty"`
-		Value  string `json:"value,omitempty"`
-		Inline bool   `json:"inline,omitempty"`
-	} `json:"fields,omitempty"`
-	Thumbnail struct {
+	Title       string  `json:"title"`
+	URL         string  `json:"url,omitempty"`
+	Description string  `json:"description"`
+	Color       int     `json:"color"`
+	Fields      []field `json:"fields,omitempty"`
+	Thumbnail   struct {
 		URL string `json:"url,omitempty"`
 	} `json:"thumbnail,omitempty"`
 	Image struct {
@@ -54,8 +50,8 @@ type Notification interface {
 func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
 	sMsg := discordMsg{Embeds: make([]embed, 1)}
 	sMsg.Embeds[0].Title = msg.Severity
-	sMsg.Embeds[0].Description = msg.Msg
 	sMsg.Embeds[0].Color = 15258703
+	sMsg.Embeds[0].Fields = []field{{msg.FuncName, msg.Msg, false}}
 	message, _ := json.Marshal(sMsg)
 	req, _ := http.NewRequest("POST", webhook, bytes.NewBufferString(string(message)))
 	req.Header.Set("Content-Type", "application/json")
