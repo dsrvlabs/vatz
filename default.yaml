@@ -2,6 +2,7 @@
 vatz_protocol_info:
   protocol_identifier: "near"
   port: 9090
+  discord_secret: ""
 plugins_info:
   plugin_name: "near"
   plugin_port: 9091
