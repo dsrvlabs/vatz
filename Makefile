@@ -9,4 +9,4 @@ coverage:
 	echo "Test Coverage script will be here"
 
 clean:
-	rm pilot-manager
+	rm vatz

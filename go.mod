@@ -1,15 +1,18 @@
-module vatz
+module github.com/dsrvlabs/vatz
 
-go 1.16
+go 1.18
 
 require (
-	github.com/golang/protobuf v1.5.2
 	github.com/xellos00/dk-yuba-proto v0.0.0-20220415063750-f5c5fc059867
-	github.com/xellos00/silver-bentonville v0.0.0-20220107234228-1c233087b431
-	golang.org/x/net v0.0.0-20211101193420-4a448f8816b3 // indirect
-	golang.org/x/sys v0.0.0-20211102192858-4dd72447c267 // indirect
-	google.golang.org/genproto v0.0.0-20211102202547-e9cf271f7f2c // indirect
-	google.golang.org/grpc v1.42.0
-	google.golang.org/protobuf v1.27.1
-	gopkg.in/yaml.v2 v2.2.3
+	google.golang.org/grpc v1.45.0
+	google.golang.org/protobuf v1.28.0
+	gopkg.in/yaml.v2 v2.4.0
+)
+
+require (
+	github.com/golang/protobuf v1.5.2 // indirect
+	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
+	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd // indirect
+	golang.org/x/text v0.3.0 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 )

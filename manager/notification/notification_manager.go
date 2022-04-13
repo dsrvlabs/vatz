@@ -1,9 +1,11 @@
 package notification
 
 import (
+	model "github.com/dsrvlabs/vatz/manager/model"
+
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
-	config "vatz/manager/config"
-	model "vatz/manager/model"
+
+	config "github.com/dsrvlabs/vatz/manager/config"
 )
 
 var (

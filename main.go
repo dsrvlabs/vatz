@@ -8,13 +8,16 @@ import (
 	"os"
 	"reflect"
 	"time"
-	"vatz/manager/api"
-	config "vatz/manager/config"
-	"vatz/manager/executor"
-	health "vatz/manager/healthcheck"
-	model "vatz/manager/model"
-	notification "vatz/manager/notification"
 
+	notification "github.com/dsrvlabs/vatz/manager/notification"
+
+	"github.com/dsrvlabs/vatz/manager/executor"
+
+	config "github.com/dsrvlabs/vatz/manager/config"
+	health "github.com/dsrvlabs/vatz/manager/healthcheck"
+
+	"github.com/dsrvlabs/vatz/manager/api"
+	"github.com/dsrvlabs/vatz/manager/model"
 	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/grpc"
