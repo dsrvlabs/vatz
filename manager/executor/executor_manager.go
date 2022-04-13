@@ -1,10 +1,12 @@
 package executor
 
 import (
+	"log"
+
+	"github.com/dsrvlabs/vatz/manager/notification"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/protobuf/types/known/structpb"
-	"log"
-	"vatz/manager/notification"
+	//"vatz/manager/config"
 )
 
 var (

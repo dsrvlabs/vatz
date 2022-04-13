@@ -1,8 +1,8 @@
 package config
 
 import (
+	model "github.com/dsrvlabs/vatz/manager/model"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
-	model "vatz/manager/model"
 )
 
 var (

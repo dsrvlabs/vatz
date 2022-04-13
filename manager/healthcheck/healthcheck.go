@@ -2,10 +2,10 @@ package healthcheck
 
 import (
 	"context"
-	"vatz/manager/config"
-	msg "vatz/manager/model"
-	"vatz/manager/notification"
 
+	"github.com/dsrvlabs/vatz/manager/config"
+	msg "github.com/dsrvlabs/vatz/manager/model"
+	"github.com/dsrvlabs/vatz/manager/notification"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )

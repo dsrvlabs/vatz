@@ -1,15 +1,16 @@
 package config
 
 import (
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
-	"google.golang.org/grpc"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	model "vatz/manager/model"
+
+	model "github.com/dsrvlabs/vatz/manager/model"
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	"google.golang.org/grpc"
+	"gopkg.in/yaml.v2"
 )
 
 type config struct {
