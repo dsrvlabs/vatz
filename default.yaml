@@ -3,7 +3,7 @@ vatz_protocol_info:
   protocol_identifier: "near"
   port: 9090
   notification_info:
-    discord_secret: "https://discord.com/api/webhooks/955326233057566750/e-Tkq6mvxXYsx3Rqi3ttxDes76UXPpgk76Bnz5jF8_DwWgdNF-iNf7ZWdqi1nQnHO-zC"
+    discord_secret: "XXXXX"
     pager_duty_secret: "YYYYY"
 plugins_infos:
   default_verify_interval: 30
