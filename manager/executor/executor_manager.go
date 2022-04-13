@@ -3,11 +3,12 @@ package executor
 import (
 	"context"
 	"fmt"
+	"log"
+	message "vatz/manager/message"
+	"vatz/manager/notification"
+
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/protobuf/types/known/structpb"
-	"log"
-	"vatz/manager/notification"
-	//"vatz/manager/config"
 )
 
 var (
@@ -55,12 +56,12 @@ func (s *executor_manager) Execute(pluginInfo interface{}, gClient pluginpb.Plug
 			resp, err := gClient.Execute(context.Background(), req)
 
 			if err != nil || resp == nil {
-				jsonMessage := "{\n   \"func_name\":\"" + methodName + "\",\n   \"state\":\"FAILURE\",\n   \"msg\":\" No response from Plugin \",\n   \"severity\":\"CRITICAL\",\n   \"resource_type\":\"" + defaultPluginName + "\"\n}"
+				jsonMessage := message.ReqMsg{methodName, "FAILURE", "No response from Plugin", "CRITICAL", defaultPluginName}
 				dispatchManager.SendNotification(jsonMessage)
 			}
 
 			if resp.GetSeverity().String() == "CRITICAL" {
-				jsonMessage := "{\n   \"func_name\":\"" + methodName + "\",\n   \"state\":\"FAILURE\",\n   \"msg\":\"" + resp.GetMessage() + "\",\n   \"severity\":\"CRITICAL\",\n   \"resource_type\":\"" + defaultPluginName + "\"\n}"
+				jsonMessage := message.ReqMsg{methodName, "FAILURE", resp.GetMessage(), "CRITICAL", defaultPluginName}
 				fmt.Println(jsonMessage)
 				dispatchManager.SendNotification(jsonMessage)
 			}

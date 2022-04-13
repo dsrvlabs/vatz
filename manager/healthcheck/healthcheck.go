@@ -2,10 +2,12 @@ package healthcheck
 
 import (
 	"context"
+	"vatz/manager/config"
+	message "vatz/manager/message"
+	"vatz/manager/notification"
+
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	"vatz/manager/config"
-	"vatz/manager/notification"
 )
 
 var (
@@ -22,7 +24,7 @@ func (h healthCheck) HealthCheck(pluginInfo interface{}, gClient pluginpb.Plugin
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 	if err != nil || verify == nil {
 		isAlive = "DOWN"
-		jsonMessage := "{\n   \"func_name\":\"is_plugin_up\",\n   \"state\":\"FAILURE\",\n   \"msg\":\"" + defaultPluginName + " is Down!!\",\n   \"severity\":\"CRITICAL\",\n   \"resource_type\":\"" + defaultPluginName + "\"\n}"
+		jsonMessage := message.ReqMsg{"is_plugin_up", "FAILURE", "is Down !!", "CRITICAL", defaultPluginName}
 		dispatchManager.SendNotification(jsonMessage)
 	}
 	return isAlive, nil

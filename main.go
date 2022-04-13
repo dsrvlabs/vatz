@@ -3,10 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
@@ -17,6 +13,11 @@ import (
 	"vatz/manager/executor"
 	health "vatz/manager/healthcheck"
 	notification "vatz/manager/notification"
+
+	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Grpc struct {

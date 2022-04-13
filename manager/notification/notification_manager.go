@@ -1,8 +1,8 @@
 package notification
 
 import (
-	"encoding/json"
 	config "vatz/manager/config"
+	message "vatz/manager/message"
 )
 
 var (
@@ -23,23 +23,9 @@ func init() {
 type dispatcher_manager struct {
 }
 
-type ReqMsg struct {
-	FuncName     string `json:"func_name"`
-	State        string `json:"state"`
-	Msg          string `json:"msg"`
-	Severity     string `json:"severity"`
-	ResourceType string `json:"resource_type"`
-}
-
-func (s *dispatcher_manager) SendNotification(request string) error {
-
-	rMsg := ReqMsg{}
-	err := json.Unmarshal([]byte(request), &rMsg)
-	if err != nil {
-		panic(err)
-	}
-	if rMsg.Severity == "CRITICAL" {
-		err := notificationInstance.SendDiscord(rMsg, discordChannel)
+func (s *dispatcher_manager) SendNotification(request message.ReqMsg) error {
+	if request.Severity == "CRITICAL" {
+		err := notificationInstance.SendDiscord(request, discordChannel)
 		if err != nil {
 			panic(err)
 		}
