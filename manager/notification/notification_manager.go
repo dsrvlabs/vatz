@@ -16,7 +16,8 @@ var (
 func init() {
 	notificationInstance = NewDispatcher()
 	protocolInfo := configManager.Parse("PROTOCOL", defaultConf)
-	discordChannel = protocolInfo.(map[interface{}]interface{})["discord_secret"].(string)
+	notificationInfo := protocolInfo.(map[interface{}]interface{})["notification_info"]
+	discordChannel = notificationInfo.(map[interface{}]interface{})["discord_secret"].(string)
 }
 
 type dispatcher_manager struct {
@@ -31,6 +32,7 @@ type ReqMsg struct {
 }
 
 func (s *dispatcher_manager) SendNotification(request string) error {
+
 	rMsg := ReqMsg{}
 	err := json.Unmarshal([]byte(request), &rMsg)
 	if err != nil {

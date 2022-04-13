@@ -18,7 +18,7 @@ func (c config) parse(retrievalInfo string, configData map[interface{}]interface
 	if retrievalInfo == "PROTOCOL" {
 		return configData["vatz_protocol_info"]
 	} else {
-		return configData["plugins_info"]
+		return configData["plugins_infos"]
 	}
 }
 
@@ -48,7 +48,8 @@ func (c config) getYMLData(str string, isDefault bool) map[interface{}]interface
 func (c config) getConfigFromURL() map[interface{}]interface{} {
 	var inputArguments = len(os.Args)
 	var configFromURL = make(map[interface{}]interface{})
-	if inputArguments > 0 {
+
+	if inputArguments > 1 {
 		url := os.Args[1]
 		resp, err := http.Get(url)
 
@@ -76,14 +77,12 @@ func (c config) getConfigFromURL() map[interface{}]interface{} {
 }
 
 func (c config) getClient() pluginpb.PluginClient {
-	opts := grpc.WithInsecure()
-	cc, err := grpc.Dial("localhost:9091", opts)
+	conn, err := grpc.Dial("localhost:9091", grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer cc.Close()
-	client := pluginpb.NewPluginClient(cc)
-	return client
+	//defer conn.Close()
+	return pluginpb.NewPluginClient(conn)
 }
 
 type Config interface {

@@ -29,6 +29,5 @@ func (c *config_manager) GetConfigFromURL() map[interface{}]interface{} {
 }
 
 func (c *config_manager) GetGRPCClient() pluginpb.PluginClient {
-	client := configInstance.getClient()
-	return client
+	return configInstance.getClient()
 }

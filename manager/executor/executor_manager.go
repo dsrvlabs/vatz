@@ -1,59 +1,71 @@
 package executor
 
 import (
-	"fmt"
-	"log"
 	"context"
-	"google.golang.org/protobuf/types/known/structpb"
+	"fmt"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	"google.golang.org/protobuf/types/known/structpb"
+	"log"
+	"vatz/manager/notification"
 	//"vatz/manager/config"
 )
 
 var (
-	executorInstance Executor
-	EManager         executor_manager
+	EManager        executor_manager
+	dispatchManager = notification.DManager
 )
 
 func init() {
-	executorInstance = NewExecutor()
 }
 
 type executor_manager struct {
 }
 
-func (s *executor_manager) Execute() error {
-	fmt.Println("this is Execute call from Manager ")
-	//TODO: get dial address, protocol from config
-	targetMap := map[string]interface{}{
-		"addr": "localhost:9091",
-		"protocol": "vatz-plugin-cosmos",
+func (s *executor_manager) Execute(pluginInfo interface{}, gClient pluginpb.PluginClient) error {
+	defaultPluginName := pluginInfo.(map[interface{}]interface{})["defult_plugin_name"].(string)
+	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
+
+	for _, api := range pluginAPIs {
+		executeMethods := api.(map[interface{}]interface{})["executable_apis"].([]interface{})
+		for _, exe := range executeMethods {
+			targetMap := map[string]interface{}{
+				"source": "localhost:9091",
+			}
+
+			target, err := structpb.NewStruct(targetMap)
+			if err != nil {
+				log.Fatalf("failed to check target structpb: %v", err)
+			}
+
+			methodName := exe.(map[interface{}]interface{})["method_name"].(string)
+			commandMap := map[string]interface{}{
+				"command": methodName,
+			}
+
+			commands, err := structpb.NewStruct(commandMap)
+			if err != nil {
+				log.Fatalf("failed to check command structpb: %v", err)
+			}
+
+			req := &pluginpb.ExecuteRequest{
+				ExecuteInfo: commands,
+				Options:     target,
+			}
+
+			resp, err := gClient.Execute(context.Background(), req)
+
+			if err != nil || resp == nil {
+				jsonMessage := "{\n   \"func_name\":\"" + methodName + "\",\n   \"state\":\"FAILURE\",\n   \"msg\":\" No response from Plugin \",\n   \"severity\":\"CRITICAL\",\n   \"resource_type\":\"" + defaultPluginName + "\"\n}"
+				dispatchManager.SendNotification(jsonMessage)
+			}
+
+			if resp.GetSeverity().String() == "CRITICAL" {
+				jsonMessage := "{\n   \"func_name\":\"" + methodName + "\",\n   \"state\":\"FAILURE\",\n   \"msg\":\"" + resp.GetMessage() + "\",\n   \"severity\":\"CRITICAL\",\n   \"resource_type\":\"" + defaultPluginName + "\"\n}"
+				fmt.Println(jsonMessage)
+				dispatchManager.SendNotification(jsonMessage)
+			}
+		}
 	}
-
-	target, err := structpb.NewStruct(targetMap)
-	if err != nil {
-		log.Fatalf("failed to check target structpb: %v", err)
-	}
-
-	//TODO: get target plugin info and commands from config
-	commandMap := map[string]interface{}{
-		"command": "getBlockHeight",
-		"params": "",
-	}
-
-	commands, err := structpb.NewStruct(commandMap)
-	if err != nil {
-		log.Fatalf("failed to check command structpb: %v", err)
-	}
-
-	req := &pluginpb.ExecuteRequest{
-		ExecuteInfo: target,
-		Options: commands,
-	}
-
-	resp, _ := executorInstance.Execute(context.Background(), req)
-
-	//TODO: handle return response
-	log.Printf("received state :%v", resp.GetState())
 
 	return nil
 }
