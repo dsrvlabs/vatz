@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	message "vatz/manager/message"
 )
 
 type notification struct {
@@ -47,10 +48,10 @@ type discordMsg struct {
 }
 
 type Notification interface {
-	SendDiscord(msg ReqMsg, webhook string) error
+	SendDiscord(msg message.ReqMsg, webhook string) error
 }
 
-func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
+func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 	sMsg := discordMsg{Embeds: make([]embed, 1)}
 	sMsg.Embeds[0].Title = msg.Severity
 	sMsg.Embeds[0].Color = 15258703
