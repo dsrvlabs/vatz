@@ -54,9 +54,9 @@ func preLoad() error {
 func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
 	verifyInterval := pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
 	executeInterval := pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
+
 	verifyTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
 	executeTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
-	fmt.Println(executeInterval)
 
 	//autoUpdateNotification := make(map[interface{}]interface{})
 	isOkayToSend := true
