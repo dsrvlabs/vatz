@@ -7,6 +7,9 @@ import (
 	"net/http"
 )
 
+type notification struct {
+}
+
 type field struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`

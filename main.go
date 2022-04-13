@@ -3,73 +3,87 @@ package main
 import (
 	"context"
 	"fmt"
+	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
+	"reflect"
 	"time"
 	"vatz/manager/api"
 	config "vatz/manager/config"
 	"vatz/manager/executor"
 	health "vatz/manager/healthcheck"
 	notification "vatz/manager/notification"
-
-	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
+type Grpc struct {
+	client pluginpb.PluginClient
+}
+
 const (
-	serviceName = "Node Manager"
+	serviceName = "Vatz Manager"
 )
 
 var (
-	defaultConf     = config.CManager.GetYMLData("default.yaml", true)
-	grpcClient      = config.CManager.GetGRPCClient()
+	defaultConf     = make(map[interface{}]interface{})
+	grpcClient      = configManager.GetGRPCClient()
 	healthManager   = health.HManager
 	dispatchManager = notification.DManager
 	configManager   = config.CManager
 	executeManager  = executor.EManager
 )
 
-//This Merge yaml file
 func preLoad() error {
+	// Get a Default Info from default Yaml
+	defaultConf = config.CManager.GetYMLData("default.yaml", true)
 	retrievedConf := configManager.GetConfigFromURL()
-	for k, v := range retrievedConf {
-		defaultConf[k] = v
+
+	// Get a Default Info from default Yaml
+	if !reflect.DeepEqual(retrievedConf, make(map[interface{}]interface{})) {
+		for k, v := range retrievedConf {
+			defaultConf[k] = v
+		}
 	}
+
 	return nil
 }
 
-func runningProcess(pluginInfo interface{}, ch <-chan os.Signal) {
+func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
 	verifyInterval := pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
 	executeInterval := pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
+	verifyTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
+	executeTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
+	fmt.Println(executeInterval)
 
-	executeTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
-	verifyTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
-
-	isOkayToSend := false
+	//autoUpdateNotification := make(map[interface{}]interface{})
+	isOkayToSend := true
 
 	go func() {
 		for {
 			select {
 			case <-verifyTicker.C:
-				live, _ := healthManager.HealthCheck()
+				live, _ := healthManager.HealthCheck(pluginInfo, grpcClient)
 				if live == "UP" {
 					isOkayToSend = true
+				} else {
+					isOkayToSend = false
 				}
 
+			//TODO: Dynamic handler for execute APIs with different time ticker.
 			case <-executeTicker.C:
 				if isOkayToSend == true {
-					executeManager.Execute()
+					executeManager.Execute(pluginInfo, grpcClient)
 				}
 
-			case <-ch:
+			case <-quit:
 				executeTicker.Stop()
 				return
 			}
 		}
 	}()
-
 }
 
 func initiateServer(ch <-chan os.Signal) error {
@@ -83,7 +97,6 @@ func initiateServer(ch <-chan os.Signal) error {
 	managerpb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	//Isn't there any better way to parse it? This isn't good to coverUp all yaml
 	protocolInfo := configManager.Parse("PROTOCOL", defaultConf)
 	pluginInfo := configManager.Parse("PLUGIN", defaultConf)
 
@@ -97,6 +110,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	log.Println("Listening Port", addr)
 
 	runningProcess(pluginInfo, ch)
+
 	log.Println("Node Manager Started")
 	if err := s.Serve(listener); err != nil {
 		log.Panic(err)

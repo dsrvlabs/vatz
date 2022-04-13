@@ -2,12 +2,17 @@
 vatz_protocol_info:
   protocol_identifier: "near"
   port: 9090
-  discord_secret: ""
-plugins_info:
-  plugin_name: "near"
-  plugin_port: 9091
-  default_verify_interval: 60
-  default_execute_interval: 30
-  executable_apis:
-    - method_name: "default_check_function"
-      api_interval: 45
+  notification_info:
+    discord_secret: "https://discord.com/api/webhooks/955326233057566750/e-Tkq6mvxXYsx3Rqi3ttxDes76UXPpgk76Bnz5jF8_DwWgdNF-iNf7ZWdqi1nQnHO-zC"
+    pager_duty_secret: "YYYYY"
+plugins_infos:
+  default_verify_interval: 30
+  default_execute_interval: 3
+  defult_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "vatz-plugin-near-node-check"
+      plugin_port: 9091
+      executable_apis:
+        - method_name: "isUp"
+        - method_name: "getBlockHeight"
+        - method_name: "getNumberOfPeers"
