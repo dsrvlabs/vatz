@@ -12,7 +12,6 @@ import (
 	config "vatz/manager/config"
 	"vatz/manager/executor"
 	health "vatz/manager/healthcheck"
-	message "vatz/manager/message"
 	notification "vatz/manager/notification"
 
 	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
@@ -39,7 +38,6 @@ var (
 )
 
 func preLoad() error {
-	fmt.Println(message.Critical)
 	// Get a Default Info from default Yaml
 	defaultConf = config.CManager.GetYMLData("default.yaml", true)
 	retrievedConf := configManager.GetConfigFromURL()
