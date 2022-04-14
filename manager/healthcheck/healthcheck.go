@@ -24,7 +24,7 @@ func (h healthCheck) HealthCheck(pluginInfo interface{}, gClient pluginpb.Plugin
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 	if err != nil || verify == nil {
 		isAlive = "DOWN"
-		jsonMessage := message.ReqMsg{"is_plugin_up", "FAILURE", "is Down !!", "CRITICAL", defaultPluginName}
+		jsonMessage := message.ReqMsg{FuncName: "is_plugin_up", State: message.Failure, Msg: "is Down !!", Severity: message.Critical, ResourceType: defaultPluginName}
 		dispatchManager.SendNotification(jsonMessage)
 	}
 	return isAlive, nil

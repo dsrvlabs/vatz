@@ -53,7 +53,7 @@ type Notification interface {
 
 func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 	sMsg := discordMsg{Embeds: make([]embed, 1)}
-	sMsg.Embeds[0].Title = msg.Severity
+	sMsg.Embeds[0].Title = string(msg.Severity)
 	sMsg.Embeds[0].Color = 15258703
 	sMsg.Embeds[0].Fields = []field{{msg.FuncName, msg.Msg, false}}
 	message, _ := json.Marshal(sMsg)
