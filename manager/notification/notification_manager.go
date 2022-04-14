@@ -24,7 +24,7 @@ type dispatcher_manager struct {
 }
 
 func (s *dispatcher_manager) SendNotification(request message.ReqMsg) error {
-	if request.Severity == "CRITICAL" {
+	if request.Severity == message.Critical {
 		err := notificationInstance.SendDiscord(request, discordChannel)
 		if err != nil {
 			panic(err)

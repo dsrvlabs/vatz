@@ -56,12 +56,12 @@ func (s *executor_manager) Execute(pluginInfo interface{}, gClient pluginpb.Plug
 			resp, err := gClient.Execute(context.Background(), req)
 
 			if err != nil || resp == nil {
-				jsonMessage := message.ReqMsg{methodName, "FAILURE", "No response from Plugin", "CRITICAL", defaultPluginName}
+				jsonMessage := message.ReqMsg{FuncName: methodName, State: message.Failure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: defaultPluginName}
 				dispatchManager.SendNotification(jsonMessage)
 			}
 
-			if resp.GetSeverity().String() == "CRITICAL" {
-				jsonMessage := message.ReqMsg{methodName, "FAILURE", resp.GetMessage(), "CRITICAL", defaultPluginName}
+			if resp.GetSeverity().String() == string(message.Critical) {
+				jsonMessage := message.ReqMsg{FuncName: methodName, State: message.Failure, Msg: resp.GetMessage(), Severity: message.Critical, ResourceType: defaultPluginName}
 				fmt.Println(jsonMessage)
 				dispatchManager.SendNotification(jsonMessage)
 			}
