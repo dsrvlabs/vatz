@@ -12,8 +12,15 @@ type State string
 type Severity string
 
 const (
-	Failure  = State("FAILURE")
-	Success  = State("SUCCESS")
-	Critical = Severity("CRITICAL")
-	Info     = Severity("INFO")
+	None       = State("NONE")
+	Pending    = State("PENDING")
+	InProgress = State("INPROGRESS")
+	Faliure    = State("FAIILURE")
+	Timeout    = State("TIMEOUT")
+	Success    = State("SUCCESS")
+	Unknown    = Severity("UNKNOWN")
+	Warning    = Severity("WARNING")
+	Error      = Severity("ERROR")
+	Critical   = Severity("CRITICAL")
+	Info       = Severity("INFO")
 )
