@@ -30,7 +30,7 @@ const (
 
 var (
 	defaultConf     = make(map[interface{}]interface{})
-	grpcClient      = configManager.GetGRPCClient()
+	grpcClient      = Grpc{}
 	healthManager   = health.HManager
 	dispatchManager = notification.DManager
 	configManager   = config.CManager
@@ -41,14 +41,14 @@ func preLoad() error {
 	// Get a Default Info from default Yaml
 	defaultConf = config.CManager.GetYMLData("default.yaml", true)
 	retrievedConf := configManager.GetConfigFromURL()
-
+	pluginInfo := configManager.Parse("PLUGIN", defaultConf)
 	// Get a Default Info from default Yaml
 	if !reflect.DeepEqual(retrievedConf, make(map[interface{}]interface{})) {
 		for k, v := range retrievedConf {
 			defaultConf[k] = v
 		}
 	}
-
+	grpcClient = Grpc{configManager.GetGRPCClient(pluginInfo)}
 	return nil
 }
 
@@ -56,17 +56,21 @@ func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
 	verifyInterval := pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
 	executeInterval := pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
 
+	if verifyInterval > executeInterval || verifyInterval == executeInterval {
+		verifyInterval = executeInterval - 1
+	}
+
 	verifyTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
 	executeTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
 
-	//autoUpdateNotification := make(map[interface{}]interface{})
-	isOkayToSend := true
+	autoUpdateNotification := make(map[interface{}]interface{})
+	isOkayToSend := false
 
 	go func() {
 		for {
 			select {
 			case <-verifyTicker.C:
-				live, _ := healthManager.HealthCheck(pluginInfo, grpcClient)
+				live, _ := healthManager.HealthCheck(grpcClient.client, pluginInfo)
 				if live == "UP" {
 					isOkayToSend = true
 				} else {
@@ -76,7 +80,8 @@ func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
 			//TODO: Dynamic handler for execute APIs with different time ticker.
 			case <-executeTicker.C:
 				if isOkayToSend == true {
-					executeManager.Execute(pluginInfo, grpcClient)
+					executedAfter := executeManager.Execute(grpcClient.client, pluginInfo, autoUpdateNotification)
+					autoUpdateNotification = executedAfter
 				}
 
 			case <-quit:

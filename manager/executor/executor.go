@@ -1,40 +1,56 @@
 package executor
 
 import (
-	"log"
 	"context"
-	"google.golang.org/grpc"
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	message "vatz/manager/model"
 )
 
 type executor struct {
 }
 
-type Executor interface {
-	Execute(ctx context.Context, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error)
+func (v executor) Execute(gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
+	resp, err := gClient.Execute(context.Background(), in)
+	if err != nil || resp == nil {
+		return &pluginpb.ExecuteResponse{
+			State:     pluginpb.State_FAILURE,
+			Message:   "API Execution Failed",
+			AlertType: pluginpb.ALERT_TYPE_DISCORD,
+			Severity:  pluginpb.Severity_ERROR,
+		}, nil
+	}
+
+	return resp, nil
 }
 
-func (v executor) Execute(ctx context.Context, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
-	log.Printf("executor call plugin")
+func (v executor) ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatus map[interface{}]interface{}) error {
+	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
+	if notifyInfo["state"] != string(message.Success) {
+		exeStatus[notifyInfo["method_name"]] = false
 
-	opts := grpc.WithInsecure()
-	//TODO: get addr from in.GetExecuteInfo()
-	var address = "localhost:9091"
-	conn, err := grpc.Dial(address, opts)
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		if notifyInfo["severity"] == string(message.Error) {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
+		}
+
+		if notifyInfo["severity"] == string(message.Critical) {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: notifyInfo["execute_message"].(string), Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
+		}
+
+	} else {
+		if exeStatus[notifyInfo["method_name"]] == false {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Success, Msg: notifyInfo["execute_message"].(string), Severity: message.Info, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
+		}
 	}
-	defer conn.Close()
 
-	client := pluginpb.NewPluginClient(conn)
+	return nil
+}
 
-	//TODO: execute request to plugin
-	resp, _ := client.Execute(context.Background(), in)
-
-	//TODO: handle response from plugin
-	//alert by resp.state, resp.severity
-	log.Printf("received state :%v", resp.GetState())
-	return nil, nil
+type Executor interface {
+	Execute(gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error)
+	ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatus map[interface{}]interface{}) error
 }
 
 func NewExecutor() Executor {

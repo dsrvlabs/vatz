@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type config struct {
@@ -60,8 +61,8 @@ func (c config) getConfigFromURL() map[interface{}]interface{} {
 
 		if resp.StatusCode != http.StatusOK {
 			log.Fatal("Status error: %v", resp.StatusCode)
-
 		}
+
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal("Read body: %v", err)
@@ -76,11 +77,23 @@ func (c config) getConfigFromURL() map[interface{}]interface{} {
 	return configFromURL
 }
 
-func (c config) getClient() pluginpb.PluginClient {
-	conn, err := grpc.Dial("localhost:9091", grpc.WithInsecure())
+//TODO: Update to function to create multiple clients
+func (c config) getClient(pluginInfo interface{}) pluginpb.PluginClient {
+	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
+	connectTarget := ":9091"
+
+	if len(pluginAPIs) > 0 {
+		clientAddress := pluginAPIs[0].(map[interface{}]interface{})["plugin_address"].(string)
+		clientPort := pluginAPIs[0].(map[interface{}]interface{})["plugin_port"].(int)
+		connectTarget = clientAddress + ":" + strconv.Itoa(clientPort)
+	}
+
+	conn, err := grpc.Dial(connectTarget, grpc.WithInsecure())
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//TODO: Please, Create a better client functions with static
 	//defer conn.Close()
 	return pluginpb.NewPluginClient(conn)
 }
@@ -89,7 +102,7 @@ type Config interface {
 	parse(retrievalInfo string, data map[interface{}]interface{}) interface{}
 	getYMLData(str string, isDefault bool) map[interface{}]interface{}
 	getConfigFromURL() map[interface{}]interface{}
-	getClient() pluginpb.PluginClient
+	getClient(interface{}) pluginpb.PluginClient
 }
 
 func NewConfig() Config {

@@ -2,69 +2,125 @@ package executor
 
 import (
 	"context"
-	"fmt"
-	"log"
-	message "vatz/manager/message"
-	"vatz/manager/notification"
-
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/protobuf/types/known/structpb"
+	"log"
+	message "vatz/manager/model"
+	"vatz/manager/notification"
 )
 
 var (
-	EManager        executor_manager
-	dispatchManager = notification.DManager
+	EManager         executorManager
+	executorInstance Executor
+	dispatchManager  = notification.DManager
 )
 
 func init() {
 }
 
-type executor_manager struct {
+type executorManager struct {
 }
 
-func (s *executor_manager) Execute(pluginInfo interface{}, gClient pluginpb.PluginClient) error {
-	defaultPluginName := pluginInfo.(map[interface{}]interface{})["defult_plugin_name"].(string)
+func (s *executorManager) updateStatus(resp *pluginpb.ExecuteResponse, methodName string, exeStatus map[interface{}]interface{}) error {
+	if resp.GetState().String() != "SUCCESS" {
+		exeStatus[methodName] = false
+	}
+	return nil
+}
+
+func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo interface{}, exeStatus map[interface{}]interface{}) map[interface{}]interface{} {
+	defaultPluginName := pluginInfo.(map[interface{}]interface{})["default_plugin_name"].(string)
 	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
 
-	for _, api := range pluginAPIs {
-		executeMethods := api.(map[interface{}]interface{})["executable_apis"].([]interface{})
-		for _, exe := range executeMethods {
-			targetMap := map[string]interface{}{
-				"source": "localhost:9091",
-			}
+	//TODO: Find how to deal with multiple plugin methods.
+	executeMethods := pluginAPIs[0].(map[interface{}]interface{})["executable_methods"].([]interface{})
 
-			target, err := structpb.NewStruct(targetMap)
-			if err != nil {
-				log.Fatalf("failed to check target structpb: %v", err)
-			}
+	for _, method := range executeMethods {
 
-			methodName := exe.(map[interface{}]interface{})["method_name"].(string)
-			commandMap := map[string]interface{}{
-				"command": methodName,
-			}
+		optionMap := map[string]interface{}{
+			"plugin_name": defaultPluginName,
+		}
 
-			commands, err := structpb.NewStruct(commandMap)
-			if err != nil {
-				log.Fatalf("failed to check command structpb: %v", err)
-			}
+		options, err := structpb.NewStruct(optionMap)
+		if err != nil {
+			log.Fatalf("failed to check target structpb: %v", err)
+		}
 
-			req := &pluginpb.ExecuteRequest{
-				ExecuteInfo: commands,
-				Options:     target,
-			}
+		methodName := method.(map[interface{}]interface{})["method_name"].(string)
 
-			resp, err := gClient.Execute(context.Background(), req)
+		//TODO: Please, add new logic to add param into Map.
+		methodMap := map[string]interface{}{
+			"execute_method": methodName,
+		}
 
-			if err != nil || resp == nil {
-				jsonMessage := message.ReqMsg{FuncName: methodName, State: message.Failure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: defaultPluginName}
-				dispatchManager.SendNotification(jsonMessage)
-			}
+		executeInfo, err := structpb.NewStruct(methodMap)
 
-			if resp.GetSeverity().String() == string(message.Critical) {
-				jsonMessage := message.ReqMsg{FuncName: methodName, State: message.Failure, Msg: resp.GetMessage(), Severity: message.Critical, ResourceType: defaultPluginName}
-				fmt.Println(jsonMessage)
-				dispatchManager.SendNotification(jsonMessage)
+		if err != nil {
+			log.Fatalf("failed to check command structpb: %v", err)
+		}
+
+		if _, ok := exeStatus[methodName]; !ok {
+			exeStatus[methodName] = true
+		}
+
+		req := &pluginpb.ExecuteRequest{
+			ExecuteInfo: executeInfo,
+			Options:     options,
+		}
+
+		// There's invalid memory trouble
+		// panic: runtime error: invalid memory address or nil pointer dereference
+		// [signal SIGSEGV: segmentation violation code=0x1 addr=0x18 pc=0x1445d4c]
+		//resp, err := executorInstance.Execute(gClient, req)
+
+		resp, exeErr := gClient.Execute(context.Background(), req)
+
+		if exeErr != nil || resp == nil {
+			resp = &pluginpb.ExecuteResponse{
+				State:     pluginpb.State_FAILURE,
+				Message:   "API Execution Failed",
+				AlertType: pluginpb.ALERT_TYPE_DISCORD,
+				Severity:  pluginpb.Severity_ERROR,
 			}
+		}
+
+		EManager.updateStatus(resp, methodName, exeStatus)
+		notifyInfo := make(map[interface{}]interface{})
+
+		notifyInfo["severity"] = resp.GetSeverity().String()
+		notifyInfo["state"] = resp.GetState().String()
+		notifyInfo["method_name"] = methodName
+		notifyInfo["execute_message"] = resp.GetMessage()
+		notifyInfo["plugin_name"] = defaultPluginName
+
+		EManager.ExecuteNotify(notifyInfo, exeStatus)
+		//executorInstance.ExecuteNotify(notifyInfo, exeStatus)
+
+	}
+
+	return exeStatus
+}
+
+func (s *executorManager) ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatus map[interface{}]interface{}) error {
+
+	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
+	if notifyInfo["state"] != string(message.Success) {
+		exeStatus[notifyInfo["method_name"]] = false
+
+		if notifyInfo["severity"] == string(message.Error) {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
+		}
+
+		if notifyInfo["severity"] == string(message.Critical) {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: notifyInfo["execute_message"].(string), Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
+		}
+
+	} else {
+		if exeStatus[notifyInfo["method_name"]] == false {
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Success, Msg: notifyInfo["execute_message"].(string), Severity: message.Info, ResourceType: notifyInfo["plugin_name"].(string)}
+			dispatchManager.SendNotification(jsonMessage)
 		}
 	}
 
