@@ -9,14 +9,15 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	model "vatz/manager/model"
 )
 
 type config struct {
 }
 
-func (c config) parse(retrievalInfo string, configData map[interface{}]interface{}) interface{} {
+func (c config) parse(retrievalInfo model.Type, configData map[interface{}]interface{}) interface{} {
 	// FLAG PROTOCOL | PLUGIN
-	if retrievalInfo == "PROTOCOL" {
+	if retrievalInfo == model.Protocol {
 		return configData["vatz_protocol_info"]
 	} else {
 		return configData["plugins_infos"]
@@ -99,7 +100,7 @@ func (c config) getClient(pluginInfo interface{}) pluginpb.PluginClient {
 }
 
 type Config interface {
-	parse(retrievalInfo string, data map[interface{}]interface{}) interface{}
+	parse(retrievalInfo model.Type, data map[interface{}]interface{}) interface{}
 	getYMLData(str string, isDefault bool) map[interface{}]interface{}
 	getConfigFromURL() map[interface{}]interface{}
 	getClient(interface{}) pluginpb.PluginClient

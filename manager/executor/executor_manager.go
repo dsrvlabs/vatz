@@ -67,17 +67,9 @@ func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo inte
 			Options:     options,
 		}
 
-		resp, err := executorInstance.Execute(gClient, req)
-
+		resp, _ := executorInstance.Execute(gClient, req)
 		EManager.updateStatus(resp, methodName, exeStatus)
-
-		notifyInfo := make(map[interface{}]interface{})
-		notifyInfo["severity"] = resp.GetSeverity().String()
-		notifyInfo["state"] = resp.GetState().String()
-		notifyInfo["method_name"] = methodName
-		notifyInfo["execute_message"] = resp.GetMessage()
-		notifyInfo["plugin_name"] = defaultPluginName
-
+		notifyInfo := dispatchManager.GetNotifyInfo(resp, defaultPluginName, methodName)
 		executorInstance.ExecuteNotify(notifyInfo, exeStatus)
 	}
 	return exeStatus
