@@ -57,6 +57,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/xellos00/dk-yuba-proto v0.0.0-20220315011649-f716d92ed9e9 h1:LfiTzz2cYac+4CukwDuXZrfxhqin5u/PjgiV0f9QBuY=
 github.com/xellos00/dk-yuba-proto v0.0.0-20220315011649-f716d92ed9e9/go.mod h1:FgjO2jMWAJhxJppW2Q49HiQo5h21rMBM17te7sMC3+w=
+github.com/xellos00/dk-yuba-proto v0.0.0-20220415063750-f5c5fc059867 h1:j/rFWnzEGeEkhu7pERQ58v5SswRpp011mJEzgC6K7t8=
+github.com/xellos00/dk-yuba-proto v0.0.0-20220415063750-f5c5fc059867/go.mod h1:FgjO2jMWAJhxJppW2Q49HiQo5h21rMBM17te7sMC3+w=
 github.com/xellos00/silver-bentonville v0.0.0-20220107234228-1c233087b431 h1:LySvBU2sIhT31gETE/fpEFRT0UEjMa9Yu96SzCzyEKo=
 github.com/xellos00/silver-bentonville v0.0.0-20220107234228-1c233087b431/go.mod h1:70FRAbbpTBvIvZCdjFWzBCQ1WSsW63z2aa8VMivXMK0=
 go.opentelemetry.io/proto/otlp v0.7.0/go.mod h1:PqfVotwruBrMGOCsRd/89rSnXhoiJIqeYNgFYFoEGnI=

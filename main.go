@@ -12,6 +12,7 @@ import (
 	config "vatz/manager/config"
 	"vatz/manager/executor"
 	health "vatz/manager/healthcheck"
+	model "vatz/manager/model"
 	notification "vatz/manager/notification"
 
 	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
@@ -41,7 +42,7 @@ func preLoad() error {
 	// Get a Default Info from default Yaml
 	defaultConf = config.CManager.GetYMLData("default.yaml", true)
 	retrievedConf := configManager.GetConfigFromURL()
-	pluginInfo := configManager.Parse("PLUGIN", defaultConf)
+	pluginInfo := configManager.Parse(model.Plugin, defaultConf)
 	// Get a Default Info from default Yaml
 	if !reflect.DeepEqual(retrievedConf, make(map[interface{}]interface{})) {
 		for k, v := range retrievedConf {
@@ -103,8 +104,8 @@ func initiateServer(ch <-chan os.Signal) error {
 	managerpb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	protocolInfo := configManager.Parse("PROTOCOL", defaultConf)
-	pluginInfo := configManager.Parse("PLUGIN", defaultConf)
+	protocolInfo := configManager.Parse(model.Protocol, defaultConf)
+	pluginInfo := configManager.Parse(model.Plugin, defaultConf)
 
 	addr := fmt.Sprintf(":%d", protocolInfo.(map[interface{}]interface{})["port"])
 

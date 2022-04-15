@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"net/http"
 	message "vatz/manager/model"
 )
@@ -49,6 +50,18 @@ type discordMsg struct {
 
 type Notification interface {
 	SendDiscord(msg message.ReqMsg, webhook string) error
+	GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) map[interface{}]interface{}
+}
+
+func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) map[interface{}]interface{} {
+	notifyInfo := make(map[interface{}]interface{})
+	notifyInfo["severity"] = response.GetSeverity().String()
+	notifyInfo["state"] = response.GetState().String()
+	notifyInfo["method_name"] = methodName
+	notifyInfo["execute_message"] = response.GetMessage()
+	notifyInfo["plugin_name"] = pluginName
+
+	return notifyInfo
 }
 
 func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {

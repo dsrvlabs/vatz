@@ -1,8 +1,9 @@
 package notification
 
 import (
+	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	config "vatz/manager/config"
-	message "vatz/manager/model"
+	model "vatz/manager/model"
 )
 
 var (
@@ -15,7 +16,8 @@ var (
 
 func init() {
 	notificationInstance = NewDispatcher()
-	protocolInfo := configManager.Parse("PROTOCOL", defaultConf)
+	//message.ConfigType
+	protocolInfo := configManager.Parse(model.Protocol, defaultConf)
 	notificationInfo := protocolInfo.(map[interface{}]interface{})["notification_info"]
 	discordChannel = notificationInfo.(map[interface{}]interface{})["discord_secret"].(string)
 }
@@ -23,8 +25,12 @@ func init() {
 type dispatcher_manager struct {
 }
 
-func (s *dispatcher_manager) SendNotification(request message.ReqMsg) error {
-	if request.Severity == message.Critical {
+func (s *dispatcher_manager) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) map[interface{}]interface{} {
+	return notificationInstance.GetNotifyInfo(response, pluginName, methodName)
+}
+
+func (s *dispatcher_manager) SendNotification(request model.ReqMsg) error {
+	if request.Severity == model.Critical {
 		err := notificationInstance.SendDiscord(request, discordChannel)
 		if err != nil {
 			panic(err)
