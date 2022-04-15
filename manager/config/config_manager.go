@@ -28,6 +28,6 @@ func (c *config_manager) GetConfigFromURL() map[interface{}]interface{} {
 	return configInstance.getConfigFromURL()
 }
 
-func (c *config_manager) GetGRPCClient() pluginpb.PluginClient {
-	return configInstance.getClient()
+func (c *config_manager) GetGRPCClient(pluginInfo interface{}) pluginpb.PluginClient {
+	return configInstance.getClient(pluginInfo)
 }

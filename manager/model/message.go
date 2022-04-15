@@ -1,4 +1,4 @@
-package message
+package model
 
 type ReqMsg struct {
 	FuncName     string   `json:"func_name"`

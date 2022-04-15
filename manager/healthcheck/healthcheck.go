@@ -3,7 +3,7 @@ package healthcheck
 import (
 	"context"
 	"vatz/manager/config"
-	message "vatz/manager/message"
+	msg "vatz/manager/model"
 	"vatz/manager/notification"
 
 	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
@@ -18,20 +18,22 @@ var (
 type healthCheck struct {
 }
 
-func (h healthCheck) HealthCheck(pluginInfo interface{}, gClient pluginpb.PluginClient) (string, error) {
+func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error) {
 	isAlive := "UP"
-	defaultPluginName := pluginInfo.(map[interface{}]interface{})["defult_plugin_name"].(string)
+	defaultPluginName := pluginInfo.(map[interface{}]interface{})["default_plugin_name"].(string)
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
+
 	if err != nil || verify == nil {
 		isAlive = "DOWN"
-		jsonMessage := message.ReqMsg{FuncName: "is_plugin_up", State: message.Failure, Msg: "is Down !!", Severity: message.Critical, ResourceType: defaultPluginName}
+		jsonMessage := msg.ReqMsg{FuncName: "is_plugin_up", State: msg.Faliure, Msg: "is Down !!", Severity: msg.Critical, ResourceType: defaultPluginName}
 		dispatchManager.SendNotification(jsonMessage)
 	}
+
 	return isAlive, nil
 }
 
 type HealthCheck interface {
-	HealthCheck(pluginInfo interface{}, gClient pluginpb.PluginClient) (string, error)
+	HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error)
 }
 
 func NewHealthChecker() HealthCheck {

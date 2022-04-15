@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	message "vatz/manager/message"
+	message "vatz/manager/model"
 )
 
 type notification struct {

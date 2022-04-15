@@ -16,7 +16,7 @@ func init() {
 type healthManager struct {
 }
 
-func (s *healthManager) HealthCheck(pluginInfo interface{}, gClient pluginpb.PluginClient) (string, error) {
-	Aliveness, nil := healthCheckInstance.HealthCheck(pluginInfo, gClient)
+func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error) {
+	Aliveness, nil := healthCheckInstance.HealthCheck(gClient, pluginInfo)
 	return Aliveness, nil
 }

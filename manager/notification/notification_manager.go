@@ -2,7 +2,7 @@ package notification
 
 import (
 	config "vatz/manager/config"
-	message "vatz/manager/message"
+	message "vatz/manager/model"
 )
 
 var (

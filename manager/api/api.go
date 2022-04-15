@@ -14,27 +14,6 @@ type GrpcService struct {
 }
 
 func (s *GrpcService) Execute(ctx context.Context, in *managerpb.ExecuteRequest) (*managerpb.ExecuteResponse, error) {
-
-	//opts := grpc.WithInsecure()
-	//cc, err := grpc.Dial("localhost:9091", opts)
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-	//defer cc.Close()
-	//
-	//client := pluginpb.NewPluginClient(cc)
-	//request := &pluginpb.ExecuteRequest{ExecuteInfo: in.TargetInfo, Options: in.Command}
-	//aresp, _ := client.Execute(context.Background(), request)
-	//
-	//data := make(map[interface{}]interface{})
-	//
-	//resp := managerpb.ExecuteResponse{
-	//	State:    managerpb.ExecuteResponse_SUCCESS,
-	//	Message:  "Empty Result",
-	//	Protocol: "Near",
-	//	Options:  data,
-	//}
-
 	return nil, nil
 }
 
