@@ -1,0 +1,29 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/dsrvlabs/vatz/sdk"
+	"golang.org/x/net/context"
+	"google.golang.org/protobuf/types/known/structpb"
+)
+
+const (
+	addr = "0.0.0.0"
+	port = 9091
+)
+
+func main() {
+	p := sdk.NewPlugin()
+	p.Register(pluginFeature)
+
+	ctx := context.Background()
+	if err := p.Start(ctx, addr, port); err != nil {
+		fmt.Println("exit")
+	}
+}
+
+func pluginFeature(info, opt map[string]*structpb.Value) error {
+	// TODO: Fill here.
+	return nil
+}
