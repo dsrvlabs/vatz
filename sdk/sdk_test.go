@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/rootwarp/vatz-plugin-sdk/plugin"
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -70,7 +70,7 @@ func TestInvokeCallback(t *testing.T) {
 	resp, err := p.grpc.Execute(ctx, &req)
 
 	assert.Nil(t, err)
-	assert.Equal(t, pb.ExecuteResponse_SUCCESS, resp.State)
+	assert.Equal(t, pb.STATE_SUCCESS, resp.State)
 
 	mockCallback.AssertExpectations(t)
 }
