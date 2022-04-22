@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/rootwarp/vatz-plugin-sdk/plugin"
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,17 +14,17 @@ import (
 )
 
 type grpcServer struct {
-	pb.UnimplementedManagerPluginServer
+	pb.UnimplementedPluginServer
 
 	srv       *grpc.Server
 	callbacks []func(map[string]*structpb.Value, map[string]*structpb.Value) error
 }
 
 // Init initializes plugin.
-func (s *grpcServer) Init(context.Context, *emptypb.Empty) (*pb.PluginInfo, error) {
-	// TODO: Fill response
-	return &pb.PluginInfo{}, nil
-}
+//func (s *grpcServer) Init(context.Context, *emptypb.Empty) (*pb.PluginInfo, error) {
+//	// TODO: Fill response
+//	return &pb.PluginInfo{}, nil
+//}
 
 // Verify returns liveness.
 func (s *grpcServer) Verify(context.Context, *emptypb.Empty) (*pb.VerifyInfo, error) {
@@ -38,7 +38,7 @@ func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.E
 	log.Println("PluginServer.Execute")
 
 	resp := &pb.ExecuteResponse{
-		State:   pb.ExecuteResponse_SUCCESS,
+		State:   pb.STATE_SUCCESS,
 		Message: "OK",
 	}
 
@@ -74,7 +74,7 @@ func (s *grpcServer) Start(ctx context.Context, address string, port int) error 
 
 	s.srv = grpc.NewServer()
 
-	pb.RegisterManagerPluginServer(s.srv, s)
+	pb.RegisterPluginServer(s.srv, s)
 	reflection.Register(s.srv)
 
 	return s.srv.Serve(c)

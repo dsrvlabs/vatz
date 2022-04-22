@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 )
 

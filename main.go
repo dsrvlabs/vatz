@@ -51,7 +51,9 @@ func preLoad() error {
 			defaultConf[k] = v
 		}
 	}
-	grpcClient = Grpc{configManager.GetGRPCClient(pluginInfo)}
+	grpcClient = Grpc{
+		client: configManager.GetGRPCClient(pluginInfo),
+	}
 	return nil
 }
 
