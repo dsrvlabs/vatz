@@ -3,10 +3,10 @@ package healthcheck
 import (
 	"context"
 
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	msg "github.com/dsrvlabs/vatz/manager/model"
 	"github.com/dsrvlabs/vatz/manager/notification"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 

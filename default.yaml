@@ -10,7 +10,7 @@ plugins_infos:
   default_execute_interval: 30
   default_plugin_name: "vatz-plugin"
   plugins:
-    - plugin_name: "vatz-plugin-near-node-check"
+    - plugin_name: "vatz-plugin-node-check"
       plugin_address: "localhost"
       plugin_port: 9091
       executable_methods:

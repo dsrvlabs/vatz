@@ -3,7 +3,7 @@ module github.com/dsrvlabs/vatz
 go 1.18
 
 require (
-	github.com/xellos00/dk-yuba-proto v0.0.0-20220415063750-f5c5fc059867
+	github.com/dsrvlabs/vatz-proto v0.0.0-20220420191920-c7decada518f
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v2 v2.4.0

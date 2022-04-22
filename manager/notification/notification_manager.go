@@ -3,7 +3,7 @@ package notification
 import (
 	model "github.com/dsrvlabs/vatz/manager/model"
 
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
 )

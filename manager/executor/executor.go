@@ -3,8 +3,8 @@ package executor
 import (
 	"context"
 
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	message "github.com/dsrvlabs/vatz/manager/model"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 )
 
 type executor struct {
