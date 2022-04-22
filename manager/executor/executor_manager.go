@@ -3,8 +3,8 @@ package executor
 import (
 	"log"
 
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/notification"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/protobuf/types/known/structpb"
 	//"vatz/manager/config"
 )

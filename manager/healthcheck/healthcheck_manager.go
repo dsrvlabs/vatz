@@ -1,7 +1,7 @@
 package healthcheck
 
 import (
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 )
 
 var (

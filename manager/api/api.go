@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
+	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 )
 
 var (

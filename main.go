@@ -11,15 +11,14 @@ import (
 
 	notification "github.com/dsrvlabs/vatz/manager/notification"
 
-	"github.com/dsrvlabs/vatz/manager/executor"
-
 	config "github.com/dsrvlabs/vatz/manager/config"
+	executor "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
 
+	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	"github.com/dsrvlabs/vatz/manager/model"
-	managerpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/manager/v1"
-	pluginpb "github.com/xellos00/dk-yuba-proto/dist/proto/vatz/plugin/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
