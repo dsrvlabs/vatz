@@ -13,9 +13,10 @@ Summary:
 Please delete options that are not relevant.
 
 - [ ] New feature (non-breaking change which adds functionality)
-- [ ] Bug/fix (non-breaking change which fixes an issue)
-- [ ] Hot fix (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Enhancement
+- [ ] Bug/fix (non-breaking change which fixes an issue)
+- [ ] others (anything other than above)
+
 
 ## Comments
 > Please, leave a comments if there's further action that requires. 
