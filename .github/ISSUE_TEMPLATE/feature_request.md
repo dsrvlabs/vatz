@@ -2,7 +2,6 @@
 name: Feature Request
 about: Suggest any idea for Vatz project
 title: ''
-projects: Vatz
 labels: Vatz, type:feature-request
 assignees: ''
 ---

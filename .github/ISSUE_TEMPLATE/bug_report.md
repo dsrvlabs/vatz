@@ -2,7 +2,6 @@
 name: Bug Report/Fix
 about: Create a report to help us improve
 title: ''
-projects: Vatz
 labels: Vatz, type:bug
 assignees: ''
 
