@@ -2,7 +2,7 @@
 
 <br/>  
 <div align="center" style="display:flex;">  
-  <img width="245" src="https://user-images.githubusercontent.com/6308023/165422882-2ab14b87-7370-4e3a-9a01-94b545a26316.png">
+  <img width="600" src="https://user-images.githubusercontent.com/6308023/165422882-2ab14b87-7370-4e3a-9a01-94b545a26316.png">
   <p> 
     <br>
     <img alt="Version"  src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000"  />    
