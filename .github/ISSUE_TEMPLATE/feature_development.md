@@ -2,7 +2,6 @@
 name: Feature Development
 about: Specify feature is going to be developed & through certain request. 
 title: ''
-projects: Vatz
 labels: Vatz, type:feature-development
 assignees: ''
 ---

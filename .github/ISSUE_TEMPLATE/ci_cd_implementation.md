@@ -2,7 +2,6 @@
 name: CI/CD implementation
 about: Create/enhance any feature that boosts Vatz Devops Process 
 title: ''
-projects: Vatz
 labels: Vatz, type:ci/cd
 assignees: ''
 
