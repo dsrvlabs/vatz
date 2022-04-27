@@ -1,13 +1,33 @@
-# VATZ
+<h1 align="center"> VATZ (Validator A To Z)</h1>  
 
-> This is a pilot for initial commit in development branch. 
->
-> Please, follow the instructions in gitbook to run [pilot version of Vatz](https://app.gitbook.com/o/-MiyxU38etxprZxihBZS/s/-Mj3CwiN6vyRfTZC-Ljw/general/contents/pilot)
+<br/>  
+<div align="center" style="display:flex;">  
+  <img width="245" src="https://user-images.githubusercontent.com/6308023/165419916-217c088c-3501-4804-9c8a-3ca97a622aec.png">
+  <p> 
+    <br>
+    <img alt="Version"  src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000"  />    
+    <a href="https://www.apache.org/licenses/LICENSE-2.0"  target="_blank"><img alt="License: Apache 2.0"  src="https://img.shields.io/badge/License-Apache 2.0-yellow.svg" /></a> 
+  </p> 
+</div>    
 
-{% hint style="info" %}
+**Vatz Project**
 
-This branch will be used only on purpose of development, or to create a release candidate
+> DSRV's [Vatz](https://github.com/dsrvlabs/vatz)
+is a tool that helps Node validator in purpose of maximizing node's uptime.   
+> VAtz supports various external monitoring ecosystems in the form of plug-ins   
+> (Prometheus, Grafana, Pagerduty, Discord,etc), which more reliably supports events of Node's behaviors for all protocols.
 
-{%  endhint %}
 
-## Dev Process
+Please contact [us](mailto:validator@dsrvlabs.com) if you need any further information.
+
+---
+
+## How can I contribute?
+
+We welcome contributions! Many people all over the world have helped make this project better.
+* [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute
+- [Project Workflow Instructions](docs/workflow.md) explains how to build and test
+
+
+## Filing issues
+(TBD)
