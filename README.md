@@ -1,7 +1,7 @@
-<h1 align="center"> VATZ (Validator A To Z)</h1>  
+<h1> VATZ (Validator A To Z)</h1>  
 
 <br/>  
-<div align="center" style="display:flex;">  
+<div style="display:flex;">  
   <img width="600" src="https://user-images.githubusercontent.com/6308023/165422882-2ab14b87-7370-4e3a-9a01-94b545a26316.png">
   <p> 
     <br>
@@ -17,8 +17,7 @@ is a tool that helps Node validator in purpose of maximizing node's uptime.
 > VAtz supports various external monitoring ecosystems in the form of plug-ins   
 > (Prometheus, Grafana, Pagerduty, Discord,etc), which more reliably supports events of Node's behaviors for all protocols.
 
-
-Please contact [us](mailto:validator@dsrvlabs.com) if you need any further information.
+Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information.
 
 ---
 
