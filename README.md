@@ -1,7 +1,7 @@
-<h1> VATZ (Validator A To Z)</h1>  
+<h1 align="center"> VATZ (Validator A To Z)</h1>  
 
 <br/>  
-<div style="display:flex;">  
+<div align="center" style="display:flex;">  
   <img width="600" src="https://user-images.githubusercontent.com/6308023/165422882-2ab14b87-7370-4e3a-9a01-94b545a26316.png">
   <p> 
     <br>
