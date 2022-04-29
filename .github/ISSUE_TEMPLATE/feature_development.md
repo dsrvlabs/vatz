@@ -10,7 +10,7 @@ assignees: ''
 
 - [ ] New Feature for the Service/Plugin (Vatz)
 - [ ] Enhancement (Vatz)
-- [ ] others(etc ie, documentation)
+- [ ] others(etc. e.g, documentation, project policy management)
 
 ---
 ### **Is your feature request related to a problem? Please describe.**

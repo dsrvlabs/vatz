@@ -10,7 +10,7 @@ assignees: ''
 - [ ] New Feature for the SVC/Plugin
 - [ ] New Feature for CI/CD
 - [ ] Enhancement on Vatz
-- [ ] Others(etc, i.e. documentation,...)
+- [ ] Others(etc. e.g, documentation,...)
 ---
 
 ### **Please describe, what it's about or related Problem with**

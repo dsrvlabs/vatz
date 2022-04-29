@@ -11,7 +11,7 @@ assignees: ''
 - [ ] Bug from Service (Vatz)
 - [ ] Bug from Plugin (Vatz) 
 - [ ] Malfunction on CI/CD 
-- [ ] etc(e.i, Hardware version doesn't match, )
+- [ ] etc(e.g, Hardware version doesn't match, )
 
 ---
 
