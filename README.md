@@ -17,8 +17,7 @@ is a tool that helps Node validator in purpose of maximizing node's uptime.
 > VAtz supports various external monitoring ecosystems in the form of plug-ins   
 > (Prometheus, Grafana, Pagerduty, Discord,etc), which more reliably supports events of Node's behaviors for all protocols.
 
-
-Please contact [us](mailto:validator@dsrvlabs.com) if you need any further information.
+Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information.
 
 ---
 
