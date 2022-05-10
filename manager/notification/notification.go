@@ -14,6 +14,15 @@ import (
 type notification struct {
 }
 
+type DiscordColor int
+
+const (
+	discordRed    DiscordColor = 15548997
+	discordYellow DiscordColor = 16705372
+	discordGreen  DiscordColor = 5763719
+	discordGray   DiscordColor = 9807270
+)
+
 type field struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`
@@ -26,12 +35,12 @@ type embed struct {
 		URL     string `json:"url,omitempty"`
 		IconURL string `json:"icon_url,omitempty"`
 	} `json:"author,omitempty"`
-	Title       string    `json:"title"`
-	URL         string    `json:"url,omitempty"`
-	Timestamp   time.Time `json:"timestamp"`
-	Description string    `json:"description"`
-	Color       int       `json:"color"`
-	Fields      []field   `json:"fields,omitempty"`
+	Title       string       `json:"title"`
+	URL         string       `json:"url,omitempty"`
+	Timestamp   time.Time    `json:"timestamp"`
+	Description string       `json:"description"`
+	Color       DiscordColor `json:"color"`
+	Fields      []field      `json:"fields,omitempty"`
 	Thumbnail   struct {
 		URL string `json:"url,omitempty"`
 	} `json:"thumbnail,omitempty"`
@@ -50,13 +59,6 @@ type discordMsg struct {
 	Content   string  `json:"content,omitempty"`
 	Embeds    []embed `json:"embeds"`
 }
-
-const (
-	discordRed    = 15548997
-	discordYellow = 16705372
-	discordGreen  = 5763719
-	discordGray   = 9807270
-)
 
 type Notification interface {
 	SendDiscord(msg message.ReqMsg, webhook string) error
