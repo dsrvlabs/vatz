@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	message "github.com/dsrvlabs/vatz/manager/model"
@@ -25,11 +26,12 @@ type embed struct {
 		URL     string `json:"url,omitempty"`
 		IconURL string `json:"icon_url,omitempty"`
 	} `json:"author,omitempty"`
-	Title       string  `json:"title"`
-	URL         string  `json:"url,omitempty"`
-	Description string  `json:"description"`
-	Color       int     `json:"color"`
-	Fields      []field `json:"fields,omitempty"`
+	Title       string    `json:"title"`
+	URL         string    `json:"url,omitempty"`
+	Timestamp   time.Time `json:"timestamp"`
+	Description string    `json:"description"`
+	Color       int       `json:"color"`
+	Fields      []field   `json:"fields,omitempty"`
 	Thumbnail   struct {
 		URL string `json:"url,omitempty"`
 	} `json:"thumbnail,omitempty"`
@@ -49,6 +51,13 @@ type discordMsg struct {
 	Embeds    []embed `json:"embeds"`
 }
 
+const (
+	discordRed    = 15548997
+	discordYellow = 16705372
+	discordGreen  = 5763719
+	discordGray   = 9807270
+)
+
 type Notification interface {
 	SendDiscord(msg message.ReqMsg, webhook string) error
 	GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) map[interface{}]interface{}
@@ -67,9 +76,20 @@ func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginNa
 
 func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 	sMsg := discordMsg{Embeds: make([]embed, 1)}
+	switch msg.Severity {
+	case message.Critical:
+		sMsg.Embeds[0].Color = discordRed
+	case message.Warning:
+		sMsg.Embeds[0].Color = discordYellow
+	case message.Ok:
+		sMsg.Embeds[0].Color = discordGreen
+	default:
+		sMsg.Embeds[0].Color = discordGray
+	}
 	sMsg.Embeds[0].Title = string(msg.Severity)
-	sMsg.Embeds[0].Color = 15258703
-	sMsg.Embeds[0].Fields = []field{{msg.FuncName, msg.Msg, false}}
+	sMsg.Embeds[0].Fields = []field{{Name: msg.ResourceType, Value: msg.Msg, Inline: false}}
+	sMsg.Embeds[0].Timestamp = time.Now()
+
 	message, _ := json.Marshal(sMsg)
 	req, _ := http.NewRequest("POST", webhook, bytes.NewBufferString(string(message)))
 	req.Header.Set("Content-Type", "application/json")

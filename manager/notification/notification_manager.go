@@ -1,7 +1,7 @@
 package notification
 
 import (
-	model "github.com/dsrvlabs/vatz/manager/model"
+	"github.com/dsrvlabs/vatz/manager/model"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 
@@ -32,11 +32,10 @@ func (s *dispatcher_manager) GetNotifyInfo(response *pluginpb.ExecuteResponse, p
 }
 
 func (s *dispatcher_manager) SendNotification(request model.ReqMsg) error {
-	if request.Severity == model.Critical {
-		err := notificationInstance.SendDiscord(request, discordChannel)
-		if err != nil {
-			panic(err)
-		}
+	err := notificationInstance.SendDiscord(request, discordChannel)
+	if err != nil {
+		panic(err)
 	}
+
 	return nil
 }
