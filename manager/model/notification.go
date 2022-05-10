@@ -23,4 +23,5 @@ const (
 	Error      = Severity("ERROR")
 	Critical   = Severity("CRITICAL")
 	Info       = Severity("INFO")
+	Ok         = Severity("OK")
 )
