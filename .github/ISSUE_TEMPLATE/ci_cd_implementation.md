@@ -2,14 +2,13 @@
 name: CI/CD implementation
 about: Create/enhance any feature that boosts Vatz Devops Process 
 title: ''
-labels: Vatz, type:ci/cd
+labels: Vatz, area:ci/cd
 assignees: ''
 
 ---
 
 ### **What does it require to on Vatz**
 > A clear and concise description of what you expected to happen through Ci/CD
-
 
 
 ### **Expected behavior**

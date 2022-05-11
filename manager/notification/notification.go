@@ -99,7 +99,7 @@ func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 	_, err := c.Do(req)
 	if err != nil {
 		fmt.Println("ERROR | Failed to send discord message")
-		panic(err)
+		//panic(err)
 	}
 	return nil
 }
