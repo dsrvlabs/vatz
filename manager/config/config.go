@@ -16,6 +16,19 @@ import (
 type config struct {
 }
 
+func (c config) getPingIntervals(pluginInfo interface{}, IntervalKey string) []int {
+	var pingIntervals []int
+	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
+	if len(pluginAPIs) > 0 {
+		for idx, _ := range pluginAPIs {
+			if value, ok := pluginAPIs[idx].(map[interface{}]interface{})[IntervalKey].(int); ok {
+				pingIntervals = append(pingIntervals, value)
+			}
+		}
+	}
+	return pingIntervals
+}
+
 func (c config) parse(retrievalInfo model.Type, configData map[interface{}]interface{}) interface{} {
 	// FLAG PROTOCOL | PLUGIN
 	if retrievalInfo == model.Protocol {
@@ -80,31 +93,46 @@ func (c config) getConfigFromURL() map[interface{}]interface{} {
 }
 
 //TODO: Update to function to create multiple clients
-func (c config) getClient(pluginInfo interface{}) pluginpb.PluginClient {
+func (c config) getClients(pluginInfo interface{}) []pluginpb.PluginClient {
+	var grpcClients []pluginpb.PluginClient
+
 	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
-	connectTarget := ":9091"
+	defaultConnectedTarget := "localhost:9091"
 
 	if len(pluginAPIs) > 0 {
-		clientAddress := pluginAPIs[0].(map[interface{}]interface{})["plugin_address"].(string)
-		clientPort := pluginAPIs[0].(map[interface{}]interface{})["plugin_port"].(int)
-		connectTarget = clientAddress + ":" + strconv.Itoa(clientPort)
+
+		for idx, _ := range pluginAPIs {
+			clientAddress := pluginAPIs[idx].(map[interface{}]interface{})["plugin_address"].(string)
+			clientPort := pluginAPIs[idx].(map[interface{}]interface{})["plugin_port"].(int)
+			connectTarget := clientAddress + ":" + strconv.Itoa(clientPort)
+			conn, err := grpc.Dial(connectTarget, grpc.WithInsecure())
+			if err != nil {
+				log.Fatal(err)
+			}
+			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+		}
+
+	} else {
+
+		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//TODO: Please, Create a better client functions with static
+		//defer conn.Close()
+		grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 	}
 
-	conn, err := grpc.Dial(connectTarget, grpc.WithInsecure())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//TODO: Please, Create a better client functions with static
-	//defer conn.Close()
-	return pluginpb.NewPluginClient(conn)
+	return grpcClients
 }
 
 type Config interface {
 	parse(retrievalInfo model.Type, data map[interface{}]interface{}) interface{}
 	getYMLData(str string, isDefault bool) map[interface{}]interface{}
 	getConfigFromURL() map[interface{}]interface{}
-	getClient(interface{}) pluginpb.PluginClient
+	getClients(interface{}) []pluginpb.PluginClient
+	getPingIntervals(pluginInfo interface{}, IntervalKey string) []int
 }
 
 func NewConfig() Config {

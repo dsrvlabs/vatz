@@ -29,6 +29,10 @@ func (c *configManager) GetConfigFromURL() map[interface{}]interface{} {
 	return configInstance.getConfigFromURL()
 }
 
-func (c *configManager) GetGRPCClient(pluginInfo interface{}) pluginpb.PluginClient {
-	return configInstance.getClient(pluginInfo)
+func (c *configManager) GetGRPCClients(pluginInfo interface{}) []pluginpb.PluginClient {
+	return configInstance.getClients(pluginInfo)
+}
+
+func (c *configManager) GetPingIntervals(pluginInfo interface{}, IntervalKey string) []int {
+	return configInstance.getPingIntervals(pluginInfo, IntervalKey)
 }
