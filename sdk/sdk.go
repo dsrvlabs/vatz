@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -18,18 +19,30 @@ const (
 // Errors
 var (
 	ErrRegisterMaxLimit = errors.New("too many register functions")
+
+	PluginName string
 )
 
 // Plugin provides interfaces to manage plugin.
 type Plugin interface {
 	Start(ctx context.Context, address string, port int) error
 	Stop()
-	Register(cb func(info, option map[string]*structpb.Value) error) error
+	Register(cb func(info, option map[string]*structpb.Value) (CallResponse, error)) error
+}
+
+// CallResponse represents return value of callback function.
+type CallResponse struct {
+	FuncName string            `json:"func_name"`
+	Message  string            `json:"msg"`
+	Severity pluginpb.SEVERITY `json:"severity"`
+	State    pluginpb.STATE    `json:"state"`
 }
 
 type plugin struct {
 	grpc grpcServer
 	ch   chan os.Signal
+
+	Name string
 }
 
 func (p *plugin) Start(ctx context.Context, address string, port int) error {
@@ -55,11 +68,11 @@ func (p *plugin) Stop() {
 	p.ch <- syscall.SIGTERM
 }
 
-func (p *plugin) Register(cb func(info, option map[string]*structpb.Value) error) error {
+func (p *plugin) Register(cb func(info, option map[string]*structpb.Value) (CallResponse, error)) error {
 	log.Println("RegisterFeature function")
 
 	if p.grpc.callbacks == nil {
-		p.grpc.callbacks = make([]func(map[string]*structpb.Value, map[string]*structpb.Value) error, 0)
+		p.grpc.callbacks = make([]func(map[string]*structpb.Value, map[string]*structpb.Value) (CallResponse, error), 0)
 	}
 
 	if len(p.grpc.callbacks) == registerFuncLimit {
@@ -72,7 +85,9 @@ func (p *plugin) Register(cb func(info, option map[string]*structpb.Value) error
 }
 
 // NewPlugin creates new plugin service instance.
-func NewPlugin() Plugin {
+func NewPlugin(name string) Plugin {
+	PluginName = name
+
 	return &plugin{
 		grpc: grpcServer{},
 	}

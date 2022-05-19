@@ -12,37 +12,40 @@ type mockFuncs struct {
 	mock.Mock
 }
 
-func (m *mockFuncs) DummyCall1(info, option map[string]*structpb.Value) error {
+func (m *mockFuncs) DummyCall1(info, option map[string]*structpb.Value) (CallResponse, error) {
 	ret := m.Called(info, option)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(map[string]*structpb.Value, map[string]*structpb.Value) error); ok {
+	var r0 CallResponse
+	if rf, ok := ret.Get(0).(func(map[string]*structpb.Value, map[string]*structpb.Value) CallResponse); ok {
 		r0 = rf(info, option)
 	} else {
-		if ret.Get(0) == nil {
-			r0 = nil
-		} else {
-			r0 = ret.Get(0).(error)
-		}
+		r0 = ret.Get(0).(CallResponse)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func(map[string]*structpb.Value, map[string]*structpb.Value) error); ok {
+		r1 = rf(info, option)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 func TestRegister(t *testing.T) {
 	tests := []struct {
-		Funcs     []func(in, opt map[string]*structpb.Value) error
+		Funcs     []func(in, opt map[string]*structpb.Value) (CallResponse, error)
 		ExpectErr error
 	}{
 		{
-			Funcs: []func(in, opt map[string]*structpb.Value) error{
+			Funcs: []func(in, opt map[string]*structpb.Value) (CallResponse, error){
 				callbackFunc,
 			},
 			ExpectErr: nil,
 		},
 
 		{
-			Funcs: []func(in, opt map[string]*structpb.Value) error{
+			Funcs: []func(in, opt map[string]*structpb.Value) (CallResponse, error){
 				callbackFunc,
 				callbackFunc,
 				callbackFunc,
@@ -73,6 +76,6 @@ func TestRegister(t *testing.T) {
 
 }
 
-func callbackFunc(in, opt map[string]*structpb.Value) error {
-	return nil
+func callbackFunc(in, opt map[string]*structpb.Value) (CallResponse, error) {
+	return CallResponse{}, nil
 }
