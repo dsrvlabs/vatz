@@ -50,6 +50,8 @@ func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.E
 		}
 
 		callResp, err := f(executeInfo, option)
+
+		resp.AlertType = callResp.AlertTypes
 		if err != nil {
 			resp.Severity = pb.SEVERITY_ERROR
 			resp.State = pb.STATE_FAILURE
