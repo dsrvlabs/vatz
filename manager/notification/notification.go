@@ -20,8 +20,9 @@ type DiscordColor int
 const (
 	discordRed    DiscordColor = 15548997
 	discordYellow DiscordColor = 16705372
-	discordGreen  DiscordColor = 5763719
+	discordGreen  DiscordColor = 65340
 	discordGray   DiscordColor = 9807270
+	discordBlue   DiscordColor = 4037805
 
 	discordWebhookFormat string = "https://discord.com/api/webhooks/"
 )
@@ -89,6 +90,8 @@ func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 			sMsg.Embeds[0].Color = discordYellow
 		case message.Ok:
 			sMsg.Embeds[0].Color = discordGreen
+		case message.Info:
+			sMsg.Embeds[0].Color = discordBlue
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
