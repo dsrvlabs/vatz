@@ -54,8 +54,9 @@ func TestInvokeCallback(t *testing.T) {
 	}{
 		{
 			MockResp: CallResponse{
-				State:   pb.STATE_SUCCESS,
-				Message: "hello world",
+				State:      pb.STATE_SUCCESS,
+				Message:    "hello world",
+				AlertTypes: []pb.ALERT_TYPE{pb.ALERT_TYPE_DISCORD},
 			},
 			MockErr: nil,
 		},
@@ -92,6 +93,8 @@ func TestInvokeCallback(t *testing.T) {
 
 		// Asserts
 		assert.Nil(t, err)
+
+		assert.Equal(t, test.MockResp.AlertTypes, resp.AlertType)
 		if test.MockErr == nil {
 			assert.Equal(t, test.MockResp.State, resp.State)
 			assert.Equal(t, test.MockResp.Message, resp.Message)
