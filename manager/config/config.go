@@ -29,7 +29,7 @@ func (c config) getPingIntervals(pluginInfo interface{}, IntervalKey string) []i
 	}
 
 	if len(pluginAPIs) > 0 {
-		for idx, _ := range pluginAPIs {
+		for idx := range pluginAPIs {
 			if value, ok := pluginAPIs[idx].(map[interface{}]interface{})[IntervalKey].(int); ok {
 				pingIntervals = append(pingIntervals, value)
 			} else {
