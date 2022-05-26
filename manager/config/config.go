@@ -19,6 +19,7 @@ type config struct {
 func (c config) getPingIntervals(pluginInfo interface{}, IntervalKey string) []int {
 	var pingIntervals []int
 	var defaultValue int
+	// TODO: need to discuss about handle if there's no plugins in config
 	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
 
 	switch IntervalKey {
@@ -28,15 +29,14 @@ func (c config) getPingIntervals(pluginInfo interface{}, IntervalKey string) []i
 		defaultValue = pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
 	}
 
-	if len(pluginAPIs) > 0 {
-		for idx := range pluginAPIs {
-			if value, ok := pluginAPIs[idx].(map[interface{}]interface{})[IntervalKey].(int); ok {
-				pingIntervals = append(pingIntervals, value)
-			} else {
-				pingIntervals = append(pingIntervals, defaultValue)
-			}
+	for _, pluginAPI := range pluginAPIs {
+		if value, ok := pluginAPI.(map[interface{}]interface{})[IntervalKey].(int); ok {
+			pingIntervals = append(pingIntervals, value)
+		} else {
+			pingIntervals = append(pingIntervals, defaultValue)
 		}
 	}
+
 	return pingIntervals
 }
 
