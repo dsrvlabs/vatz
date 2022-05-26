@@ -17,14 +17,8 @@ type grpcServer struct {
 	pb.UnimplementedPluginServer
 
 	srv       *grpc.Server
-	callbacks []func(map[string]*structpb.Value, map[string]*structpb.Value) error
+	callbacks []func(map[string]*structpb.Value, map[string]*structpb.Value) (CallResponse, error)
 }
-
-// Init initializes plugin.
-//func (s *grpcServer) Init(context.Context, *emptypb.Empty) (*pb.PluginInfo, error) {
-//	// TODO: Fill response
-//	return &pb.PluginInfo{}, nil
-//}
 
 // Verify returns liveness.
 func (s *grpcServer) Verify(context.Context, *emptypb.Empty) (*pb.VerifyInfo, error) {
@@ -38,8 +32,7 @@ func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.E
 	log.Println("PluginServer.Execute")
 
 	resp := &pb.ExecuteResponse{
-		State:   pb.STATE_SUCCESS,
-		Message: "OK",
+		ResourceType: PluginName,
 	}
 
 	for _, f := range s.callbacks {
@@ -56,7 +49,18 @@ func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.E
 			option = req.GetOptions().GetFields()
 		}
 
-		f(executeInfo, option)
+		callResp, err := f(executeInfo, option)
+
+		resp.AlertType = callResp.AlertTypes
+		if err != nil {
+			resp.Severity = pb.SEVERITY_ERROR
+			resp.State = pb.STATE_FAILURE
+			resp.Message = err.Error()
+		} else {
+			resp.Severity = callResp.Severity
+			resp.State = callResp.State
+			resp.Message = callResp.Message
+		}
 	}
 
 	return resp, nil
