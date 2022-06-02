@@ -74,12 +74,7 @@ func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
 
 	//TODO: Need updated with better way for Dynamic handlers
 	for idx, singleClient := range grpcClients {
-		if len(verifyIntervals) != len(grpcClients) || len(executeIntervals) != len(grpcClients) {
-			go multiPluginExecutor(pluginInfo, singleClient, defaultVerifyInterval, defaultExecuteInterval, isOkayToSend, autoUpdateNotification, quit)
-		} else {
-			go multiPluginExecutor(pluginInfo, singleClient, verifyIntervals[idx], executeIntervals[idx], isOkayToSend, autoUpdateNotification, quit)
-		}
-
+		go multiPluginExecutor(pluginInfo, singleClient, verifyIntervals[idx], executeIntervals[idx], isOkayToSend, autoUpdateNotification, quit)
 	}
 }
 
