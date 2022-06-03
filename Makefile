@@ -7,6 +7,7 @@ test:
 
 coverage:
 	echo "Test Coverage script will be here"
+	@go test -coverprofile cover.out ./...
 
 clean:
 	rm vatz

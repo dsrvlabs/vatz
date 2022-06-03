@@ -1,151 +1,143 @@
 package config
 
 import (
+	"flag"
+	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
+	"strings"
+	"sync"
 
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	model "github.com/dsrvlabs/vatz/manager/model"
-	"google.golang.org/grpc"
 	"gopkg.in/yaml.v2"
 )
 
-type config struct {
+const (
+	flagConfig = "config"
+
+	defaultConfigFile = "default.yaml"
+)
+
+var (
+	configOnce = sync.Once{}
+	vatzConfig *Config
+)
+
+// Config is Vatz config structure.
+type Config struct {
+	Vatz struct {
+		ProtocolIdentifier string `yaml:"protocol_identifier"`
+		Port               int    `yaml:"port"`
+		NotificationInfo   struct {
+			DiscordSecret   string `yaml:"discord_secret"`
+			PagerDutySecret string `yaml:"pager_duty_secret"`
+		} `yaml:"notification_info"`
+	} `yaml:"vatz_protocol_info"`
+
+	PluginInfos PluginInfo `yaml:"plugins_infos"`
 }
 
-func (c config) getPingIntervals(pluginInfo interface{}, IntervalKey string) []int {
-	var pingIntervals []int
-	var defaultValue int
-	// TODO: need to discuss about handle if there's no plugins in config
-	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
-
-	switch IntervalKey {
-	case "verify_interval":
-		defaultValue = pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
-	case "execute_interval":
-		defaultValue = pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
-	}
-
-	for _, pluginAPI := range pluginAPIs {
-		if value, ok := pluginAPI.(map[interface{}]interface{})[IntervalKey].(int); ok {
-			pingIntervals = append(pingIntervals, value)
-		} else {
-			pingIntervals = append(pingIntervals, defaultValue)
-		}
-	}
-
-	return pingIntervals
+// PluginInfo contains general plugin info.
+type PluginInfo struct {
+	DefaultVerifyInterval  int      `yaml:"default_verify_interval"`
+	DefaultExecuteInterval int      `yaml:"default_execute_interval"`
+	DefaultPluginName      string   `yaml:"default_plugin_name"`
+	Plugins                []Plugin `yaml:"plugins"`
 }
 
-func (c config) parse(retrievalInfo model.Type, configData map[interface{}]interface{}) interface{} {
-	// FLAG PROTOCOL | PLUGIN
-	if retrievalInfo == model.Protocol {
-		return configData["vatz_protocol_info"]
-	} else {
-		return configData["plugins_infos"]
-	}
+// Plugin contains specific plugin info.
+type Plugin struct {
+	Name              string `yaml:"plugin_name"`
+	Address           string `yaml:"plugin_address"`
+	VerifyInterval    int    `yaml:"verify_interval"`
+	ExecuteInterval   int    `yaml:"execute_interval"`
+	Port              int    `yaml:"plugin_port"`
+	ExecutableMethods []struct {
+		Name string `yaml:"method_name"`
+	} `yaml:"executable_methods"`
 }
 
-func (c config) getYMLData(str string, isDefault bool) map[interface{}]interface{} {
-	wd, _ := os.Getwd()
-	confPath := str
-	if isDefault == true {
-		confPath = wd + "/" + confPath
-	}
-
-	yamlFile, err := ioutil.ReadFile(confPath)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	data := make(map[interface{}]interface{})
-	err2 := yaml.Unmarshal(yamlFile, &data)
-
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-
-	return data
+type parser struct {
+	rawConfig map[string]interface{}
 }
 
-func (c config) getConfigFromURL() map[interface{}]interface{} {
-	var inputArguments = len(os.Args)
-	var configFromURL = make(map[interface{}]interface{})
+func (p *parser) loadConfigFile(path string) ([]byte, error) {
+	var (
+		rawYAML []byte
+		err     error
+	)
 
-	if inputArguments > 1 {
-		url := os.Args[1]
-		resp, err := http.Get(url)
-
+	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+		resp, err := http.Get(path)
 		if err != nil {
-			log.Fatal("cannot fetch URL %q: %v", url, err)
+			return nil, err
 		}
-		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			log.Fatal("Status error: %v", resp.StatusCode)
+			return nil, fmt.Errorf("invalid response status %d", resp.StatusCode)
 		}
 
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal("Read body: %v", err)
-		}
-
-		err2 := yaml.Unmarshal(data, &configFromURL)
-		if err2 != nil {
-			log.Fatal(err2)
-		}
-
-	}
-	return configFromURL
-}
-
-//TODO: Update to function to create multiple clients
-func (c config) getClients(pluginInfo interface{}) []pluginpb.PluginClient {
-	var grpcClients []pluginpb.PluginClient
-
-	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
-	defaultConnectedTarget := "localhost:9091"
-
-	if len(pluginAPIs) > 0 {
-
-		for idx, _ := range pluginAPIs {
-			clientAddress := pluginAPIs[idx].(map[interface{}]interface{})["plugin_address"].(string)
-			clientPort := pluginAPIs[idx].(map[interface{}]interface{})["plugin_port"].(int)
-			connectTarget := clientAddress + ":" + strconv.Itoa(clientPort)
-			conn, err := grpc.Dial(connectTarget, grpc.WithInsecure())
-			if err != nil {
-				log.Fatal(err)
-			}
-			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
-		}
-
+		rawYAML, err = io.ReadAll(resp.Body)
 	} else {
-
-		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		//TODO: Please, Create a better client functions with static
-		//defer conn.Close()
-		grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+		rawYAML, err = ioutil.ReadFile(path)
 	}
 
-	return grpcClients
+	if err != nil {
+		return nil, err
+	}
+
+	return rawYAML, err
 }
 
-type Config interface {
-	parse(retrievalInfo model.Type, data map[interface{}]interface{}) interface{}
-	getYMLData(str string, isDefault bool) map[interface{}]interface{}
-	getConfigFromURL() map[interface{}]interface{}
-	getClients(interface{}) []pluginpb.PluginClient
-	getPingIntervals(pluginInfo interface{}, IntervalKey string) []int
+func (p *parser) parseYAML(contents []byte) (*Config, error) {
+	newConfig := Config{}
+	err := yaml.Unmarshal(contents, &newConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	p.overriteDefault(&newConfig)
+
+	return &newConfig, nil
 }
 
-func NewConfig() Config {
-	return &config{}
+func (p *parser) overriteDefault(config *Config) {
+	for i, plugin := range config.PluginInfos.Plugins {
+		if plugin.VerifyInterval == 0 {
+			config.PluginInfos.Plugins[i].VerifyInterval = config.PluginInfos.DefaultVerifyInterval
+		}
+
+		if plugin.ExecuteInterval == 0 {
+			config.PluginInfos.Plugins[i].ExecuteInterval = config.PluginInfos.DefaultExecuteInterval
+		}
+
+		if plugin.Name == "" {
+			config.PluginInfos.Plugins[i].Name = config.PluginInfos.DefaultPluginName
+		}
+	}
+}
+
+// GetConfig returns current Vatz config.
+func GetConfig() *Config {
+	configOnce.Do(func() {
+		// TODO: How to test flag?
+		var configFile string
+		flag.StringVar(&configFile, flagConfig, defaultConfigFile, "Vatz config file")
+		flag.Parse()
+
+		p := parser{}
+		configData, err := p.loadConfigFile(configFile)
+		if err != nil {
+			panic(err)
+		}
+
+		config, err := p.parseYAML(configData)
+		if err != nil {
+			panic(err)
+		}
+
+		vatzConfig = config
+	})
+
+	return vatzConfig
 }

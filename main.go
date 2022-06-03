@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"reflect"
 	"time"
 
 	notification "github.com/dsrvlabs/vatz/manager/notification"
@@ -18,7 +17,6 @@ import (
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
-	"github.com/dsrvlabs/vatz/manager/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -28,93 +26,23 @@ const (
 )
 
 var (
-	grpcClients            []pluginpb.PluginClient
-	defaultConf            = make(map[interface{}]interface{})
 	healthManager          = health.HManager
 	dispatchManager        = notification.DManager
-	configManager          = config.CManager
 	executeManager         = executor.EManager
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
 
-func preLoad() error {
-	// Get a Default Info from default Yaml
-	defaultConf = config.CManager.GetYMLData("default.yaml", true)
-	retrievedConf := configManager.GetConfigFromURL()
-	pluginInfo := configManager.Parse(model.Plugin, defaultConf)
+func main() {
+	_ = config.GetConfig()
 
-	defaultVerifyInterval = pluginInfo.(map[interface{}]interface{})["default_verify_interval"].(int)
-	defaultExecuteInterval = pluginInfo.(map[interface{}]interface{})["default_execute_interval"].(int)
-
-	if defaultVerifyInterval > defaultExecuteInterval || defaultVerifyInterval == defaultExecuteInterval {
-		defaultVerifyInterval = defaultExecuteInterval - 1
-	}
-
-	// Get a Default Info from default Yaml
-	if !reflect.DeepEqual(retrievedConf, make(map[interface{}]interface{})) {
-		for k, v := range retrievedConf {
-			defaultConf[k] = v
-		}
-	}
-
-	grpcClients = configManager.GetGRPCClients(pluginInfo)
-	fmt.Println("grpcClients", grpcClients)
-	return nil
-}
-
-func runningProcess(pluginInfo interface{}, quit <-chan os.Signal) {
-
-	verifyIntervals := configManager.GetPingIntervals(pluginInfo, "verify_interval")
-	executeIntervals := configManager.GetPingIntervals(pluginInfo, "execute_interval")
-
-	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
-	autoUpdateNotification := make(map[interface{}]interface{})
-	isOkayToSend := false
-
-	//TODO: Need updated with better way for Dynamic handlers
-	for idx, singleClient := range grpcClients {
-		go multiPluginExecutor(pluginInfo, singleClient, verifyIntervals[idx], executeIntervals[idx], isOkayToSend, autoUpdateNotification, quit)
-	}
-}
-
-func multiPluginExecutor(pluginInfo interface{},
-	singleClient pluginpb.PluginClient,
-	verifyInterval int,
-	executeInterval int,
-	isOkayToSend bool,
-	autoUpdateNotification map[interface{}]interface{},
-	quit <-chan os.Signal) {
-
-	verifyTicker := time.NewTicker(time.Duration(verifyInterval) * time.Second)
-	executeTicker := time.NewTicker(time.Duration(executeInterval) * time.Second)
-
-	for {
-		select {
-		case <-verifyTicker.C:
-			live, _ := healthManager.HealthCheck(singleClient, pluginInfo)
-			if live == "UP" {
-				isOkayToSend = true
-			} else {
-				isOkayToSend = false
-			}
-
-		case <-executeTicker.C:
-			if isOkayToSend == true {
-				executedAfter := executeManager.Execute(singleClient, pluginInfo, autoUpdateNotification)
-				autoUpdateNotification = executedAfter
-			}
-
-		case <-quit:
-			executeTicker.Stop()
-			return
-		}
-	}
+	ch := make(chan os.Signal, 1)
+	initiateServer(ch)
 }
 
 func initiateServer(ch <-chan os.Signal) error {
-
 	log.Println("Initialize Servers:", serviceName)
+
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -123,10 +51,9 @@ func initiateServer(ch <-chan os.Signal) error {
 	managerpb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	protocolInfo := configManager.Parse(model.Protocol, defaultConf)
-	pluginInfo := configManager.Parse(model.Plugin, defaultConf)
-
-	addr := fmt.Sprintf(":%d", protocolInfo.(map[interface{}]interface{})["port"])
+	cfg := config.GetConfig()
+	vatzConfig := cfg.Vatz
+	addr := fmt.Sprintf(":%d", vatzConfig.Port)
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -134,7 +61,8 @@ func initiateServer(ch <-chan os.Signal) error {
 	}
 
 	log.Println("Listening Port", addr)
-	runningProcess(pluginInfo, ch)
+
+	startExecutor(cfg.PluginInfos, ch)
 
 	log.Println("Node Manager Started")
 
@@ -145,8 +73,72 @@ func initiateServer(ch <-chan os.Signal) error {
 	return nil
 }
 
-func main() {
-	preLoad()
-	ch := make(chan os.Signal, 1)
-	initiateServer(ch)
+func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
+	autoUpdateNotification := make(map[interface{}]interface{})
+	isOkayToSend := false
+
+	grpcClients := getClients(pluginInfo.Plugins)
+
+	//TODO: Need updated with better way for Dynamic handlers
+	for idx, singleClient := range grpcClients {
+		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, autoUpdateNotification, quit)
+	}
+}
+
+func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
+	var grpcClients []pluginpb.PluginClient
+
+	if len(plugins) > 0 {
+		for _, plugin := range plugins {
+			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithInsecure())
+			if err != nil {
+				// TODO: Panic??? Error message will be enough here.
+				log.Fatal(err)
+			}
+			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+		}
+	} else {
+		// TODO: Is this really neccessary???
+		defaultConnectedTarget := "localhost:9091"
+		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		//TODO: Please, Create a better client functions with static
+		grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+	}
+
+	return grpcClients
+}
+
+func multiPluginExecutor(plugin config.Plugin,
+	singleClient pluginpb.PluginClient,
+	isOkayToSend bool,
+	autoUpdateNotification map[interface{}]interface{},
+	quit <-chan os.Signal) {
+
+	verifyTicker := time.NewTicker(time.Duration(plugin.VerifyInterval) * time.Second)
+	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
+
+	for {
+		select {
+		case <-verifyTicker.C:
+			live, _ := healthManager.HealthCheck(singleClient, plugin)
+			if live == "UP" {
+				isOkayToSend = true
+			} else {
+				isOkayToSend = false
+			}
+		case <-executeTicker.C:
+			if isOkayToSend == true {
+				executedAfter := executeManager.Execute(singleClient, plugin, autoUpdateNotification)
+				autoUpdateNotification = executedAfter
+			}
+		case <-quit:
+			executeTicker.Stop()
+			return
+		}
+	}
 }

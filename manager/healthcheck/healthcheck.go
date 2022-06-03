@@ -12,20 +12,26 @@ import (
 
 var (
 	dispatchManager = notification.DManager
-	configManager   = config.CManager
 )
 
 type healthCheck struct {
 }
 
-func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error) {
+func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+	// TODO: Magic value always wrong.
 	isAlive := "UP"
-	defaultPluginName := pluginInfo.(map[interface{}]interface{})["default_plugin_name"].(string)
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
 		isAlive = "DOWN"
-		jsonMessage := msg.ReqMsg{FuncName: "is_plugin_up", State: msg.Faliure, Msg: "is Down !!", Severity: msg.Critical, ResourceType: defaultPluginName}
+		jsonMessage := msg.ReqMsg{
+			FuncName:     "is_plugin_up",
+			State:        msg.Faliure,
+			Msg:          "is Down !!",
+			Severity:     msg.Critical,
+			ResourceType: plugin.Name,
+		}
+
 		dispatchManager.SendNotification(jsonMessage)
 	}
 
@@ -33,7 +39,7 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, pluginInfo inter
 }
 
 type HealthCheck interface {
-	HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error)
+	HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error)
 }
 
 func NewHealthChecker() HealthCheck {
