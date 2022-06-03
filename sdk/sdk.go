@@ -3,12 +3,13 @@ package sdk
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/rs/zerolog/log"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -47,7 +48,7 @@ type plugin struct {
 }
 
 func (p *plugin) Start(ctx context.Context, address string, port int) error {
-	log.Println("plugin - Start")
+	log.Info().Str("module", "sdk").Msg(fmt.Sprintf("Start %s %d", address, port))
 
 	p.ch = make(chan os.Signal, 1)
 	signal.Notify(p.ch, syscall.SIGKILL, syscall.SIGTERM, syscall.SIGINT)
@@ -55,7 +56,7 @@ func (p *plugin) Start(ctx context.Context, address string, port int) error {
 	go func() {
 		_ = <-p.ch
 
-		log.Println("grpcServer - Shutting down")
+		log.Info().Str("module", "grpc").Msg("Shutting down")
 
 		p.grpc.Stop()
 	}()
@@ -64,13 +65,13 @@ func (p *plugin) Start(ctx context.Context, address string, port int) error {
 }
 
 func (p *plugin) Stop() {
-	log.Println("plugin - Stop")
+	log.Info().Str("module", "grpc").Msg("Stop")
 
 	p.ch <- syscall.SIGTERM
 }
 
 func (p *plugin) Register(cb func(info, option map[string]*structpb.Value) (CallResponse, error)) error {
-	log.Println("RegisterFeature function")
+	log.Info().Str("module", "grpc").Msg("Register")
 
 	if p.grpc.callbacks == nil {
 		p.grpc.callbacks = make([]func(map[string]*structpb.Value, map[string]*structpb.Value) (CallResponse, error), 0)
