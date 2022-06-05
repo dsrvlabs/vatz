@@ -68,7 +68,17 @@
    Close the issue, re-register and change to other assignee if it is difficult to proceed during the 2 sprints(4 weeks).
 
 ### 1.4. PR policy
-(TBD)
+> This is rules for PR for Vatz project. 
+
+- Person who raises the PR must track their PR status until their PR is closed.
+- PR - First Review approved / First Merge.
+- Delete Branch that has been merged. 
+   - Anyone who comments on PR while reviewing the process has an obligation to resolve/close their comment when the assignee has fixed a comment or suggestion.
+- Must include either of closes or related
+   - Close an issue when PR is merged
+     > closes #16 ...
+   - Connect with specific issue when PR is merged
+     > related #16 ... 
 
 ## 2. External Process (For those who want to contribute to open source)
 (TBD)
