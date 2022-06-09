@@ -74,11 +74,13 @@
 - PR - First Review approved / First Merge.
 - Delete Branch that has been merged. 
    - Anyone who comments on PR while reviewing the process has an obligation to resolve/close their comment when the assignee has fixed a comment or suggestion.
-- Must include either of closes or related
-   - Close an issue when PR is merged
-     > closes #16 ...
-   - Connect with specific issue when PR is merged
-     > related #16 ... 
+- Must include one of keywords in `closes`, `resolved` and `fixes` as below. 
+
+Linked issue | Syntax | Example
+-- | -- | --
+Issue in the same repository | KEYWORD #ISSUE-NUMBER | Closes #10
+Issue in a different repository | KEYWORD OWNER/REPOSITORY#ISSUE-NUMBER | Fixes octo-org/octo-repo#100
+Multiple issues | Use full syntax for each issue | Resolves #10, resolves #123, resolves octo-org/octo-repo#100
 
 ## 2. External Process (For those who want to contribute to open source)
 (TBD)
