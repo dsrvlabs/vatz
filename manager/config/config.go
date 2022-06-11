@@ -1,7 +1,6 @@
 package config
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,13 +12,15 @@ import (
 )
 
 const (
-	flagConfig = "config"
+	// FlagConfig is name of CLI flags for config.
+	FlagConfig = "config"
 
-	defaultConfigFile = "default.yaml"
+	// DefaultConfigFile is default file name of config.
+	DefaultConfigFile = "default.yaml"
 )
 
 var (
-	configOnce = sync.Once{}
+	configOnce = &sync.Once{}
 	vatzConfig *Config
 )
 
@@ -117,14 +118,9 @@ func (p *parser) overriteDefault(config *Config) {
 	}
 }
 
-// GetConfig returns current Vatz config.
-func GetConfig() *Config {
+// InitConfig initilizes Vatz config.
+func InitConfig(configFile string) *Config {
 	configOnce.Do(func() {
-		// TODO: How to test flag?
-		var configFile string
-		flag.StringVar(&configFile, flagConfig, defaultConfigFile, "Vatz config file")
-		flag.Parse()
-
 		p := parser{}
 		configData, err := p.loadConfigFile(configFile)
 		if err != nil {
@@ -139,5 +135,10 @@ func GetConfig() *Config {
 		vatzConfig = config
 	})
 
+	return vatzConfig
+}
+
+// GetConfig returns current Vatz config.
+func GetConfig() *Config {
 	return vatzConfig
 }

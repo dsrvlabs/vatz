@@ -55,3 +55,25 @@ plugins_infos:
         - method_name: "getBlockHeight"
         - method_name: "getNumberOfPeers"
 `
+
+// Intentionally ruin file contents.
+const configInvalidYAMLContents = `
+vatz_protocol_info
+  protocol_identifier: "vatz"
+  port: 9090
+  "notification_info":
+    discord_secret: "hello"
+    pager_duty_secret: "world"
+
+plugins_infos:
+  default_verify_interval:  15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_address: "localhost"
+      plugin_port: 9091
+      executable_methods:
+        - method_name: "isUp"
+        - method_name: "getBlockHeight"
+        - method_name: "getNumberOfPeers"
+`

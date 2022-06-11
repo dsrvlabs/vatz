@@ -3,6 +3,7 @@ package config
 import (
 	"net/http"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -105,7 +106,7 @@ func TestDefaultConfig(t *testing.T) {
 	}
 }
 
-func TestOverrideDefaultConfig(t *testing.T) {
+func TestOverrideDefaultValues(t *testing.T) {
 	test := testConfigExpects{
 		MockContents: configNoIntervalContents,
 
@@ -205,6 +206,49 @@ func TestURLConfig(t *testing.T) {
 	}
 }
 
+func TestNotExistConfigFile(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+
+	_ = InitConfig("not_existing_file.yaml")
+
+	// DO NOT REACH HERE
+	t.Error("no panic occures")
+}
+
+func TestInvalidYAMLFormat(t *testing.T) {
+	defer func() {
+		recover()
+	}()
+
+	configOnce = &sync.Once{} // Overrice Once
+
+	f, err := createDefaultConfigFile(configInvalidYAMLContents)
+	defer os.Remove(f.Name())
+
+	assert.Nil(t, err)
+
+	_ = InitConfig(DefaultConfigFile)
+
+	// DO NOT REACH HERE
+	t.Errorf("no panic")
+}
+
+func createDefaultConfigFile(contents string) (*os.File, error) {
+	f, err := os.Create(DefaultConfigFile)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = f.WriteString(contents)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
+}
+
 // This test should be the last one, because "GetConfig" function can execute once.
 func TestGetConfig(t *testing.T) {
 	test := testConfigExpects{
@@ -241,19 +285,15 @@ func TestGetConfig(t *testing.T) {
 		},
 	}
 
-	// Call GetConfig
-	f, err := os.Create(defaultConfigFile)
-	if err != nil {
-		assert.Fail(t, "Config file doesn't created")
-	}
-	defer os.Remove(defaultConfigFile)
+	// Prepare files for testing.
+	configOnce = &sync.Once{} // Overrice Once
+	f, err := createDefaultConfigFile(test.MockContents)
+	defer os.Remove(f.Name())
 
-	_, err = f.WriteString(test.MockContents)
-	if err != nil {
-		assert.Fail(t, "Config file doesn't created")
-	}
+	assert.Nil(t, err)
 
-	cfg := GetConfig()
+	// Init Config.
+	cfg := InitConfig(DefaultConfigFile)
 
 	// Asserts.
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)

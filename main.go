@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -34,7 +35,13 @@ var (
 )
 
 func main() {
-	_ = config.GetConfig()
+	var configFile string
+
+	// TODO: How to test flag?
+	flag.StringVar(&configFile, "config", "default.yaml", "-config=<FILENAME>")
+	flag.Parse()
+
+	config.InitConfig(configFile)
 
 	ch := make(chan os.Signal, 1)
 	initiateServer(ch)
