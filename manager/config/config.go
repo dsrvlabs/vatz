@@ -97,12 +97,12 @@ func (p *parser) parseYAML(contents []byte) (*Config, error) {
 		return nil, err
 	}
 
-	p.overriteDefault(&newConfig)
+	p.overrideDefault(&newConfig)
 
 	return &newConfig, nil
 }
 
-func (p *parser) overriteDefault(config *Config) {
+func (p *parser) overrideDefault(config *Config) {
 	for i, plugin := range config.PluginInfos.Plugins {
 		if plugin.VerifyInterval == 0 {
 			config.PluginInfos.Plugins[i].VerifyInterval = config.PluginInfos.DefaultVerifyInterval
