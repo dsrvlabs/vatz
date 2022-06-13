@@ -81,6 +81,18 @@ func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginNa
 }
 
 func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
+	// Check empty contents
+	if msg.Severity == "" {
+		msg.Severity = "Empty Severity"
+	}
+	if msg.ResourceType == "" {
+		msg.ResourceType = "Not location"
+	}
+	if msg.Msg == "" {
+		msg.Msg = "Empty message"
+	}
+
+	// Check discord secret
 	if strings.Contains(webhook, discordWebhookFormat) {
 		sMsg := discordMsg{Embeds: make([]embed, 1)}
 		switch msg.Severity {
