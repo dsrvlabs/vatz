@@ -83,7 +83,7 @@ func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginNa
 func (d notification) SendDiscord(msg message.ReqMsg, webhook string) error {
 	// Check empty contents
 	if msg.Severity == "" {
-		msg.Severity = "No Severity"
+		msg.Severity = message.Unknown
 	}
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
