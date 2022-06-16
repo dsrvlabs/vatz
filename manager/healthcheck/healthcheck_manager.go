@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/dsrvlabs/vatz/manager/config"
 )
 
 var (
@@ -16,7 +17,6 @@ func init() {
 type healthManager struct {
 }
 
-func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, pluginInfo interface{}) (string, error) {
-	Aliveness, nil := healthCheckInstance.HealthCheck(gClient, pluginInfo)
-	return Aliveness, nil
+func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+	return healthCheckInstance.HealthCheck(gClient, plugin)
 }
