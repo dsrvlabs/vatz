@@ -4,6 +4,7 @@ import (
 	"log"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/notification"
 	"google.golang.org/protobuf/types/known/structpb"
 	//"vatz/manager/config"
@@ -29,17 +30,13 @@ func (s *executorManager) updateStatus(resp *pluginpb.ExecuteResponse, methodNam
 	return nil
 }
 
-func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo interface{}, exeStatus map[interface{}]interface{}) map[interface{}]interface{} {
-	defaultPluginName := pluginInfo.(map[interface{}]interface{})["default_plugin_name"].(string)
-	pluginAPIs := pluginInfo.(map[interface{}]interface{})["plugins"].([]interface{})
-
+func (s *executorManager) Execute(gClient pluginpb.PluginClient, plugin config.Plugin, exeStatus map[interface{}]interface{}) map[interface{}]interface{} {
 	//TODO: Find how to deal with multiple plugin methods.
-	executeMethods := pluginAPIs[0].(map[interface{}]interface{})["executable_methods"].([]interface{})
+	executeMethods := plugin.ExecutableMethods
 
 	for _, method := range executeMethods {
-
 		optionMap := map[string]interface{}{
-			"plugin_name": defaultPluginName,
+			"plugin_name": plugin.Name,
 		}
 
 		options, err := structpb.NewStruct(optionMap)
@@ -47,11 +44,9 @@ func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo inte
 			log.Fatalf("failed to check target structpb: %v", err)
 		}
 
-		methodName := method.(map[interface{}]interface{})["method_name"].(string)
-
 		//TODO: Please, add new logic to add param into Map.
 		methodMap := map[string]interface{}{
-			"execute_method": methodName,
+			"execute_method": method.Name,
 		}
 
 		executeInfo, err := structpb.NewStruct(methodMap)
@@ -60,8 +55,8 @@ func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo inte
 			log.Fatalf("failed to check command structpb: %v", err)
 		}
 
-		if _, ok := exeStatus[methodName]; !ok {
-			exeStatus[methodName] = true
+		if _, ok := exeStatus[method.Name]; !ok {
+			exeStatus[method.Name] = true
 		}
 
 		req := &pluginpb.ExecuteRequest{
@@ -70,9 +65,10 @@ func (s *executorManager) Execute(gClient pluginpb.PluginClient, pluginInfo inte
 		}
 
 		resp, _ := executorInstance.Execute(gClient, req)
-		EManager.updateStatus(resp, methodName, exeStatus)
-		notifyInfo := dispatchManager.GetNotifyInfo(resp, defaultPluginName, methodName)
+		EManager.updateStatus(resp, method.Name, exeStatus)
+		notifyInfo := dispatchManager.GetNotifyInfo(resp, plugin.Name, method.Name)
 		executorInstance.ExecuteNotify(notifyInfo, exeStatus)
 	}
+
 	return exeStatus
 }
