@@ -68,12 +68,12 @@
    Close the issue, re-register and change to other assignee if it is difficult to proceed during the 2 sprints(4 weeks).
 
 ### 1.4. PR policy
-> This is rules for PR for Vatz project. 
+> This is rules for PR for VATZ project. 
 
-- Person who raises the PR must track their PR status until their PR is closed.
 - PR - First Review approved / First Merge.
-- Delete Branch that has been merged. 
-   - Anyone who comments on PR while reviewing the process has an obligation to resolve/close their comment when the assignee has fixed a comment or suggestion.
+- Delete Branch that has been merged.
+- Person who raises the PR must track their PR status until their PR is closed.
+    - Anyone who comments on PR while reviewing the process has an obligation to resolve/close their comment when the assignee has fixed a comment or suggestion.
 - Must include one of keywords in `close` or `related` as below. 
    - Put `close` keyword when you would like to close an issue. 
    - Put `related` keyword when you would like to comment relate to an issue. 
