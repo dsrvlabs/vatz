@@ -3,10 +3,10 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,7 +29,7 @@ func (s *grpcServer) Verify(context.Context, *emptypb.Empty) (*pb.VerifyInfo, er
 
 // Execute runs plugin features.
 func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.ExecuteResponse, error) {
-	log.Println("PluginServer.Execute")
+	log.Info().Str("module", "grpc").Msg("Execute")
 
 	resp := &pb.ExecuteResponse{
 		ResourceType: PluginName,
@@ -68,11 +68,11 @@ func (s *grpcServer) Execute(ctx context.Context, req *pb.ExecuteRequest) (*pb.E
 
 // Start starts gRPC service.
 func (s *grpcServer) Start(ctx context.Context, address string, port int) error {
-	log.Println("grpcServer - Start")
+	log.Info().Str("module", "grpc").Msg("Start")
 
 	c, err := net.Listen("tcp", fmt.Sprintf("%s:%d", address, port))
 	if err != nil {
-		log.Println(err)
+		log.Error().Str("module", "grpc").Msg(err.Error())
 		return err
 	}
 
@@ -85,7 +85,7 @@ func (s *grpcServer) Start(ctx context.Context, address string, port int) error 
 }
 
 func (s *grpcServer) Stop() {
-	log.Println("grpcServer - Stop")
+	log.Info().Str("module", "grpc").Msg("Stop")
 
 	if s.srv != nil {
 		s.srv.GracefulStop()

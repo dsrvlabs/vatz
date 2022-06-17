@@ -1,29 +1,22 @@
 package notification
 
 import (
+	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/model"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-
-	config "github.com/dsrvlabs/vatz/manager/config"
 )
 
 var (
 	notificationInstance Notification
 	DManager             dispatcher_manager
-	defaultConf          = config.CManager.GetYMLData("default.yaml", true)
-	configManager        = config.CManager
-	discordChannel       string
 )
 
 func init() {
 	notificationInstance = NewDispatcher()
-	//message.ConfigType
-	protocolInfo := configManager.Parse(model.Protocol, defaultConf)
-	notificationInfo := protocolInfo.(map[interface{}]interface{})["notification_info"]
-	discordChannel = notificationInfo.(map[interface{}]interface{})["discord_secret"].(string)
 }
 
+// TODO: Rename this.
 type dispatcher_manager struct {
 }
 
@@ -32,7 +25,9 @@ func (s *dispatcher_manager) GetNotifyInfo(response *pluginpb.ExecuteResponse, p
 }
 
 func (s *dispatcher_manager) SendNotification(request model.ReqMsg) error {
-	err := notificationInstance.SendDiscord(request, discordChannel)
+	cfg := config.GetConfig()
+
+	err := notificationInstance.SendDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
 	if err != nil {
 		panic(err)
 	}

@@ -41,6 +41,7 @@ package main
 import (
 	"fmt"
 
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/sdk"
 	"golang.org/x/net/context"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -49,10 +50,11 @@ import (
 const (
 	addr = "0.0.0.0"
 	port = 9091
+	pluginName = "YOUR_PLUGIN_NAME"
 )
 
 func main() {
-	p := sdk.NewPlugin()
+	p := sdk.NewPlugin(pluginName)
 	p.Register(pluginFeature)
 
 	ctx := context.Background()
@@ -61,9 +63,17 @@ func main() {
 	}
 }
 
-func pluginFeature(info, opt map[string]*structpb.Value) error {
+func pluginFeature(info, option map[string]*structpb.Value) (sdk.CallResponse, error) {
 	// TODO: Fill here.
-	return nil
+	ret := sdk.CallResponse{
+		FuncName:	"YOUR_FUNCTION_NAME",
+		Message:	"YOUR_MESSAGE_CONTENTS",
+		Severity:	pluginpb.SEVERITY_UNKNOWN,
+		State:		pluginpb.STATE_NONE,
+		AlertTypes:	[]pluginpb.ALERT_TYPE{pluginpb.ALERT_TYPE_DISCORD},
+	}
+
+	return ret, nil
 }
 ```
 
