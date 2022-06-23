@@ -39,41 +39,56 @@ Create `main.go` file with below contents.
 package main
 
 import (
-	"fmt"
+        "flag"
+        "fmt"
 
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	"github.com/dsrvlabs/vatz/sdk"
-	"golang.org/x/net/context"
-	"google.golang.org/protobuf/types/known/structpb"
+        pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+        "github.com/dsrvlabs/vatz/sdk"
+        "golang.org/x/net/context"
+        "google.golang.org/protobuf/types/known/structpb"
 )
 
 const (
-	addr = "0.0.0.0"
-	port = 9091
-	pluginName = "YOUR_PLUGIN_NAME"
+        // Default values.
+        defaultAddr = "127.0.0.1"
+        defaultPort = 9091
+
+        pluginName = "YOUR_PLUGIN_NAME"
 )
 
-func main() {
-	p := sdk.NewPlugin(pluginName)
-	p.Register(pluginFeature)
+var (
+        addr string
+        port int
+)
 
-	ctx := context.Background()
-	if err := p.Start(ctx, addr, port); err != nil {
-		fmt.Println("exit")
-	}
+func init() {
+        flag.StringVar(&addr, "addr", defaultAddr, "IP Address(e.g. 0.0.0.0, 127.0.0.1)")
+        flag.IntVar(&port, "port", defaultPort, "Port number, defulat 9091")
+
+        flag.Parse()
+}
+
+func main() {
+        p := sdk.NewPlugin(pluginName)
+        p.Register(pluginFeature)
+
+        ctx := context.Background()
+        if err := p.Start(ctx, addr, port); err != nil {
+                fmt.Println("exit")
+        }
 }
 
 func pluginFeature(info, option map[string]*structpb.Value) (sdk.CallResponse, error) {
-	// TODO: Fill here.
-	ret := sdk.CallResponse{
-		FuncName:	"YOUR_FUNCTION_NAME",
-		Message:	"YOUR_MESSAGE_CONTENTS",
-		Severity:	pluginpb.SEVERITY_UNKNOWN,
-		State:		pluginpb.STATE_NONE,
-		AlertTypes:	[]pluginpb.ALERT_TYPE{pluginpb.ALERT_TYPE_DISCORD},
-	}
+        // TODO: Fill here.
+        ret := sdk.CallResponse{
+                FuncName:   "YOUR_FUNCTION_NAME",
+                Message:    "YOUR_MESSAGE_CONTENTS",
+                Severity:   pluginpb.SEVERITY_UNKNOWN,
+                State:      pluginpb.STATE_NONE,
+                AlertTypes: []pluginpb.ALERT_TYPE{pluginpb.ALERT_TYPE_DISCORD},
+        }
 
-	return ret, nil
+        return ret, nil
 }
 ```
 
