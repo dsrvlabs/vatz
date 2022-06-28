@@ -40,6 +40,7 @@ func (v executor) ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatu
 		if exeStatus[notifyInfo["method_name"]] == false {
 			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Success, Msg: notifyInfo["execute_message"].(string), Severity: message.Info, ResourceType: notifyInfo["plugin_name"].(string)}
 			dispatchManager.SendNotification(jsonMessage)
+			exeStatus[notifyInfo["method_name"]] = true
 		}
 	}
 	return nil
