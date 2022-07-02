@@ -10,7 +10,7 @@
   </p> 
 </div>    
 
-## 1. VATZ ##
+## 1. About VATZ ##
 
 > VATZ is a tool for building, analyzing, and managing block chain Node infrastructure safely and efficiently. You can set up VATZ to manage existing or new blockchain nodes and integrate with popular services PagerDuty, Discord, and more as well as custom in-house solutions.
 
@@ -26,6 +26,7 @@ The key features of VATZ are:
 We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
 As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future block chain technology.
 
+
 ## 3. Contact
 Please, <b>  contact </b> [us](mailto:validator@dsrvlabs.com) if you need any further information.
 Visit us if you are interested about what we are doing
@@ -38,7 +39,7 @@ Visit us if you are interested about what we are doing
 
 ---
 
-## How can I contribute?
+# How can I contribute?
 
 We welcome contributions! Many people all over the world have helped make this project better.
 * [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute
