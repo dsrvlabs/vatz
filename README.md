@@ -28,9 +28,7 @@ As Validators, we provide tools to people to manage their own nodes with low cos
 
 
 ## 3. Contact
-Please, <b>  contact </b> [us](mailto:validator@dsrvlabs.com) if you need any further information.
-
-Visit us if you are interested about what we are doing
+Please, <b>  contact </b> [us](mailto:validator@dsrvlabs.com) if you need any further information. <br> Visit us if you are interested about what we are doing
 
 [<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://dsrv.medium.com)
 [<img alt="Github" src="https://user-images.githubusercontent.com/6308023/176984452-c73aa188-563a-4b93-8ad8-cd7974770275.svg" width="50" height="50" />](https://github.com/dsrvlabs)
