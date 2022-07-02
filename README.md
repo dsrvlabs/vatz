@@ -29,13 +29,13 @@ As Validators, we provide tools to people to manage their own nodes with low cos
 ## 3. Contact
 Please, <b>  contact </b> [us](mailto:validator@dsrvlabs.com) if you need any further information.
 Visit us if you are interested about what we are doing
-<p float="center">
-<img href="https://dsrv.medium.com/" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50">
-<img href="https://github.com/dsrvlabs" src="https://user-images.githubusercontent.com/6308023/176984452-c73aa188-563a-4b93-8ad8-cd7974770275.svg" width="50" height="50">
-<img href="https://www.facebook.com/dsrvlabs" src="https://user-images.githubusercontent.com/6308023/176984453-2fc6cd38-b0f8-4c44-a8d5-82291b3ce4f2.svg" width="50" height="50">
-<img href="https://www.youtube.com/channel/UCWhv8Kd430cEMpEYBPtSPjA/featured" src="https://user-images.githubusercontent.com/6308023/176984454-52c20db5-6b8f-4c15-a621-dd4a0052e99f.svg" width="50" height="50">
-<img href="https://twitter.com/dsrvlabs" src="https://user-images.githubusercontent.com/6308023/176984455-d48b24a9-1eb4-4c38-b728-2f4a0ccff09b.svg" width="50" height="50">
-</p>
+
+[<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://dsrv.medium.com)
+[<img alt="Github" src="https://user-images.githubusercontent.com/6308023/176984452-c73aa188-563a-4b93-8ad8-cd7974770275.svg" width="50" height="50" />](https://github.com/dsrvlabs)
+[<img alt="Facebook" src="https://user-images.githubusercontent.com/6308023/176984453-2fc6cd38-b0f8-4c44-a8d5-82291b3ce4f2.svg" width="50" height="50" />](https://www.facebook.com/dsrvlabs)
+[<img alt="Youtube" src="https://user-images.githubusercontent.com/6308023/176984454-52c20db5-6b8f-4c15-a621-dd4a0052e99f.svg" width="50" height="50" />](https://www.youtube.com/channel/UCWhv8Kd430cEMpEYBPtSPjA/featured)
+[<img alt="Twitter" src="https://user-images.githubusercontent.com/6308023/176984455-d48b24a9-1eb4-4c38-b728-2f4a0ccff09b.svg" width="50" height="50" />](https://twitter.com/dsrvlabs)
+
 ---
 
 ## How can I contribute?
