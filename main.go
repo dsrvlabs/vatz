@@ -8,6 +8,8 @@ import (
 	"net"
 	"os"
 	"time"
+	"net/http"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	notification "github.com/dsrvlabs/vatz/manager/notification"
 
@@ -24,6 +26,7 @@ import (
 
 const (
 	serviceName = "Vatz Manager"
+	defaultPromAddr = "21112"
 )
 
 var (
@@ -32,15 +35,20 @@ var (
 	executeManager         = executor.EManager
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
+	configFile string
+	promAddr string
 )
 
-func main() {
-	var configFile string
-
+func init() {
 	// TODO: How to test flag?
 	flag.StringVar(&configFile, "config", "default.yaml", "-config=<FILENAME>")
-	flag.Parse()
+	flag.StringVar(&promAddr, "promAddr", defaultPromAddr, "Prometheus served port")
 
+	flag.Parse()
+}
+
+func main() {
+	go initPrometheus(promAddr)
 	config.InitConfig(configFile)
 
 	ch := make(chan os.Signal, 1)
@@ -148,4 +156,17 @@ func multiPluginExecutor(plugin config.Plugin,
 			return
 		}
 	}
+}
+
+func initPrometheus(port string) error {
+    log.Println("prometheus served at :" + port)
+
+	http.Handle("/metrics", promhttp.Handler())
+	err := http.ListenAndServe(":" + port, nil)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	return nil
 }
