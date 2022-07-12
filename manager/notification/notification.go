@@ -22,6 +22,7 @@ but dispatcher and notification module should be splitted into two part.
 // State defines VATZ state.
 type State string
 
+// TODO: why we don't use pluginpb's State
 // States
 const (
 	None       = State("NONE")
@@ -35,6 +36,7 @@ const (
 // Severity defines notification level.
 type Severity string
 
+// TODO: why we don't use pluginpb's Severity
 // Severities
 const (
 	Unknown  = Severity("UNKNOWN")
@@ -139,6 +141,7 @@ func (d notification) SendNotification(request ReqMsg) error {
 	return nil
 }
 
+// TODO: Do we really need this function?
 func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) NotifyInfo {
 	notifyInfo := NotifyInfo{
 		Plugin:     pluginName,
