@@ -13,7 +13,7 @@ import (
 var (
 	EManager         executorManager
 	executorInstance Executor
-	dispatchManager  = notification.DManager
+	dispatchManager  = notification.GetDispatcher()
 )
 
 func init() {
@@ -67,7 +67,17 @@ func (s *executorManager) Execute(gClient pluginpb.PluginClient, plugin config.P
 		resp, _ := executorInstance.Execute(gClient, req)
 		EManager.updateStatus(resp, method.Name, exeStatus)
 		notifyInfo := dispatchManager.GetNotifyInfo(resp, plugin.Name, method.Name)
-		executorInstance.ExecuteNotify(notifyInfo, exeStatus)
+
+		// TODO: Temporarily convert data type.
+		// This part should be removed on refactoring issue of executor #179.
+		temp := make(map[interface{}]interface{})
+		temp["severity"] = notifyInfo.Severity.String()
+		temp["state"] = notifyInfo.State.String()
+		temp["method_name"] = notifyInfo.Method
+		temp["execute_message"] = notifyInfo.ExecuteMsg
+		temp["plugin_name"] = notifyInfo.Plugin
+
+		executorInstance.ExecuteNotify(temp, exeStatus)
 	}
 
 	return exeStatus

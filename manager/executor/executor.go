@@ -4,7 +4,7 @@ import (
 	"context"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	message "github.com/dsrvlabs/vatz/manager/model"
+	message "github.com/dsrvlabs/vatz/manager/notification"
 )
 
 type executor struct {
