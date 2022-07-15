@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	notification "github.com/dsrvlabs/vatz/manager/notification"
-
 	config "github.com/dsrvlabs/vatz/manager/config"
 	executor "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
@@ -27,9 +25,9 @@ const (
 )
 
 var (
-	healthManager          = health.HManager
-	dispatchManager        = notification.DManager
-	executeManager         = executor.EManager
+	healthManager  = health.HManager
+	executeManager = executor.EManager
+
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
