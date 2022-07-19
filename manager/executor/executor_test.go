@@ -70,8 +70,6 @@ func TestExecutorSuccess(t *testing.T) {
 		mockNotif := notif.MockNotification{}
 		dispatchManager = &mockNotif
 
-		mockNotif.On("GetNotifyInfo", test.TestExecResp, cfgPlugin.Name, testMethodName).Return(test.TestNotifInfo)
-
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
 			dummyMsg := notif.ReqMsg{
 				FuncName:     testMethodName,
@@ -141,6 +139,7 @@ func TestExecutorFailure(t *testing.T) {
 			TestExecResp: &pluginpb.ExecuteResponse{
 				State:    pluginpb.STATE_FAILURE,
 				Severity: pluginpb.SEVERITY_CRITICAL,
+				Message:  "test execute msg",
 			},
 			TestNotifInfo: notif.NotifyInfo{
 				Plugin:     testPluginName,
@@ -189,8 +188,6 @@ func TestExecutorFailure(t *testing.T) {
 
 		mockNotif := notif.MockNotification{}
 		dispatchManager = &mockNotif
-
-		mockNotif.On("GetNotifyInfo", test.TestExecResp, cfgPlugin.Name, testMethodName).Return(test.TestNotifInfo)
 
 		mockNotif.On("SendNotification", test.ExpectReqMsg).Return(nil)
 

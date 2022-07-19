@@ -69,7 +69,14 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			s.status[method.Name] = false
 		}
 
-		notifyInfo := dispatchManager.GetNotifyInfo(resp, plugin.Name, method.Name)
+		notifyInfo := message.NotifyInfo{
+			Plugin:     plugin.Name,
+			Method:     method.Name,
+			Severity:   resp.GetSeverity(),
+			State:      resp.GetState(),
+			ExecuteMsg: resp.GetMessage(),
+		}
+
 		s.executeNotify(notifyInfo)
 	}
 
@@ -79,7 +86,6 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
 	resp, err := gClient.Execute(ctx, in)
 	if err != nil || resp == nil {
-		// TODO: why below codes chnage response?
 		return &pluginpb.ExecuteResponse{
 			State:        pluginpb.STATE_FAILURE,
 			Message:      "API Execution Failed",

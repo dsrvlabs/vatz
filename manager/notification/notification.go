@@ -95,7 +95,6 @@ type NotifyInfo struct {
 // Notification provides interfaces to send alert notification message with variable channel.
 type Notification interface {
 	SendDiscord(msg ReqMsg, webhook string) error
-	GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) NotifyInfo
 	SendNotification(request ReqMsg) error
 }
 
@@ -111,19 +110,6 @@ func (d notification) SendNotification(request ReqMsg) error {
 	}
 
 	return nil
-}
-
-// TODO: Do we really need this function?
-func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginName string, methodName string) NotifyInfo {
-	notifyInfo := NotifyInfo{
-		Plugin:     pluginName,
-		Method:     methodName,
-		Severity:   response.GetSeverity(),
-		State:      response.GetState(),
-		ExecuteMsg: response.GetMessage(),
-	}
-
-	return notifyInfo
 }
 
 func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
