@@ -27,7 +27,7 @@ const (
 	None       = State("NONE")
 	Pending    = State("PENDING")
 	InProgress = State("INPROGRESS")
-	Faliure    = State("FAIILURE")
+	Failure    = State("FAIILURE")
 	Timeout    = State("TIMEOUT")
 	Success    = State("SUCCESS")
 )
