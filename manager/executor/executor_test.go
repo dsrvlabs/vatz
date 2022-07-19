@@ -75,9 +75,9 @@ func TestExecutorSuccess(t *testing.T) {
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
 			dummyMsg := notif.ReqMsg{
 				FuncName:     testMethodName,
-				State:        notif.Faliure,
+				State:        pluginpb.STATE_FAILURE,
 				Msg:          "No response from Plugin",
-				Severity:     notif.Critical,
+				Severity:     pluginpb.SEVERITY_CRITICAL,
 				ResourceType: testPluginName,
 			}
 			mockNotif.On("SendNotification", dummyMsg).Return(nil)
@@ -129,9 +129,9 @@ func TestExecutorFailure(t *testing.T) {
 			},
 			ExpectReqMsg: notif.ReqMsg{
 				FuncName:     testMethodName,
-				State:        notif.Faliure,
+				State:        pluginpb.STATE_FAILURE,
 				Msg:          "No response from Plugin",
-				Severity:     notif.Critical,
+				Severity:     pluginpb.SEVERITY_CRITICAL,
 				ResourceType: testPluginName,
 			},
 		},
@@ -151,9 +151,9 @@ func TestExecutorFailure(t *testing.T) {
 			},
 			ExpectReqMsg: notif.ReqMsg{
 				FuncName:     testMethodName,
-				State:        notif.Faliure,
+				State:        pluginpb.STATE_FAILURE,
 				Msg:          "test execute msg",
-				Severity:     notif.Critical,
+				Severity:     pluginpb.SEVERITY_CRITICAL,
 				ResourceType: testPluginName,
 			},
 		},

@@ -19,34 +19,6 @@ As I see this code, notification itself is described is dispatcher
 but dispatcher and notification module should be splitted into two part.
 */
 
-// State defines VATZ state.
-type State string
-
-// TODO: why we don't use pluginpb's State
-// States
-const (
-	None       = State("NONE")
-	Pending    = State("PENDING")
-	InProgress = State("INPROGRESS")
-	Faliure    = State("FAIILURE")
-	Timeout    = State("TIMEOUT")
-	Success    = State("SUCCESS")
-)
-
-// Severity defines notification level.
-type Severity string
-
-// TODO: why we don't use pluginpb's Severity
-// Severities
-const (
-	Unknown  = Severity("UNKNOWN")
-	Warning  = Severity("WARNING")
-	Error    = Severity("ERROR")
-	Critical = Severity("CRITICAL")
-	Info     = Severity("INFO")
-	Ok       = Severity("OK")
-)
-
 // DiscordColor describes color codes which are using for Discord msg.
 type DiscordColor int
 
@@ -67,11 +39,11 @@ var (
 
 // ReqMsg is request message to send notification.
 type ReqMsg struct {
-	FuncName     string   `json:"func_name"`
-	State        State    `json:"state"`
-	Msg          string   `json:"msg"`
-	Severity     Severity `json:"severity"`
-	ResourceType string   `json:"resource_type"`
+	FuncName     string            `json:"func_name"`
+	State        pluginpb.STATE    `json:"state"`
+	Msg          string            `json:"msg"`
+	Severity     pluginpb.SEVERITY `json:"severity"`
+	ResourceType string            `json:"resource_type"`
 }
 
 type discordMsg struct {
@@ -155,10 +127,6 @@ func (d notification) GetNotifyInfo(response *pluginpb.ExecuteResponse, pluginNa
 }
 
 func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
-	// Check empty contents
-	if msg.Severity == "" {
-		msg.Severity = Unknown
-	}
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
 	}
@@ -170,13 +138,11 @@ func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
 	if strings.Contains(webhook, discordWebhookFormat) {
 		sMsg := discordMsg{Embeds: make([]embed, 1)}
 		switch msg.Severity {
-		case Critical:
+		case pluginpb.SEVERITY_CRITICAL:
 			sMsg.Embeds[0].Color = discordRed
-		case Warning:
+		case pluginpb.SEVERITY_WARNING:
 			sMsg.Embeds[0].Color = discordYellow
-		case Ok:
-			sMsg.Embeds[0].Color = discordGreen
-		case Info:
+		case pluginpb.SEVERITY_INFO:
 			sMsg.Embeds[0].Color = discordBlue
 		default:
 			sMsg.Embeds[0].Color = discordGray
