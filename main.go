@@ -20,6 +20,8 @@ import (
 	"github.com/dsrvlabs/vatz/manager/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	grpchealth "google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 const (
@@ -79,6 +81,7 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	log.Println("Node Manager Started")
 
+	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {
 		log.Panic(err)
 	}
@@ -155,4 +158,10 @@ func multiPluginExecutor(plugin config.Plugin,
 			return
 		}
 	}
+}
+
+func InitHealthServer(s *grpc.Server) {
+	healthserver := grpchealth.NewServer()
+	healthserver.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
+	healthpb.RegisterHealthServer(s, healthserver)
 }
