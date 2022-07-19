@@ -29,11 +29,11 @@ func (v executor) ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatu
 	if notifyInfo["state"] != string(message.Success) {
 		exeStatus[notifyInfo["method_name"]] = false
 		if notifyInfo["severity"] == string(message.Error) {
-			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Failure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
 			dispatchManager.SendNotification(jsonMessage)
 		}
 		if notifyInfo["severity"] == string(message.Critical) {
-			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: notifyInfo["execute_message"].(string), Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Failure, Msg: notifyInfo["execute_message"].(string), Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
 			dispatchManager.SendNotification(jsonMessage)
 		}
 	} else {
