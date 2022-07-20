@@ -13,6 +13,7 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
+	isSending       = make(map[string]bool)
 )
 
 func init() {
@@ -103,25 +104,27 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 
 	if notifyInfo.State != pluginpb.STATE_SUCCESS {
 		s.status[methodName] = false
-		if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
-			jsonMessage := message.ReqMsg{
-				FuncName:     notifyInfo.Method,
-				State:        pluginpb.STATE_FAILURE,
-				Msg:          "No response from Plugin",
-				Severity:     pluginpb.SEVERITY_CRITICAL, // TODO: Error or Critical?
-				ResourceType: notifyInfo.Plugin,
+		if isSending[methodName] != true {
+			if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
+				jsonMessage := message.ReqMsg{
+					FuncName:     notifyInfo.Method,
+					State:        pluginpb.STATE_FAILURE,
+					Msg:          "No response from Plugin",
+					Severity:     pluginpb.SEVERITY_CRITICAL, // TODO: Error or Critical?
+					ResourceType: notifyInfo.Plugin,
+				}
+				dispatchManager.SendNotification(jsonMessage)
+			} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
+				jsonMessage := message.ReqMsg{
+					FuncName:     notifyInfo.Method,
+					State:        pluginpb.STATE_FAILURE,
+					Msg:          notifyInfo.ExecuteMsg,
+					Severity:     pluginpb.SEVERITY_CRITICAL,
+					ResourceType: notifyInfo.Plugin,
+				}
+				dispatchManager.SendNotification(jsonMessage)
 			}
-
-			dispatchManager.SendNotification(jsonMessage)
-		} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
-			jsonMessage := message.ReqMsg{
-				FuncName:     notifyInfo.Method,
-				State:        pluginpb.STATE_FAILURE,
-				Msg:          notifyInfo.ExecuteMsg,
-				Severity:     pluginpb.SEVERITY_CRITICAL,
-				ResourceType: notifyInfo.Plugin,
-			}
-			dispatchManager.SendNotification(jsonMessage)
+			isSending[methodName] = true
 		}
 	} else {
 		if s.status[methodName] == false {
