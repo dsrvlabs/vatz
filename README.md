@@ -21,8 +21,7 @@ The key features of VATZ are:
 - `Data Analysis`: VATZ helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafaka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
 - `Change automation`: Complex sets of node's operational tasks can be done through VATZ with minimal human interaction. (2023-Q2)
 
-
-To Find more for **Project Design** 
+To Find more for **Project Design**
 * [VATZ Project Design](docs/design.md)
 
 ## 2. Our Mission ##
@@ -31,7 +30,7 @@ We're on a mission to transform the way people experience blockchain technology 
 As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future block chain technology.
 
 
-## 4. Contact
+## 3. Contact
 Please, <b>  contact </b> [us](mailto:validator@dsrvlabs.com) if you need any further information. <br> Visit us if you are interested about what we are doing
 
 [<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://dsrv.medium.com)
