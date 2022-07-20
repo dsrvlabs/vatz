@@ -3,10 +3,10 @@ vatz_protocol_info:
   protocol_identifier: "VATZ"
   port: 9090
   notification_info:
-    discord_secret: "https://discord.com/api/webhooks/993878454036611265/GiWUW8tkFFIZpKY7BV4tMrKVk0h0nnUlolZoNYrRbxZ63F2b8iKM1nJBSVYmdaU8b8it"
+    discord_secret: "xxxxxxx"
     pager_duty_secret: "YYYYY"
   health_checker_schedule:
-    - "* 1 * * *"
+    - "* 1t * * *"
 plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
