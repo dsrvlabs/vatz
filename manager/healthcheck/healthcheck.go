@@ -49,9 +49,9 @@ func VatzHealthCheck(HealthCheckerSchedule []string) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	jsonMessage := msg.ReqMsg{
 		FuncName:     "vatz_healthcheck",
-		State:        msg.Success,
+		State:        pluginpb.STATE_SUCCESS,
 		Msg:          "Vatz is alive!",
-		Severity:     msg.Info,
+		Severity:     pluginpb.SEVERITY_CRITICAL,
 		ResourceType: "Vatz",
 	}
 	for i := 0; i < len(HealthCheckerSchedule); i++ {
