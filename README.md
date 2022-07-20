@@ -12,7 +12,7 @@
 
 ## 1. About VATZ ##
 
-> VATZ is a tool for building, analyzing, and managing block chain Node infrastructure safely and efficiently. You can set up VATZ to manage existing or new blockchain nodes and integrate with popular services PagerDuty, Discord, and more as well as custom in-house solutions.
+> VATZ is a tool for building, analyzing, and managing blockchain Node infrastructure safely and efficiently. You can set up VATZ to manage existing or new blockchain nodes and integrate with popular services PagerDuty, Discord, and more as well as custom in-house solutions.
 
 The key features of VATZ are:
 
@@ -21,8 +21,9 @@ The key features of VATZ are:
 - `Data Analysis`: VATZ helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafaka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
 - `Change automation`: Complex sets of node's operational tasks can be done through VATZ with minimal human interaction. (2023-Q2)
 
-To Find more for **Project Design**
-* [VATZ Project Design](docs/design.md)
+
+#### _To find more about_ **`VATZ Project`**
+- [VATZ Project Design](docs/design.md)
 
 ## 2. Our Mission ##
 

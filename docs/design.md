@@ -1,6 +1,6 @@
 # VATZ Project Design
 
-![Vatz Diagram (To be) drawio (2)](https://user-images.githubusercontent.com/6308023/179885451-6d40505b-8b31-41d3-8dff-25220e00be1c.png)
+![Vatz Project Design](https://user-images.githubusercontent.com/6308023/179885451-6d40505b-8b31-41d3-8dff-25220e00be1c.png)
 
 > **VATZ** is mainly designed to check the node status in real time and get the alert notification of all blockchain protocols, including metrics that doesn't supported by protocol itself.
 
@@ -21,7 +21,7 @@ End-users develop their own plugins and add features with their needs regardless
 
 ### 1. Manager
 
-- This is a main service of VATZ that execute plugins APIs based on configs.
+- This is a main service of VATZ that executes plugin APIs based on configs.
 
 ```
 SAMPLE DEFAULT YAML
@@ -50,14 +50,14 @@ plugins_infos:
         - method_name: "sampleMethod2"
 ```
 
-`vatz_protocol_info` & `plugins_infos` must declared in default.yaml to get stared VATZ properly. 
+`vatz_protocol_info` & `plugins_infos` must be declared in default.yaml to get started with VATZ properly.
 
 ### 2. Plugins
 
-- Plugins that allow you to perform in pu 
-   - `Collect` Metric data
-   - `Execute` Command on Node automatically
-   - `Check` Status on Node
+Plugins that allow you to perform followings per protocols
+   - `Check`: Node & Machine status
+   - `Collect`: Node's metric + more
+   - `Execute`: Command on machine for certain behaviors (e.g, Restart Node)
    
 
 ### 3. Monitoring
