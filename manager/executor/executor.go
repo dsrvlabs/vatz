@@ -2,16 +2,89 @@ package executor
 
 import (
 	"context"
+	"log"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/dsrvlabs/vatz/manager/config"
+	"github.com/dsrvlabs/vatz/manager/notification"
 	message "github.com/dsrvlabs/vatz/manager/notification"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
-type executor struct {
+var (
+	dispatchManager = notification.GetDispatcher()
+)
+
+func init() {
 }
 
-func (v executor) Execute(gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
-	resp, err := gClient.Execute(context.Background(), in)
+// Executor provides interfaces to execute plugin features.
+type Executor interface {
+	Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin) error
+}
+
+type executor struct {
+	status map[string]bool
+}
+
+func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin) error {
+	//TODO: Find how to deal with multiple plugin methods.
+	executeMethods := plugin.ExecutableMethods
+
+	for _, method := range executeMethods {
+		optionMap := map[string]interface{}{
+			"plugin_name": plugin.Name,
+		}
+
+		options, err := structpb.NewStruct(optionMap)
+		if err != nil {
+			log.Fatalf("failed to check target structpb: %v", err)
+		}
+
+		//TODO: Please, add new logic to add param into Map.
+		methodMap := map[string]interface{}{
+			"execute_method": method.Name,
+		}
+
+		executeInfo, err := structpb.NewStruct(methodMap)
+		if err != nil {
+			log.Fatalf("failed to check command structpb: %v", err)
+		}
+
+		if _, ok := s.status[method.Name]; !ok {
+			s.status[method.Name] = true
+		}
+
+		req := &pluginpb.ExecuteRequest{
+			ExecuteInfo: executeInfo,
+			Options:     options,
+		}
+
+		resp, err := s.execute(ctx, gClient, req)
+		if err != nil {
+			return err
+		}
+
+		if resp.GetState() != pluginpb.STATE_SUCCESS {
+			s.status[method.Name] = false
+		}
+
+		notifyInfo := message.NotifyInfo{
+			Plugin:     plugin.Name,
+			Method:     method.Name,
+			Severity:   resp.GetSeverity(),
+			State:      resp.GetState(),
+			ExecuteMsg: resp.GetMessage(),
+		}
+
+		s.executeNotify(notifyInfo)
+	}
+
+	return nil
+}
+
+func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
+	resp, err := gClient.Execute(ctx, in)
 	if err != nil || resp == nil {
 		return &pluginpb.ExecuteResponse{
 			State:        pluginpb.STATE_FAILURE,
@@ -21,41 +94,55 @@ func (v executor) Execute(gClient pluginpb.PluginClient, in *pluginpb.ExecuteReq
 			ResourceType: "ResourceType Unknown",
 		}, nil
 	}
-	return resp, nil
+	return resp, err
 }
 
-func (v executor) ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatus map[interface{}]interface{}) error {
+func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
-	if notifyInfo["state"] != string(message.Success) {
-		exeStatus[notifyInfo["method_name"]] = false
-		if notifyInfo["severity"] == string(message.Error) {
-			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: "No response from Plugin", Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+	methodName := notifyInfo.Method
+
+	if notifyInfo.State != pluginpb.STATE_SUCCESS {
+		s.status[methodName] = false
+		if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
+			jsonMessage := message.ReqMsg{
+				FuncName:     notifyInfo.Method,
+				State:        pluginpb.STATE_FAILURE,
+				Msg:          "No response from Plugin",
+				Severity:     pluginpb.SEVERITY_CRITICAL, // TODO: Error or Critical?
+				ResourceType: notifyInfo.Plugin,
+			}
+
 			dispatchManager.SendNotification(jsonMessage)
-		}
-		if notifyInfo["severity"] == string(message.Critical) {
-			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Faliure, Msg: notifyInfo["execute_message"].(string), Severity: message.Critical, ResourceType: notifyInfo["plugin_name"].(string)}
+		} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
+			jsonMessage := message.ReqMsg{
+				FuncName:     notifyInfo.Method,
+				State:        pluginpb.STATE_FAILURE,
+				Msg:          notifyInfo.ExecuteMsg,
+				Severity:     pluginpb.SEVERITY_CRITICAL,
+				ResourceType: notifyInfo.Plugin,
+			}
 			dispatchManager.SendNotification(jsonMessage)
 		}
 	} else {
-		if exeStatus[notifyInfo["method_name"]] == false {
-			jsonMessage := message.ReqMsg{FuncName: notifyInfo["method_name"].(string), State: message.Success, Msg: notifyInfo["execute_message"].(string), Severity: message.Info, ResourceType: notifyInfo["plugin_name"].(string)}
+		if s.status[methodName] == false {
+			jsonMessage := message.ReqMsg{
+				FuncName:     notifyInfo.Method,
+				State:        pluginpb.STATE_SUCCESS,
+				Msg:          notifyInfo.ExecuteMsg,
+				Severity:     pluginpb.SEVERITY_INFO,
+				ResourceType: notifyInfo.Plugin,
+			}
+
 			dispatchManager.SendNotification(jsonMessage)
-			exeStatus[notifyInfo["method_name"]] = true
+			s.status[methodName] = true
 		}
 	}
 	return nil
 }
 
-func (v executor) GenerateExecutorRequest() error {
-	return nil
-}
-
-type Executor interface {
-	GenerateExecutorRequest() error
-	Execute(gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error)
-	ExecuteNotify(notifyInfo map[interface{}]interface{}, exeStatus map[interface{}]interface{}) error
-}
-
+// NewExecutor create new executor instance.
 func NewExecutor() Executor {
-	return &executor{}
+	return &executor{
+		status: map[string]bool{},
+	}
 }

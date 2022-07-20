@@ -9,8 +9,10 @@ import (
 	"os"
 	"time"
 
+	ex "github.com/dsrvlabs/vatz/manager/executor"
+	notification "github.com/dsrvlabs/vatz/manager/notification"
+
 	config "github.com/dsrvlabs/vatz/manager/config"
-	executor "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
@@ -25,12 +27,18 @@ const (
 )
 
 var (
-	healthManager  = health.HManager
-	executeManager = executor.EManager
+	healthManager   = health.HManager
+	dispatchManager = notification.GetDispatcher()
+
+	executor ex.Executor
 
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
+
+func init() {
+	executor = ex.NewExecutor()
+}
 
 func main() {
 	var configFile string
@@ -80,14 +88,13 @@ func initiateServer(ch <-chan os.Signal) error {
 
 func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
-	autoUpdateNotification := make(map[interface{}]interface{})
 	isOkayToSend := false
 
 	grpcClients := getClients(pluginInfo.Plugins)
 
 	//TODO: Need updated with better way for Dynamic handlers
 	for idx, singleClient := range grpcClients {
-		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, autoUpdateNotification, quit)
+		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
 	}
 }
 
@@ -121,12 +128,12 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 func multiPluginExecutor(plugin config.Plugin,
 	singleClient pluginpb.PluginClient,
 	isOkayToSend bool,
-	autoUpdateNotification map[interface{}]interface{},
 	quit <-chan os.Signal) {
 
 	verifyTicker := time.NewTicker(time.Duration(plugin.VerifyInterval) * time.Second)
 	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
 
+	ctx := context.Background()
 	for {
 		select {
 		case <-verifyTicker.C:
@@ -138,8 +145,10 @@ func multiPluginExecutor(plugin config.Plugin,
 			}
 		case <-executeTicker.C:
 			if isOkayToSend == true {
-				executedAfter := executeManager.Execute(singleClient, plugin, autoUpdateNotification)
-				autoUpdateNotification = executedAfter
+				err := executor.Execute(ctx, singleClient, plugin)
+				if err != nil {
+					// TODO: Handle error.
+				}
 			}
 		case <-quit:
 			executeTicker.Stop()

@@ -26,9 +26,9 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Pl
 		isAlive = "DOWN"
 		jsonMessage := msg.ReqMsg{
 			FuncName:     "is_plugin_up",
-			State:        msg.Faliure,
+			State:        pluginpb.STATE_FAILURE,
 			Msg:          "is Down !!",
-			Severity:     msg.Critical,
+			Severity:     pluginpb.SEVERITY_CRITICAL,
 			ResourceType: plugin.Name,
 		}
 
