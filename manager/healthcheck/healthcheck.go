@@ -12,7 +12,7 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
-	checkSending    = false
+	isSending       = false
 )
 
 type healthCheck struct {
