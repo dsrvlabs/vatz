@@ -10,10 +10,10 @@ import (
 	"time"
 
 	ex "github.com/dsrvlabs/vatz/manager/executor"
+	"github.com/dsrvlabs/vatz/manager/healthcheck"
 	notification "github.com/dsrvlabs/vatz/manager/notification"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
-	"github.com/dsrvlabs/vatz/manager/healthcheck"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
