@@ -10,7 +10,6 @@ import (
 	"time"
 
 	ex "github.com/dsrvlabs/vatz/manager/executor"
-	"github.com/dsrvlabs/vatz/manager/healthcheck"
 	notification "github.com/dsrvlabs/vatz/manager/notification"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
@@ -68,7 +67,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthcheck.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	err := health.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
 	if err != nil {
 		log.Println(err)
 	}
