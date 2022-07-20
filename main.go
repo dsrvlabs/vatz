@@ -13,6 +13,7 @@ import (
 	notification "github.com/dsrvlabs/vatz/manager/notification"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
+	"github.com/dsrvlabs/vatz/manager/healthcheck"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
@@ -67,6 +68,11 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
+	fmt.Println("main : ", vatzConfig.HealthCheckerSchedule)
+	err := healthcheck.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	if err != nil {
+		log.Println(err)
+	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {

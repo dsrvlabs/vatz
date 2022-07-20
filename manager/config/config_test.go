@@ -27,6 +27,7 @@ type testConfigExpects struct {
 	ExpectVatzPort               int
 	ExpectDiscordSecret          string
 	ExpectPagerDutySecret        string
+	ExpectHealthCheckerSchedule  []string
 	ExpectDefaultVerifyInterval  int
 	ExpectDefaultExecuteInterval int
 	ExpectDefaultPluginName      string
@@ -51,6 +52,7 @@ func TestDefaultConfig(t *testing.T) {
 		ExpectVatzPort:               9090,
 		ExpectDiscordSecret:          "XXXXX",
 		ExpectPagerDutySecret:        "YYYYY",
+		ExpectHealthCheckerSchedule:  []string{"* 1 * * *"},
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
 		ExpectDefaultPluginName:      "vatz-plugin",
@@ -85,6 +87,7 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
+	assert.Equal(t, test.ExpectHealthCheckerSchedule, cfg.Vatz.HealthCheckerSchedule)
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
 	assert.Equal(t, test.ExpectDefaultExecuteInterval, cfg.PluginInfos.DefaultExecuteInterval)
@@ -137,6 +140,7 @@ func TestOverrideDefaultValues(t *testing.T) {
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
+	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
@@ -258,6 +262,7 @@ func TestGetConfig(t *testing.T) {
 		ExpectVatzPort:               9090,
 		ExpectDiscordSecret:          "XXXXX",
 		ExpectPagerDutySecret:        "YYYYY",
+		ExpectHealthCheckerSchedule:  []string{"* 1 * * *"},
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
 		ExpectDefaultPluginName:      "vatz-plugin",
@@ -299,6 +304,7 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
+	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
