@@ -6,7 +6,7 @@ vatz_protocol_info:
     discord_secret: "xxxxxxx"
     pager_duty_secret: "YYYYY"
   health_checker_schedule:
-    - "* 1 * * *"
+    - "0 1 * * *"
 plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
