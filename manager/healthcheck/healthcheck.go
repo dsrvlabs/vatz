@@ -12,6 +12,7 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
+	checkSending    = false
 )
 
 type healthCheck struct {
@@ -23,16 +24,20 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Pl
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
-		isAlive = "DOWN"
-		jsonMessage := msg.ReqMsg{
-			FuncName:     "is_plugin_up",
-			State:        pluginpb.STATE_FAILURE,
-			Msg:          "is Down !!",
-			Severity:     pluginpb.SEVERITY_CRITICAL,
-			ResourceType: plugin.Name,
+		if !checkSending {
+			isAlive = "DOWN"
+			jsonMessage := msg.ReqMsg{
+				FuncName:     "is_plugin_up",
+				State:        pluginpb.STATE_FAILURE,
+				Msg:          "is Down !!",
+				Severity:     pluginpb.SEVERITY_CRITICAL,
+				ResourceType: plugin.Name,
+			}
+			dispatchManager.SendNotification(jsonMessage)
+			checkSending = true
 		}
-
-		dispatchManager.SendNotification(jsonMessage)
+	} else {
+		checkSending = false
 	}
 
 	return isAlive, nil
