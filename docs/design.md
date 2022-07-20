@@ -54,10 +54,10 @@ plugins_infos:
 
 ### 2. Plugins
 
-- Plugins that allow you to perform in pu 
-   - `Collect` Metric data
-   - `Execute` Command on Node automatically
-   - `Check` Status on Node
+Plugins that allow you to perform followings per protocols
+   - `Check`: Node & Machine status
+   - `Collect`: Node's metric + more
+   - `Execute`: Command on machine for certain behaviors (e.g, Restart Node)
    
 
 ### 3. Monitoring
