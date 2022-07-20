@@ -3,6 +3,7 @@ package notification
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -133,7 +134,7 @@ func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
-		sMsg.Embeds[0].Title = string(msg.Severity)
+		sMsg.Embeds[0].Title = fmt.Sprintf("%v", msg.Severity)
 		sMsg.Embeds[0].Fields = []field{{Name: msg.ResourceType, Value: msg.Msg, Inline: false}}
 		sMsg.Embeds[0].Timestamp = time.Now()
 
