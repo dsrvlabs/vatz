@@ -17,6 +17,6 @@ func init() {
 type healthManager struct {
 }
 
-func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (bool, error) {
 	return healthCheckInstance.HealthCheck(gClient, plugin)
 }

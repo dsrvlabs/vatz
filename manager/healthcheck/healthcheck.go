@@ -18,14 +18,14 @@ var (
 type healthCheck struct {
 }
 
-func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (bool, error) {
 	// TODO: Magic value always wrong.
-	isAlive := "UP"
+	isAlive := true
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
 		if !isSending {
-			isAlive = "DOWN"
+			isAlive = false
 			jsonMessage := msg.ReqMsg{
 				FuncName:     "is_plugin_up",
 				State:        pluginpb.STATE_FAILURE,
@@ -44,7 +44,7 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Pl
 }
 
 type HealthCheck interface {
-	HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error)
+	HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (bool, error)
 }
 
 func NewHealthChecker() HealthCheck {

@@ -138,7 +138,7 @@ func multiPluginExecutor(plugin config.Plugin,
 		select {
 		case <-verifyTicker.C:
 			live, _ := healthManager.HealthCheck(singleClient, plugin)
-			if live == "UP" {
+			if live == true {
 				isOkayToSend = true
 			} else {
 				isOkayToSend = false
