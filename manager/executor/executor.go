@@ -13,7 +13,6 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
-	isSendingA      = make(map[string]bool)
 )
 
 func init() {
