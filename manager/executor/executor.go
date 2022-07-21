@@ -13,7 +13,7 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
-	isSending       = make(map[string]bool)
+	isSendingA      = make(map[string]bool)
 )
 
 func init() {
@@ -25,7 +25,8 @@ type Executor interface {
 }
 
 type executor struct {
-	status map[string]bool
+	status    map[string]bool
+	isSending map[string]bool
 }
 
 func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin) error {
@@ -104,7 +105,7 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 
 	if notifyInfo.State != pluginpb.STATE_SUCCESS {
 		s.status[methodName] = false
-		if isSending[methodName] != true {
+		if s.isSending[methodName] != true {
 			if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
 				jsonMessage := message.ReqMsg{
 					FuncName:     notifyInfo.Method,
@@ -124,7 +125,7 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 				}
 				dispatchManager.SendNotification(jsonMessage)
 			}
-			isSending[methodName] = true
+			s.isSending[methodName] = true
 		}
 	} else {
 		if s.status[methodName] == false {
@@ -146,6 +147,7 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 // NewExecutor create new executor instance.
 func NewExecutor() Executor {
 	return &executor{
-		status: map[string]bool{},
+		status:    map[string]bool{},
+		isSending: map[string]bool{},
 	}
 }
