@@ -24,7 +24,7 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Pl
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
-		if !checkSending {
+		if !isSending {
 			isAlive = "DOWN"
 			jsonMessage := msg.ReqMsg{
 				FuncName:     "is_plugin_up",
@@ -34,10 +34,10 @@ func (h healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Pl
 				ResourceType: plugin.Name,
 			}
 			dispatchManager.SendNotification(jsonMessage)
-			checkSending = true
+			isSending = true
 		}
 	} else {
-		checkSending = false
+		isSending = false
 	}
 
 	return isAlive, nil
