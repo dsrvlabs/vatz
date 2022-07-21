@@ -193,7 +193,8 @@ func TestExecutorFailure(t *testing.T) {
 
 		// Test
 		e := executor{
-			status: map[string]bool{},
+			status:    map[string]bool{},
+			isSending: map[string]bool{},
 		}
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin)
