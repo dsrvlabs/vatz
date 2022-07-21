@@ -35,7 +35,7 @@ func (h *healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.P
 			FuncName:     "is_plugin_up",
 			State:        pluginpb.STATE_FAILURE,
 			Msg:          "is Down !!",
-			Severity:     pluginpb.SEVERITY_CRITICAL,
+			Severity:     pluginpb.SEVERITY_INFO,
 			ResourceType: plugin.Name,
 		}
 
