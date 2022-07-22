@@ -21,9 +21,6 @@ var (
 type healthCheck struct {
 }
 
-type vatzHealthCheck struct {
-}
-
 func (h *healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
 	// TODO: Magic value always wrong.
 	isAlive := "UP"
@@ -45,7 +42,7 @@ func (h *healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.P
 	return isAlive, nil
 }
 
-func VatzHealthCheck(HealthCheckerSchedule []string) error {
+func (v *healthCheck) VatzHealthCheck(HealthCheckerSchedule []string) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	jsonMessage := msg.ReqMsg{
 		FuncName:     "vatz_healthcheck",
@@ -64,6 +61,7 @@ func VatzHealthCheck(HealthCheckerSchedule []string) error {
 
 type HealthCheck interface {
 	HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error)
+	VatzHealthCheck(schedule []string) error
 }
 
 func NewHealthChecker() HealthCheck {

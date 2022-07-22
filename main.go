@@ -67,7 +67,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := health.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	err := healthManager.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
 	if err != nil {
 		log.Println(err)
 	}
