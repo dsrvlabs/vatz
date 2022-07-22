@@ -19,9 +19,9 @@ import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -74,7 +74,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	if err != nil {
 		log.Println(err)
 	}
-
+	fmt.Println("Hello!")
 	log.Println("Listening Port", addr)
 
 	startExecutor(cfg.PluginInfos, ch)
