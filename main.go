@@ -20,6 +20,8 @@ import (
 	"github.com/dsrvlabs/vatz/manager/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+	grpchealth "google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 const (
@@ -67,6 +69,10 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
+	err := healthManager.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	if err != nil {
+		log.Println(err)
+	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -79,6 +85,7 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	log.Println("Node Manager Started")
 
+	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {
 		log.Panic(err)
 	}
@@ -137,7 +144,7 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthManager.HealthCheck(singleClient, plugin)
+			live, _ := healthManager.PluginHealthCheck(singleClient, plugin)
 			if live == true {
 				isOkayToSend = true
 			} else {
@@ -155,4 +162,10 @@ func multiPluginExecutor(plugin config.Plugin,
 			return
 		}
 	}
+}
+
+func InitHealthServer(s *grpc.Server) {
+	healthserver := grpchealth.NewServer()
+	healthserver.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
+	healthpb.RegisterHealthServer(s, healthserver)
 }

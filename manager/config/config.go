@@ -33,6 +33,7 @@ type Config struct {
 			DiscordSecret   string `yaml:"discord_secret"`
 			PagerDutySecret string `yaml:"pager_duty_secret"`
 		} `yaml:"notification_info"`
+		HealthCheckerSchedule []string `yaml:"health_checker_schedule"`
 	} `yaml:"vatz_protocol_info"`
 
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
