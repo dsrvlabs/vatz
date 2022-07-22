@@ -4,7 +4,7 @@
 
 > **VATZ** is mainly designed to check the node status in real time and get the alert notification of all blockchain protocols, including metrics that doesn't supported by the protocol itself. Features for helping node operators such as automation that enable node manage orchestration and controlling VATZ over CLI commands are going to be available in near future.
 
-3 major services are planned in VATZ project as follows:
+3 major services are planned in VATZ project as follows: <br>
 (Will be upgraded or added for the future)
 
    1. Manager
