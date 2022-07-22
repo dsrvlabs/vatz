@@ -2,13 +2,14 @@
 
 ![Vatz Project Design](https://user-images.githubusercontent.com/6308023/179885451-6d40505b-8b31-41d3-8dff-25220e00be1c.png)
 
-> **VATZ** is mainly designed to check the node status in real time and get the alert notification of all blockchain protocols, including metrics that doesn't supported by protocol itself.
+> **VATZ** is mainly designed to check the node status in real time and get the alert notification of all blockchain protocols, including metrics that doesn't supported by the protocol itself. Features for helping node operators such as automation that enable node manage orchestration and controlling VATZ over CLI commands are going to be available in near future.
 
-3 major services planned for the VATZ project as follows:
-(Will be added for the futures)
-1. Manager
-2. SDK
-3. Monitoring
+3 major services are planned in VATZ project as follows:
+(Will be upgraded or added for the future)
+
+   1. Manager
+   2. SDK
+   3. Monitoring
 
 ---
 
@@ -16,6 +17,7 @@
 
 VATZ is a total node management tool that is designed to be customizable and expandable through plug-in from the initial design stage.
 End-users develop their own plugins and add features with their needs regardless of the development language by using gRPC protocol.
+
 
 ## Protocol Node
 
