@@ -4,13 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/robfig/cron/v3"
-	"github.com/rs/zerolog/log"
-
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/notification"
 	msg "github.com/dsrvlabs/vatz/manager/notification"
+	"github.com/robfig/cron/v3"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -22,17 +20,16 @@ type healthCheck struct {
 }
 
 func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
-	// TODO: Magic value always wrong.
 	isAlive := "UP"
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
 		isAlive = "DOWN"
 		jsonMessage := msg.ReqMsg{
-			FuncName:     "is_plugin_up",
+			FuncName:     "isPluginUp",
 			State:        pluginpb.STATE_FAILURE,
-			Msg:          "is Down !!",
-			Severity:     pluginpb.SEVERITY_INFO,
+			Msg:          "Plugin is DOWN!!",
+			Severity:     pluginpb.SEVERITY_CRITICAL,
 			ResourceType: plugin.Name,
 		}
 
@@ -45,14 +42,13 @@ func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin co
 func (v *healthCheck) VatzHealthCheck(HealthCheckerSchedule []string) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	jsonMessage := msg.ReqMsg{
-		FuncName:     "vatz_healthcheck",
+		FuncName:     "vatzHealthCheck",
 		State:        pluginpb.STATE_SUCCESS,
-		Msg:          "Vatz is alive!",
-		Severity:     pluginpb.SEVERITY_CRITICAL,
-		ResourceType: "Vatz",
+		Msg:          "VATZ is alive!.",
+		Severity:     pluginpb.SEVERITY_INFO,
+		ResourceType: "VATZ",
 	}
 	for i := 0; i < len(HealthCheckerSchedule); i++ {
-		log.Info().Str("module", "VatzHealthCheck").Msgf("%d, %s", i, HealthCheckerSchedule[i])
 		c.AddFunc(HealthCheckerSchedule[i], func() { dispatchManager.SendNotification(jsonMessage) })
 	}
 	c.Start()
