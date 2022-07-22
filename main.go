@@ -69,6 +69,10 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
+	err := healthManager.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	if err != nil {
+		log.Println(err)
+	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -140,7 +144,7 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthManager.HealthCheck(singleClient, plugin)
+			live, _ := healthManager.PluginHealthCheck(singleClient, plugin)
 			if live == "UP" {
 				isOkayToSend = true
 			} else {

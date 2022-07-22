@@ -17,6 +17,10 @@ func init() {
 type healthManager struct {
 }
 
-func (s *healthManager) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
-	return healthCheckInstance.HealthCheck(gClient, plugin)
+func (s *healthManager) PluginHealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+	return healthCheckInstance.PluginHealthCheck(gClient, plugin)
+}
+
+func (s *healthManager) VatzHealthCheck(schedule []string) error {
+	return healthCheckInstance.VatzHealthCheck(schedule)
 }
