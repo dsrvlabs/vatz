@@ -133,7 +133,7 @@ func (d notification) SendDiscord(msg ReqMsg, webhook string) error {
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
-		sMsg.Embeds[0].Title = string(msg.Severity)
+		sMsg.Embeds[0].Title = msg.Severity.String()
 		sMsg.Embeds[0].Fields = []field{{Name: msg.ResourceType, Value: msg.Msg, Inline: false}}
 		sMsg.Embeds[0].Timestamp = time.Now()
 
