@@ -21,7 +21,7 @@ var (
 type healthCheck struct {
 }
 
-func (h *healthCheck) HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
+func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error) {
 	// TODO: Magic value always wrong.
 	isAlive := "UP"
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
@@ -60,7 +60,7 @@ func (v *healthCheck) VatzHealthCheck(HealthCheckerSchedule []string) error {
 }
 
 type HealthCheck interface {
-	HealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error)
+	PluginHealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (string, error)
 	VatzHealthCheck(schedule []string) error
 }
 
