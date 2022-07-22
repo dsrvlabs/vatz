@@ -16,10 +16,10 @@ import (
 
 var (
 	dispatchManager = notification.GetDispatcher()
-	isSending       = false
 )
 
 type healthCheck struct {
+	isSending map[string]bool
 }
 
 func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin config.Plugin) (bool, error) {
@@ -28,7 +28,7 @@ func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin co
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
-		if !isSending {
+		if !h.isSending[plugin.Name] {
 			isAlive = false
 			jsonMessage := msg.ReqMsg{
 				FuncName:     "is_plugin_up",
@@ -38,11 +38,10 @@ func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin co
 				ResourceType: plugin.Name,
 			}
 			dispatchManager.SendNotification(jsonMessage)
-			isSending = true
-
+			h.isSending[plugin.Name] = true
 		}
 	} else {
-		isSending = false
+		h.isSending[plugin.Name] = false
 	}
 
 	return isAlive, nil
@@ -71,5 +70,7 @@ type HealthCheck interface {
 }
 
 func NewHealthChecker() HealthCheck {
-	return &healthCheck{}
+	return &healthCheck{
+		isSending: map[string]bool{},
+	}
 }
