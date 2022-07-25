@@ -28,8 +28,8 @@ func (h *healthCheck) PluginHealthCheck(gClient pluginpb.PluginClient, plugin co
 	verify, err := gClient.Verify(context.Background(), new(emptypb.Empty))
 
 	if err != nil || verify == nil {
+		isAlive = false
 		if !h.isSending[plugin.Name] {
-			isAlive = false
 			jsonMessage := msg.ReqMsg{
 				FuncName:     "is_plugin_up",
 				State:        pluginpb.STATE_FAILURE,
