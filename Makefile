@@ -10,4 +10,4 @@ coverage:
 	@go test -coverprofile cover.out ./...
 
 clean:
-	rm vatz
+	go clean

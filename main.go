@@ -19,9 +19,9 @@ import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -29,18 +29,13 @@ const (
 )
 
 var (
-	healthManager   = health.HManager
+	healthManager   = health.NewHealthChecker()
 	dispatchManager = notification.GetDispatcher()
-
-	executor ex.Executor
+	executor        = ex.NewExecutor()
 
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
-
-func init() {
-	executor = ex.NewExecutor()
-}
 
 func main() {
 	var configFile string
@@ -144,8 +139,8 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthManager.PluginHealthCheck(singleClient, plugin)
-			if live == "UP" {
+			live, _ := healthManager.PluginHealthCheck(ctx, singleClient, plugin)
+			if live == health.AliveStatusUp {
 				isOkayToSend = true
 			} else {
 				isOkayToSend = false
