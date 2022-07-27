@@ -51,7 +51,7 @@ func createRootCommand() *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
-	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "VATZ config file.")
+	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "log file export to.")
 
 	return cmd
 }
