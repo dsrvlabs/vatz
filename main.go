@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +10,7 @@ import (
 
 	ex "github.com/dsrvlabs/vatz/manager/executor"
 	notification "github.com/dsrvlabs/vatz/manager/notification"
+	"github.com/spf13/cobra"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
@@ -18,6 +18,8 @@ import (
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
@@ -37,17 +39,18 @@ var (
 	defaultExecuteInterval = 30
 )
 
+func init() {
+	executor = ex.NewExecutor()
+
+	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+}
+
 func main() {
-	var configFile string
-
-	// TODO: How to test flag?
-	flag.StringVar(&configFile, "config", "default.yaml", "-config=<FILENAME>")
-	flag.Parse()
-
-	config.InitConfig(configFile)
-
-	ch := make(chan os.Signal, 1)
-	initiateServer(ch)
+	rootCmd := &cobra.Command{}
+	rootCmd.AddCommand(createRootCommand())
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
+	}
 }
 
 func initiateServer(ch <-chan os.Signal) error {
