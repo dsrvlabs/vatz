@@ -25,6 +25,9 @@ The key features of **VATZ** are:
 #### _To find more about_ **`VATZ Project`**
 - [VATZ Project Design](docs/design.md)
 
+#### _To get start with_ **VATZ**
+- [Installation guide](docs/installation.md)
+
 ## 2. Our Mission ##
 
 We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
