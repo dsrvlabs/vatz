@@ -3,7 +3,7 @@ vatz_protocol_info:
   protocol_identifier: VATZ
   port: 9090
   notification_info:
-    discord_secret: https://discord.com/api/webhooks/1000166982613745675/qAkmrSCF-lTjfQrRhShm34smCj0EnX1VkEQ9p3yIvr5KbR9tPKuLRf87NkjNxadCS-De
+    discord_secret: XXXX
     pager_duty_secret: YYYYY
   health_checker_schedule:
     - "* * * * *"
