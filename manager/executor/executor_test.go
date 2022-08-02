@@ -3,6 +3,7 @@ package executor
 import (
 	"context"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"testing"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
@@ -22,7 +23,7 @@ func TestExecutorSuccess(t *testing.T) {
 	tests := []struct {
 		Desc          string
 		TestExecResp  *pluginpb.ExecuteResponse
-		TestNotifInfo notif.NotifyInfo
+		TestNotifInfo tp.NotifyInfo
 	}{
 		{
 			Desc: "No Alert",
@@ -30,7 +31,7 @@ func TestExecutorSuccess(t *testing.T) {
 				State:    pluginpb.STATE_SUCCESS,
 				Severity: pluginpb.SEVERITY_UNKNOWN,
 			},
-			TestNotifInfo: notif.NotifyInfo{
+			TestNotifInfo: tp.NotifyInfo{
 				Plugin:   testPluginName,
 				Method:   testMethodName,
 				State:    pluginpb.STATE_SUCCESS,
@@ -71,7 +72,7 @@ func TestExecutorSuccess(t *testing.T) {
 		dispatchManager = &mockNotif
 
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
-			dummyMsg := notif.ReqMsg{
+			dummyMsg := tp.ReqMsg{
 				FuncName:     testMethodName,
 				State:        pluginpb.STATE_FAILURE,
 				Msg:          "No response from Plugin",
@@ -109,8 +110,8 @@ func TestExecutorFailure(t *testing.T) {
 		Desc           string
 		MockPrevStatus bool
 		TestExecResp   *pluginpb.ExecuteResponse
-		TestNotifInfo  notif.NotifyInfo
-		ExpectReqMsg   notif.ReqMsg
+		TestNotifInfo  tp.NotifyInfo
+		ExpectReqMsg   tp.ReqMsg
 	}{
 		{
 			Desc:           "Alert ERROR",
@@ -119,13 +120,13 @@ func TestExecutorFailure(t *testing.T) {
 				State:    pluginpb.STATE_FAILURE,
 				Severity: pluginpb.SEVERITY_ERROR,
 			},
-			TestNotifInfo: notif.NotifyInfo{
+			TestNotifInfo: tp.NotifyInfo{
 				Plugin:   testPluginName,
 				Method:   testMethodName,
 				State:    pluginpb.STATE_FAILURE,
 				Severity: pluginpb.SEVERITY_ERROR,
 			},
-			ExpectReqMsg: notif.ReqMsg{
+			ExpectReqMsg: tp.ReqMsg{
 				FuncName:     testMethodName,
 				State:        pluginpb.STATE_FAILURE,
 				Msg:          "No response from Plugin",
@@ -141,14 +142,14 @@ func TestExecutorFailure(t *testing.T) {
 				Severity: pluginpb.SEVERITY_CRITICAL,
 				Message:  "test execute msg",
 			},
-			TestNotifInfo: notif.NotifyInfo{
+			TestNotifInfo: tp.NotifyInfo{
 				Plugin:     testPluginName,
 				Method:     testMethodName,
 				State:      pluginpb.STATE_FAILURE,
 				Severity:   pluginpb.SEVERITY_CRITICAL,
 				ExecuteMsg: "test execute msg",
 			},
-			ExpectReqMsg: notif.ReqMsg{
+			ExpectReqMsg: tp.ReqMsg{
 				FuncName:     testMethodName,
 				State:        pluginpb.STATE_FAILURE,
 				Msg:          "test execute msg",

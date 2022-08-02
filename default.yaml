@@ -1,26 +1,29 @@
 ---
 vatz_protocol_info:
-  protocol_identifier: "VATZ"
+  protocol_identifier: VATZ
   port: 9090
   notification_info:
-    discord_secret: "xxxxxxx"
-    pager_duty_secret: "YYYYY"
+    discord_secret: https://discord.com/api/webhooks/1000166982613745675/qAkmrSCF-lTjfQrRhShm34smCj0EnX1VkEQ9p3yIvr5KbR9tPKuLRf87NkjNxadCS-De
+    pager_duty_secret: YYYYY
   health_checker_schedule:
-    - "0 1 * * *"
+    - "* * * * *"
 plugins_infos:
-  default_verify_interval: 15
-  default_execute_interval: 30
-  default_plugin_name: "vatz-plugin"
+  default_verify_interval: 7
+  default_execute_interval: 8
+  default_plugin_name: vatz-plugin
   plugins:
-    - plugin_name: "sample1"
-      plugin_address: "localhost"
+    - plugin_name: sample1
+      plugin_address: localhost
       plugin_port: 9091
       executable_methods:
-        - method_name: "sampleMethod1"
-    - plugin_name: "sample2"
-      plugin_address: "localhost"
-      verify_interval: 7
-      execute_interval: 9
-      plugin_port: 10002
+        - method_name: sampleMethod1
+    - plugin_name: sample2
+      plugin_address: localhost
+      plugin_port: 9092
       executable_methods:
-        - method_name: "sampleMethod2"
+        - method_name: sampleMethod2
+    - plugin_name: sample3
+      plugin_address: localhost
+      plugin_port: 9093
+      executable_methods:
+        - method_name: sampleMethod3

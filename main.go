@@ -3,37 +3,35 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net"
-	"os"
-	"time"
-
-	ex "github.com/dsrvlabs/vatz/manager/executor"
-	notification "github.com/dsrvlabs/vatz/manager/notification"
-	"github.com/spf13/cobra"
-
-	config "github.com/dsrvlabs/vatz/manager/config"
-	health "github.com/dsrvlabs/vatz/manager/healthcheck"
-
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
+	"github.com/dsrvlabs/vatz/manager/config"
+	ex "github.com/dsrvlabs/vatz/manager/executor"
+	health "github.com/dsrvlabs/vatz/manager/healthcheck"
+	"github.com/dsrvlabs/vatz/manager/notification"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
+	"os"
+	"time"
 )
 
 const (
-	serviceName = "Vatz Manager"
+	serviceName = "VATZ Manager"
 )
 
 var (
-	healthManager   = health.NewHealthChecker()
-	dispatchManager = notification.GetDispatcher()
-	executor        = ex.NewExecutor()
+	healthChecker = health.GetHealthChecker()
+	dispatcher    = notification.GetDispatcher()
+	executor      = ex.NewExecutor()
 
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
@@ -41,7 +39,6 @@ var (
 
 func init() {
 	executor = ex.NewExecutor()
-
 	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
@@ -54,7 +51,7 @@ func main() {
 }
 
 func initiateServer(ch <-chan os.Signal) error {
-	log.Println("Initialize Servers:", serviceName)
+	zlog.Info().Str("module", "main").Msgf("Initialize Servers: %s", serviceName)
 
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -67,7 +64,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthManager.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatcher)
 	if err != nil {
 		log.Println(err)
 	}
@@ -76,12 +73,9 @@ func initiateServer(ch <-chan os.Signal) error {
 	if err != nil {
 		log.Println(err)
 	}
-
-	log.Println("Listening Port", addr)
-
+	zlog.Info().Str("module", "main").Msgf("Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
-
-	log.Println("Node Manager Started")
+	zlog.Info().Str("module", "main").Msg("Node Manager Started")
 
 	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {
@@ -94,9 +88,7 @@ func initiateServer(ch <-chan os.Signal) error {
 func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
-
 	grpcClients := getClients(pluginInfo.Plugins)
-
 	//TODO: Need updated with better way for Dynamic handlers
 	for idx, singleClient := range grpcClients {
 		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
@@ -142,8 +134,8 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthManager.PluginHealthCheck(ctx, singleClient, plugin)
-			if live == health.AliveStatusUp {
+			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatcher)
+			if live == tp.AliveStatusUp {
 				isOkayToSend = true
 			} else {
 				isOkayToSend = false
@@ -152,7 +144,7 @@ func multiPluginExecutor(plugin config.Plugin,
 			if isOkayToSend == true {
 				err := executor.Execute(ctx, singleClient, plugin)
 				if err != nil {
-					// TODO: Handle error.
+					zlog.Error().Str("module", "main").Msgf("%s", err)
 				}
 			}
 		case <-quit:
@@ -163,7 +155,7 @@ func multiPluginExecutor(plugin config.Plugin,
 }
 
 func InitHealthServer(s *grpc.Server) {
-	healthserver := grpchealth.NewServer()
-	healthserver.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
-	healthpb.RegisterHealthServer(s, healthserver)
+	gRPCHealthServer := grpchealth.NewServer()
+	gRPCHealthServer.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
+	healthpb.RegisterHealthServer(s, gRPCHealthServer)
 }

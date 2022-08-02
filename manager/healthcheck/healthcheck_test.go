@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"errors"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"testing"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
@@ -16,7 +17,7 @@ import (
 )
 
 func TestPluginHealthCheckSuccess(t *testing.T) {
-	h := healthCheck{}
+	h := healthChecker{}
 	ctx := context.Background()
 
 	// Mock
@@ -26,14 +27,13 @@ func TestPluginHealthCheckSuccess(t *testing.T) {
 		Return(&pluginpb.VerifyInfo{VerifyMsg: "test"}, nil)
 
 	mockDispatcher := notif.MockNotification{}
-	dispatchManager = &mockDispatcher
 
 	// Test
-	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{})
+	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{}, &mockDispatcher)
 
 	// Asserts
 	assert.Nil(t, err)
-	assert.Equal(t, AliveStatusUp, status)
+	assert.Equal(t, tp.AliveStatusUp, status)
 
 	mockPluginCli.AssertExpectations(t)
 	mockDispatcher.AssertExpectations(t)
@@ -58,7 +58,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		h := healthCheck{}
+		h := healthChecker{}
 		ctx := context.Background()
 
 		// Mock
@@ -68,9 +68,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 			Return(test.MockVerifyInfo, test.MockVerifyErr)
 
 		mockDispatcher := notif.MockNotification{}
-		dispatchManager = &mockDispatcher
-
-		mockJSONMsg := notif.ReqMsg{
+		mockJSONMsg := tp.ReqMsg{
 			FuncName:     "isPluginUp",
 			State:        pluginpb.STATE_FAILURE,
 			Msg:          "Plugin is DOWN!!",
@@ -80,11 +78,11 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		mockDispatcher.On("SendNotification", mockJSONMsg).Return(nil)
 
 		// Test
-		status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "test"})
+		status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "test"}, &mockDispatcher)
 
 		// Asserts
 		assert.Nil(t, err)
-		assert.Equal(t, AliveStatusDown, status)
+		assert.Equal(t, tp.AliveStatusDown, status)
 
 		mockPluginCli.AssertExpectations(t)
 		mockDispatcher.AssertExpectations(t)
