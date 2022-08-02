@@ -1,7 +1,7 @@
 ## Install from sources (Ubuntu)
 - Clone vatz (public) repository with:
 ```
-$ git cone git@github.com:dsrvlabs/vatz.git
+$ git clone git@github.com:dsrvlabs/vatz.git
 ```
 Then compile:
 ```

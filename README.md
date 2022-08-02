@@ -25,8 +25,8 @@ The key features of **VATZ** are:
 #### _To find more about_ **`VATZ Project`**
 - [VATZ Project Design](docs/design.md)
 
-#### Installation
-- [guide](docs/installation.md)
+#### _To get start with_ **VATZ**
+- [Installation guide](docs/installation.md)
 
 ## 2. Our Mission ##
 
