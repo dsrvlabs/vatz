@@ -12,7 +12,7 @@ type HealthCheck interface {
 	VATZHealthCheck(schedule []string, dispatcher notif.Notification) error
 }
 
-func GetHealthChecker() *healthChecker {
+func NewHealthChecker() *healthChecker {
 	return &healthChecker{
 		healthMSG: tp.ReqMsg{
 			FuncName:     "VATZHealthCheck",

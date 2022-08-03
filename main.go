@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	healthChecker = health.GetHealthChecker()
+	healthChecker = health.NewHealthChecker()
 	dispatcher    = notification.GetDispatcher()
 	executor      = ex.NewExecutor()
 
