@@ -21,7 +21,67 @@ var (
 	logfile    string
 )
 
-func createRootCommand() *cobra.Command {
+func createInitCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "init",
+		Short: "Init",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Info().Str("module", "main").Msg("init")
+
+			template := `
+vatz_protocol_info:
+  protocol_identifier: "VATZ"
+  port: 9090
+  notification_info:
+    discord_secret: "xxxxxxx"
+    pager_duty_secret: "YYYYY"
+  health_checker_schedule:
+    - "0 1 * * *"
+plugins_infos:
+  default_verify_interval: 15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "sample1"
+      plugin_address: "localhost"
+      plugin_port: 9091
+      executable_methods:
+        - method_name: "sampleMethod1"
+    - plugin_name: "sample2"
+      plugin_address: "localhost"
+      verify_interval: 7
+      execute_interval: 9
+      plugin_port: 10002
+      executable_methods:
+        - method_name: "sampleMethod2"
+`
+			filename, err := cmd.Flags().GetString("output")
+			if err != nil {
+				return err
+			}
+
+			log.Info().Str("module", "main").Msgf("create file %s", filename)
+
+			f, err := os.Create(filename)
+			if err != nil {
+				return err
+			}
+
+			_, err = f.WriteString(template)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
+	}
+
+	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
+
+	return cmd
+}
+
+func createStartCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "start VATZ",

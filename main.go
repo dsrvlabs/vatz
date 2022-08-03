@@ -43,7 +43,9 @@ func init() {
 
 func main() {
 	rootCmd := &cobra.Command{}
-	rootCmd.AddCommand(createRootCommand())
+	rootCmd.AddCommand(createInitCommand())
+	rootCmd.AddCommand(createStartCommand())
+
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
 	}
