@@ -28,8 +28,7 @@ func createInitCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Str("module", "main").Msg("init")
 
-			template := `
-vatz_protocol_info:
+			template := `vatz_protocol_info:
   protocol_identifier: "VATZ"
   port: 9090
   notification_info:
