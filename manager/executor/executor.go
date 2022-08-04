@@ -125,7 +125,7 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 			dispatchManager.SendNotification(jsonMessage)
 		}
 	} else {
-		if status, _ := s.status.Load(methodName); status == false {
+		if status, ok := s.status.Load(methodName); ok && status == false {
 			jsonMessage := message.ReqMsg{
 				FuncName:     notifyInfo.Method,
 				State:        pluginpb.STATE_SUCCESS,
