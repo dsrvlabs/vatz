@@ -4,6 +4,7 @@ import (
 	"context"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"log"
+	"sync"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -24,7 +25,7 @@ type Executor interface {
 }
 
 type executor struct {
-	status map[string]bool
+	status sync.Map
 }
 
 func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin) error {
@@ -51,8 +52,8 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			log.Fatalf("failed to check command structpb: %v", err)
 		}
 
-		if _, ok := s.status[method.Name]; !ok {
-			s.status[method.Name] = true
+		if _, ok := s.status.Load(method.Name); !ok {
+			s.status.Store(method.Name, true)
 		}
 
 		req := &pluginpb.ExecuteRequest{
@@ -66,7 +67,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		}
 
 		if resp.GetState() != pluginpb.STATE_SUCCESS {
-			s.status[method.Name] = false
+			s.status.Store(method.Name, false)
 		}
 
 		notifyInfo := tp.NotifyInfo{
@@ -102,7 +103,7 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo) error {
 	methodName := notifyInfo.Method
 
 	if notifyInfo.State != pluginpb.STATE_SUCCESS {
-		s.status[methodName] = false
+		s.status.Store(methodName, false)
 		if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
 			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
@@ -124,7 +125,7 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo) error {
 			dispatchManager.SendNotification(jsonMessage)
 		}
 	} else {
-		if s.status[methodName] == false {
+		if status, ok := s.status.Load(methodName); ok && status == false {
 			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
 				State:        pluginpb.STATE_SUCCESS,
@@ -132,9 +133,8 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo) error {
 				Severity:     pluginpb.SEVERITY_INFO,
 				ResourceType: notifyInfo.Plugin,
 			}
-
 			dispatchManager.SendNotification(jsonMessage)
-			s.status[methodName] = true
+			s.status.Store(methodName, true)
 		}
 	}
 	return nil
@@ -143,6 +143,6 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo) error {
 // NewExecutor create new executor instance.
 func NewExecutor() Executor {
 	return &executor{
-		status: map[string]bool{},
+		status: sync.Map{},
 	}
 }
