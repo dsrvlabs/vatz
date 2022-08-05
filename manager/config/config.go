@@ -2,17 +2,13 @@ package config
 
 import (
 	"fmt"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
-	"time"
-
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -144,10 +140,6 @@ func InitConfig(configFile string) *Config {
 	})
 
 	return vatzConfig
-}
-
-func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
 // GetConfig returns current Vatz config.
