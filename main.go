@@ -3,37 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"net"
-	"os"
-	"time"
-
-	ex "github.com/dsrvlabs/vatz/manager/executor"
-	notification "github.com/dsrvlabs/vatz/manager/notification"
-	"github.com/spf13/cobra"
-
-	config "github.com/dsrvlabs/vatz/manager/config"
-	health "github.com/dsrvlabs/vatz/manager/healthcheck"
-
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
+	"github.com/dsrvlabs/vatz/manager/config"
+	ex "github.com/dsrvlabs/vatz/manager/executor"
+	health "github.com/dsrvlabs/vatz/manager/healthcheck"
+	"github.com/dsrvlabs/vatz/manager/notification"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"net"
+	"os"
+	"time"
 )
 
 const (
-	serviceName = "Vatz Manager"
+	serviceName = "VATZ Manager"
 )
 
 var (
-	healthManager   = health.NewHealthChecker()
-	dispatchManager = notification.GetDispatcher()
-	executor        = ex.NewExecutor()
+	healthChecker = health.NewHealthChecker()
+	dispatcher    = notification.GetDispatcher()
+	executor      = ex.NewExecutor()
 
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
@@ -41,8 +38,7 @@ var (
 
 func init() {
 	executor = ex.NewExecutor()
-
-	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
 func main() {
@@ -54,7 +50,7 @@ func main() {
 }
 
 func initiateServer(ch <-chan os.Signal) error {
-	log.Println("Initialize Servers:", serviceName)
+	log.Info().Str("module", "main").Msgf("Initialize Servers: %s", serviceName)
 
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -67,25 +63,22 @@ func initiateServer(ch <-chan os.Signal) error {
 	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthManager.VatzHealthCheck(vatzConfig.HealthCheckerSchedule)
+	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatcher)
 	if err != nil {
-		log.Println(err)
+		log.Error().Str("module", "main").Msgf("VATZHealthCheck Error: %s", err)
 	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Println(err)
+		log.Error().Str("module", "main").Msgf("listener Error: %s", err)
 	}
-
-	log.Println("Listening Port", addr)
-
+	log.Info().Str("module", "main").Msgf("Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
-
-	log.Println("Node Manager Started")
+	log.Info().Str("module", "main").Msg("Node Manager Started")
 
 	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {
-		log.Panic(err)
+		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
 	}
 
 	return nil
@@ -94,9 +87,7 @@ func initiateServer(ch <-chan os.Signal) error {
 func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
-
 	grpcClients := getClients(pluginInfo.Plugins)
-
 	//TODO: Need updated with better way for Dynamic handlers
 	for idx, singleClient := range grpcClients {
 		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
@@ -110,8 +101,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 		for _, plugin := range plugins {
 			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithInsecure())
 			if err != nil {
-				// TODO: Panic??? Error message will be enough here.
-				log.Fatal(err)
+				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", plugin.Name, err)
 			}
 			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 		}
@@ -120,7 +110,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 		defaultConnectedTarget := "localhost:9091"
 		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Str("module", "main").Msgf("gRPC Dial Error: %s", err)
 		}
 
 		//TODO: Please, Create a better client functions with static
@@ -142,8 +132,8 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthManager.PluginHealthCheck(ctx, singleClient, plugin)
-			if live == health.AliveStatusUp {
+			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatcher)
+			if live == tp.AliveStatusUp {
 				isOkayToSend = true
 			} else {
 				isOkayToSend = false
@@ -152,7 +142,7 @@ func multiPluginExecutor(plugin config.Plugin,
 			if isOkayToSend == true {
 				err := executor.Execute(ctx, singleClient, plugin)
 				if err != nil {
-					// TODO: Handle error.
+					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
 				}
 			}
 		case <-quit:
@@ -163,7 +153,7 @@ func multiPluginExecutor(plugin config.Plugin,
 }
 
 func InitHealthServer(s *grpc.Server) {
-	healthserver := grpchealth.NewServer()
-	healthserver.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
-	healthpb.RegisterHealthServer(s, healthserver)
+	gRPCHealthServer := grpchealth.NewServer()
+	gRPCHealthServer.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
+	healthpb.RegisterHealthServer(s, gRPCHealthServer)
 }

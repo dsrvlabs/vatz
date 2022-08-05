@@ -2,13 +2,13 @@ package executor
 
 import (
 	"context"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"log"
 	"sync"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/notification"
-	message "github.com/dsrvlabs/vatz/manager/notification"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -70,7 +70,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			s.status.Store(method.Name, false)
 		}
 
-		notifyInfo := message.NotifyInfo{
+		notifyInfo := tp.NotifyInfo{
 			Plugin:     plugin.Name,
 			Method:     method.Name,
 			Severity:   resp.GetSeverity(),
@@ -98,14 +98,14 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
-func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
+func (s *executor) executeNotify(notifyInfo tp.NotifyInfo) error {
 	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
 	methodName := notifyInfo.Method
 
 	if notifyInfo.State != pluginpb.STATE_SUCCESS {
 		s.status.Store(methodName, false)
 		if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
-			jsonMessage := message.ReqMsg{
+			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
 				State:        pluginpb.STATE_FAILURE,
 				Msg:          "No response from Plugin",
@@ -115,7 +115,7 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 
 			dispatchManager.SendNotification(jsonMessage)
 		} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
-			jsonMessage := message.ReqMsg{
+			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
 				State:        pluginpb.STATE_FAILURE,
 				Msg:          notifyInfo.ExecuteMsg,
@@ -126,14 +126,13 @@ func (s *executor) executeNotify(notifyInfo message.NotifyInfo) error {
 		}
 	} else {
 		if status, ok := s.status.Load(methodName); ok && status == false {
-			jsonMessage := message.ReqMsg{
+			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
 				State:        pluginpb.STATE_SUCCESS,
 				Msg:          notifyInfo.ExecuteMsg,
 				Severity:     pluginpb.SEVERITY_INFO,
 				ResourceType: notifyInfo.Plugin,
 			}
-
 			dispatchManager.SendNotification(jsonMessage)
 			s.status.Store(methodName, true)
 		}
