@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"sync"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -83,7 +84,7 @@ func TestExecutorSuccess(t *testing.T) {
 
 		// Test
 		e := executor{
-			status: map[string]bool{},
+			status: sync.Map{},
 		}
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin)
@@ -95,7 +96,8 @@ func TestExecutorSuccess(t *testing.T) {
 		mockNotif.AssertExpectations(t)
 
 		assert.Nil(t, err)
-		assert.True(t, e.status[testMethodName])
+		mockStatus, _ := e.status.Load(testMethodName)
+		assert.True(t, mockStatus == true)
 	}
 }
 
@@ -193,7 +195,7 @@ func TestExecutorFailure(t *testing.T) {
 
 		// Test
 		e := executor{
-			status: map[string]bool{},
+			status: sync.Map{},
 		}
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin)
@@ -205,6 +207,7 @@ func TestExecutorFailure(t *testing.T) {
 		mockNotif.AssertExpectations(t)
 
 		assert.Nil(t, err)
-		assert.False(t, e.status[testMethodName])
+		mockStatus, _ := e.status.Load(testMethodName)
+		assert.False(t, mockStatus == true)
 	}
 }
