@@ -2,11 +2,15 @@ package config
 
 import (
 	"fmt"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
@@ -74,7 +78,6 @@ func (p *parser) loadConfigFile(path string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		if resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("invalid response status %d", resp.StatusCode)
 		}
@@ -119,17 +122,21 @@ func (p *parser) overrideDefault(config *Config) {
 	}
 }
 
-// InitConfig initilizes Vatz config.
+// InitConfig - initializes VATZ config.
 func InitConfig(configFile string) *Config {
 	configOnce.Do(func() {
 		p := parser{}
 		configData, err := p.loadConfigFile(configFile)
 		if err != nil {
+			if strings.Contains(err.Error(), "no such file or directory") {
+				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
+				log.Error().Str("module", "config").Msg("Please, execute `.vatz init` first or set appropriate path for default.yaml")
+			}
 			panic(err)
 		}
-
 		config, err := p.parseYAML(configData)
 		if err != nil {
+			log.Error().Str("module", "config").Msgf("parseYAML Error: %s", err)
 			panic(err)
 		}
 
@@ -137,6 +144,10 @@ func InitConfig(configFile string) *Config {
 	})
 
 	return vatzConfig
+}
+
+func init() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
 // GetConfig returns current Vatz config.
