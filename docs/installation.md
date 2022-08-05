@@ -1,5 +1,4 @@
 ## To get started with VATZ 
-Installation&Run guide)
 
 > This instruction is mainly based on Linux:Ubuntu
 
