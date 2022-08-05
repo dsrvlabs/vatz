@@ -17,7 +17,7 @@ func NewHealthChecker() *healthChecker {
 		healthMSG: tp.ReqMsg{
 			FuncName:     "VATZHealthCheck",
 			State:        pluginpb.STATE_SUCCESS,
-			Msg:          "VATZ is alive!.",
+			Msg:          "VATZ is Alive!!",
 			Severity:     pluginpb.SEVERITY_INFO,
 			ResourceType: "VATZ",
 		},

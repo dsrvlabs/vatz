@@ -53,7 +53,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		{
 			Desc:           "Error VerifyInfo",
 			MockVerifyInfo: &pluginpb.VerifyInfo{},
-			MockVerifyErr:  errors.New("temporal error occured"),
+			MockVerifyErr:  errors.New("temporal error occurred"),
 		},
 	}
 

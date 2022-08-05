@@ -12,13 +12,12 @@ import (
 	"github.com/dsrvlabs/vatz/manager/notification"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	"log"
 	"net"
 	"os"
 	"time"
@@ -39,7 +38,7 @@ var (
 
 func init() {
 	executor = ex.NewExecutor()
-	zlog.Logger = zlog.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
 func main() {
@@ -51,7 +50,7 @@ func main() {
 }
 
 func initiateServer(ch <-chan os.Signal) error {
-	zlog.Info().Str("module", "main").Msgf("Initialize Servers: %s", serviceName)
+	log.Info().Str("module", "main").Msgf("Initialize Servers: %s", serviceName)
 
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -66,20 +65,20 @@ func initiateServer(ch <-chan os.Signal) error {
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
 	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatcher)
 	if err != nil {
-		log.Println(err)
+		log.Error().Str("module", "main").Msgf("VATZHealthCheck Error: %s", err)
 	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Println(err)
+		log.Error().Str("module", "main").Msgf("listener Error: %s", err)
 	}
-	zlog.Info().Str("module", "main").Msgf("Listening Port: %s", addr)
+	log.Info().Str("module", "main").Msgf("Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
-	zlog.Info().Str("module", "main").Msg("Node Manager Started")
+	log.Info().Str("module", "main").Msg("Node Manager Started")
 
 	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {
-		log.Panic(err)
+		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
 	}
 
 	return nil
@@ -102,8 +101,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 		for _, plugin := range plugins {
 			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithInsecure())
 			if err != nil {
-				// TODO: Panic??? Error message will be enough here.
-				log.Fatal(err)
+				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", plugin.Name, err)
 			}
 			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 		}
@@ -112,7 +110,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 		defaultConnectedTarget := "localhost:9091"
 		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().Str("module", "main").Msgf("gRPC Dial Error: %s", err)
 		}
 
 		//TODO: Please, Create a better client functions with static
@@ -144,7 +142,7 @@ func multiPluginExecutor(plugin config.Plugin,
 			if isOkayToSend == true {
 				err := executor.Execute(ctx, singleClient, plugin)
 				if err != nil {
-					zlog.Error().Str("module", "main").Msgf("%s", err)
+					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
 				}
 			}
 		case <-quit:
