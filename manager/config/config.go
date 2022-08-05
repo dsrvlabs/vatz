@@ -2,13 +2,13 @@ package config
 
 import (
 	"fmt"
+	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
-
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -74,7 +74,6 @@ func (p *parser) loadConfigFile(path string) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		if resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("invalid response status %d", resp.StatusCode)
 		}
@@ -119,17 +118,21 @@ func (p *parser) overrideDefault(config *Config) {
 	}
 }
 
-// InitConfig initilizes Vatz config.
+// InitConfig - initializes VATZ config.
 func InitConfig(configFile string) *Config {
 	configOnce.Do(func() {
 		p := parser{}
 		configData, err := p.loadConfigFile(configFile)
 		if err != nil {
+			if strings.Contains(err.Error(), "no such file or directory") {
+				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
+				log.Error().Str("module", "config").Msg("Please, execute `.vatz init` first or set appropriate path for default.yaml")
+			}
 			panic(err)
 		}
-
 		config, err := p.parseYAML(configData)
 		if err != nil {
+			log.Error().Str("module", "config").Msgf("parseYAML Error: %s", err)
 			panic(err)
 		}
 
