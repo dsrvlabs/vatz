@@ -34,7 +34,7 @@ Installation&Run guide)
 
 ---
 
-You've created two binaries vatz and vatz-plugin to run.  
+You just created two binary files: vatz and vatz-plugin to run.  
 
 ## Usage
 - Modify default.yaml (VATZ)
