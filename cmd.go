@@ -29,11 +29,11 @@ func createInitCommand() *cobra.Command {
 			log.Info().Str("module", "main").Msg("init")
 
 			template := `vatz_protocol_info:
-  protocol_identifier: "VATZ"
+  protocol_identifier: "Put Your Protocol here"
   port: 9090
   notification_info:
-    discord_secret: "xxxxxxx"
-    pager_duty_secret: "YYYYY"
+    discord_secret: "Your Discord Webhook"
+    pager_duty_secret: "Your Events API V2 Integration Key"
   health_checker_schedule:
     - "0 1 * * *"
 plugins_infos:
@@ -43,7 +43,7 @@ plugins_infos:
   plugins:
     - plugin_name: "sample1"
       plugin_address: "localhost"
-      plugin_port: 9091
+      plugin_port: 10001
       executable_methods:
         - method_name: "sampleMethod1"
     - plugin_name: "sample2"
