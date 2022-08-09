@@ -43,7 +43,7 @@ plugins_infos:
   plugins:
     - plugin_name: "sample1"
       plugin_address: "localhost"
-      plugin_port: 10001
+      plugin_port: 9001
       executable_methods:
         - method_name: "sampleMethod1"
     - plugin_name: "sample2"
