@@ -2,8 +2,10 @@
 *.swp
 
 cover.out
-
 vatz
+default.yaml
+
+
 /.idea/modules.xml
 /.idea/vatz.iml
 /.idea/vcs.xml

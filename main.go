@@ -142,7 +142,7 @@ func multiPluginExecutor(plugin config.Plugin,
 			}
 		case <-executeTicker.C:
 			if isOkayToSend == true {
-				err := executor.Execute(ctx, singleClient, plugin)
+				err := executor.Execute(ctx, singleClient, plugin, dispatcher)
 				if err != nil {
 					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
 				}

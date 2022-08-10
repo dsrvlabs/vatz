@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	tp "github.com/dsrvlabs/vatz/manager/types"
-	"testing"
 	"sync"
+	"testing"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -70,7 +70,7 @@ func TestExecutorSuccess(t *testing.T) {
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
 		mockNotif := notif.MockNotification{}
-		dispatchManager = &mockNotif
+		dispatcher := &mockNotif
 
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
 			dummyMsg := tp.ReqMsg{
@@ -88,7 +88,7 @@ func TestExecutorSuccess(t *testing.T) {
 			status: sync.Map{},
 		}
 
-		err = e.Execute(ctx, &mockClient, cfgPlugin)
+		err = e.Execute(ctx, &mockClient, cfgPlugin, dispatcher)
 
 		fmt.Println("Status", e.status)
 
@@ -190,7 +190,7 @@ func TestExecutorFailure(t *testing.T) {
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
 		mockNotif := notif.MockNotification{}
-		dispatchManager = &mockNotif
+		dispatcher := &mockNotif
 
 		mockNotif.On("SendNotification", test.ExpectReqMsg).Return(nil)
 
@@ -199,7 +199,7 @@ func TestExecutorFailure(t *testing.T) {
 			status: sync.Map{},
 		}
 
-		err = e.Execute(ctx, &mockClient, cfgPlugin)
+		err = e.Execute(ctx, &mockClient, cfgPlugin, dispatcher)
 
 		fmt.Println("Status", e.status)
 
