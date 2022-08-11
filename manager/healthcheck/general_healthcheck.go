@@ -4,14 +4,14 @@ import (
 	"context"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	notif "github.com/dsrvlabs/vatz/manager/notification"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/robfig/cron/v3"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	"time"
 )
 
-func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher notif.Notification) (tp.AliveStatus, error) {
+func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 	if err != nil || verify == nil {
@@ -28,7 +28,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.
 	return isAlive, nil
 }
 
-func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatcher notif.Notification) error {
+func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatcher dp.Dispatcher) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	for i := 0; i < len(healthCheckerSchedule); i++ {
 		c.AddFunc(healthCheckerSchedule[i], func() { dispatcher.SendNotification(h.healthMSG) })
@@ -37,6 +37,14 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	return nil
 }
 
-type healthChecker struct {
-	healthMSG tp.ReqMsg
+func NewHealthChecker() *healthChecker {
+	return &healthChecker{
+		healthMSG: tp.ReqMsg{
+			FuncName:     "VATZHealthCheck",
+			State:        pluginpb.STATE_SUCCESS,
+			Msg:          "VATZ is Alive!!",
+			Severity:     pluginpb.SEVERITY_INFO,
+			ResourceType: "VATZ",
+		},
+	}
 }

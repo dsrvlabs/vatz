@@ -7,7 +7,7 @@ import (
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	notif "github.com/dsrvlabs/vatz/manager/notification"
+	notif "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

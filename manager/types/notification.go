@@ -53,7 +53,7 @@ type Field struct {
 	Inline bool   `json:"inline,omitempty"`
 }
 
-// NotifyInfo contains detail notification configs.
+// NotifyInfo contains detail dispatcher configs.
 type NotifyInfo struct {
 	Plugin     string            `json:"plugin"`
 	Method     string            `json:"method"`
