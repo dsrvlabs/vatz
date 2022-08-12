@@ -9,7 +9,7 @@ import (
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	notif "github.com/dsrvlabs/vatz/manager/notification"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -69,7 +69,7 @@ func TestExecutorSuccess(t *testing.T) {
 		mockClient := mockPluginClient{}
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
-		mockNotif := notif.MockNotification{}
+		mockNotif := dp.MockNotification{}
 		dispatcher := &mockNotif
 
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
@@ -189,7 +189,7 @@ func TestExecutorFailure(t *testing.T) {
 		mockClient := mockPluginClient{}
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
-		mockNotif := notif.MockNotification{}
+		mockNotif := dp.MockNotification{}
 		dispatcher := &mockNotif
 
 		mockNotif.On("SendNotification", test.ExpectReqMsg).Return(nil)

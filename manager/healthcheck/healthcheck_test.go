@@ -7,7 +7,7 @@ import (
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	notif "github.com/dsrvlabs/vatz/manager/notification"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -26,7 +26,7 @@ func TestPluginHealthCheckSuccess(t *testing.T) {
 		On("Verify", ctx, new(emptypb.Empty), []grpc.CallOption(nil)).
 		Return(&pluginpb.VerifyInfo{VerifyMsg: "test"}, nil)
 
-	mockDispatcher := notif.MockNotification{}
+	mockDispatcher := dp.MockNotification{}
 
 	// Test
 	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{}, &mockDispatcher)
@@ -67,7 +67,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 			On("Verify", ctx, new(emptypb.Empty), []grpc.CallOption(nil)).
 			Return(test.MockVerifyInfo, test.MockVerifyErr)
 
-		mockDispatcher := notif.MockNotification{}
+		mockDispatcher := dp.MockNotification{}
 		mockJSONMsg := tp.ReqMsg{
 			FuncName:     "isPluginUp",
 			State:        pluginpb.STATE_FAILURE,

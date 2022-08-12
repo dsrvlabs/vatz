@@ -7,9 +7,9 @@ import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	"github.com/dsrvlabs/vatz/manager/config"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	ex "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
-	"github.com/dsrvlabs/vatz/manager/notification"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -29,7 +29,7 @@ const (
 
 var (
 	healthChecker = health.NewHealthChecker()
-	dispatcher    = notification.GetDispatcher()
+	dispatcher    = dp.GetDispatcher()
 	executor      = ex.NewExecutor()
 
 	defaultVerifyInterval  = 15
@@ -72,11 +72,11 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Error().Str("module", "main").Msgf("listener Error: %s", err)
+		log.Error().Str("module", "main").Msgf("VATZ listener Error: %s", err)
 	}
-	log.Info().Str("module", "main").Msgf("Listening Port: %s", addr)
+	log.Info().Str("module", "main").Msgf("VATZ Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
-	log.Info().Str("module", "main").Msg("Node Manager Started")
+	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 
 	InitHealthServer(s)
 	if err := s.Serve(listener); err != nil {

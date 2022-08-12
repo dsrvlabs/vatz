@@ -1,24 +1,16 @@
-package notification
+package dispatcher
 
 import (
 	"bytes"
 	"encoding/json"
-	"log"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
-
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"log"
+	"net/http"
+	"strings"
+	"time"
 )
-
-/* TODO: Discussion.
-We need to discuss about notificatino module.
-As I see this code, notification itself is described is dispatcher
-but dispatcher and notification module should be splitted into two part.
-*/
 
 // DiscordColor describes color codes which are using for Discord msg.
 type DiscordColor int
@@ -33,31 +25,17 @@ const (
 	discordWebhookFormat string = "https://discord.com/api/webhooks/"
 )
 
-var (
-	notifSingleton Notification
-	notifOnce      sync.Once
-)
-
-// Notification provides interfaces to send alert notification message with variable channel.
-type Notification interface {
-	SendDiscord(msg tp.ReqMsg, webhook string) error
-	SendNotification(request tp.ReqMsg) error
-}
-
-type notification struct {
-}
-
-func (d notification) SendNotification(request tp.ReqMsg) error {
+func (d dispatcher) SendNotification(request tp.ReqMsg) error {
 	cfg := config.GetConfig()
 
-	err := d.SendDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
+	err := d.sendNotificationForDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
 	if err != nil {
 		panic(err)
 	}
 	return nil
 }
 
-func (d notification) SendDiscord(msg tp.ReqMsg, webhook string) error {
+func (d dispatcher) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error {
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
 	}
@@ -101,13 +79,4 @@ func (d notification) SendDiscord(msg tp.ReqMsg, webhook string) error {
 		log.Println("ERROR | Invalid discord webhook address")
 	}
 	return nil
-}
-
-// GetDispatcher create new notification dispatcher.
-func GetDispatcher() Notification {
-	notifOnce.Do(func() {
-		notifSingleton = &notification{}
-	})
-
-	return notifSingleton
 }

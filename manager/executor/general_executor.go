@@ -4,14 +4,14 @@ import (
 	"context"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	notif "github.com/dsrvlabs/vatz/manager/notification"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"google.golang.org/protobuf/types/known/structpb"
 	"log"
 	"sync"
 )
 
-func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher notif.Notification) error {
+func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) error {
 	//TODO: Find how to deal with multiple plugin methods.
 	executeMethods := plugin.ExecutableMethods
 
@@ -81,7 +81,7 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
-func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher notif.Notification) error {
+func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatcher) error {
 	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
 	methodName := notifyInfo.Method
 
