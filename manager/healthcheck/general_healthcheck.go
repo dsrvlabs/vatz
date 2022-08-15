@@ -2,13 +2,14 @@ package healthcheck
 
 import (
 	"context"
+	"time"
+
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/robfig/cron/v3"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	"time"
 )
 
 func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) (tp.AliveStatus, error) {
@@ -37,7 +38,8 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	return nil
 }
 
-func NewHealthChecker() *healthChecker {
+// NewHealthChecker creates instance of HealchChecker
+func NewHealthChecker() HealthCheck {
 	return &healthChecker{
 		healthMSG: tp.ReqMsg{
 			FuncName:     "VATZHealthCheck",
