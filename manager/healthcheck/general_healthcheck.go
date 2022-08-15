@@ -12,6 +12,12 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
+type healthChecker struct {
+	healthMSG tp.ReqMsg // TODO: Why to we need this?
+
+	pluginStatus map[string]tp.PluginStatus
+}
+
 func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
@@ -26,6 +32,13 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.
 		}
 		dispatcher.SendNotification(failErrorMessage)
 	}
+
+	h.pluginStatus[plugin.Name] = tp.PluginStatus{
+		Plugin:    plugin,
+		IsAlive:   isAlive,
+		LastCheck: time.Now(),
+	}
+
 	return isAlive, nil
 }
 
@@ -38,6 +51,15 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	return nil
 }
 
+func (h *healthChecker) PluginStatus(ctx context.Context) []tp.PluginStatus {
+	status := make([]tp.PluginStatus, 0)
+	for _, s := range h.pluginStatus {
+		status = append(status, s)
+	}
+
+	return status
+}
+
 // NewHealthChecker creates instance of HealchChecker
 func NewHealthChecker() HealthCheck {
 	return &healthChecker{
@@ -48,5 +70,6 @@ func NewHealthChecker() HealthCheck {
 			Severity:     pluginpb.SEVERITY_INFO,
 			ResourceType: "VATZ",
 		},
+		pluginStatus: map[string]tp.PluginStatus{},
 	}
 }

@@ -13,8 +13,6 @@ import (
 type HealthCheck interface {
 	PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) (tp.AliveStatus, error)
 	VATZHealthCheck(schedule []string, dispatcher dp.Dispatcher) error
-}
 
-type healthChecker struct {
-	healthMSG tp.ReqMsg
+	PluginStatus(ctx context.Context) []tp.PluginStatus
 }
