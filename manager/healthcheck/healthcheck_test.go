@@ -2,8 +2,9 @@ package healthcheck
 
 import (
 	"errors"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"testing"
+
+	tp "github.com/dsrvlabs/vatz/manager/types"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -17,7 +18,9 @@ import (
 )
 
 func TestPluginHealthCheckSuccess(t *testing.T) {
-	h := healthChecker{}
+	h := healthChecker{
+		pluginStatus: map[string]tp.PluginStatus{},
+	}
 	ctx := context.Background()
 
 	// Mock
@@ -29,11 +32,17 @@ func TestPluginHealthCheckSuccess(t *testing.T) {
 	mockDispatcher := dp.MockNotification{}
 
 	// Test
-	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{}, &mockDispatcher)
+	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "dummy"}, &mockDispatcher)
 
 	// Asserts
 	assert.Nil(t, err)
 	assert.Equal(t, tp.AliveStatusUp, status)
+
+	statuses := h.PluginStatus(ctx)
+
+	assert.Equal(t, 1, len(statuses))
+	assert.Equal(t, "dummy", statuses[0].Plugin.Name)
+	assert.Equal(t, tp.AliveStatusUp, statuses[0].IsAlive)
 
 	mockPluginCli.AssertExpectations(t)
 	mockDispatcher.AssertExpectations(t)
@@ -58,7 +67,9 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		h := healthChecker{}
+		h := healthChecker{
+			pluginStatus: map[string]tp.PluginStatus{},
+		}
 		ctx := context.Background()
 
 		// Mock
@@ -84,10 +95,15 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, tp.AliveStatusDown, status)
 
+		statuses := h.PluginStatus(ctx)
+
+		assert.Equal(t, 1, len(statuses))
+		assert.Equal(t, "test", statuses[0].Plugin.Name)
+		assert.Equal(t, tp.AliveStatusDown, statuses[0].IsAlive)
+
 		mockPluginCli.AssertExpectations(t)
 		mockDispatcher.AssertExpectations(t)
 	}
-
 }
 
 func TestVatzHealthCheck(t *testing.T) {
