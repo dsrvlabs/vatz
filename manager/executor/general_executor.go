@@ -11,8 +11,11 @@ import (
 	"sync"
 )
 
+type executor struct {
+	status sync.Map
+}
+
 func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) error {
-	//TODO: Find how to deal with multiple plugin methods.
 	executeMethods := plugin.ExecutableMethods
 
 	for _, method := range executeMethods {
@@ -81,6 +84,7 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
+//executeNotify function has to be moved to dispatcher.
 func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatcher) error {
 	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
 	methodName := notifyInfo.Method
@@ -121,11 +125,4 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatc
 		}
 	}
 	return nil
-}
-
-// NewExecutor create new executor instance.
-func NewExecutor() Executor {
-	return &executor{
-		status: sync.Map{},
-	}
 }

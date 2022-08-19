@@ -13,6 +13,12 @@ type Executor interface {
 	Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) error
 }
 
-type executor struct {
-	status sync.Map
+// NewExecutor create new executor instance.
+func NewExecutor(executorType string) Executor {
+	switch executorType {
+	default:
+		return &executor{
+			status: sync.Map{},
+		}
+	}
 }

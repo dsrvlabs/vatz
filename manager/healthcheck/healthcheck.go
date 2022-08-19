@@ -16,3 +16,19 @@ type HealthCheck interface {
 
 	PluginStatus(ctx context.Context) []tp.PluginStatus
 }
+
+func NewHealthChecker(healthCheckerType string) HealthCheck {
+	switch healthCheckerType {
+	default:
+		return &healthChecker{
+			healthMSG: tp.ReqMsg{
+				FuncName:     "VATZHealthCheck",
+				State:        pluginpb.STATE_SUCCESS,
+				Msg:          "VATZ is Alive!!",
+				Severity:     pluginpb.SEVERITY_INFO,
+				ResourceType: "VATZ",
+			},
+			pluginStatus: map[string]tp.PluginStatus{},
+		}
+	}
+}

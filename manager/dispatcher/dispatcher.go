@@ -21,14 +21,13 @@ type Dispatcher interface {
 	SendNotification(request tp.ReqMsg) error
 }
 
-type dispatcher struct {
-}
-
-// GetDispatcher create new dispatcher dispatcher.
-func GetDispatcher() Dispatcher {
+// GetDispatcher To set up a channels, it has to return multiple Dispatchers
+func GetDispatcher(dispatcherType string) Dispatcher {
 	dispatcherOnce.Do(func() {
-		dispatcherSingleton = &dispatcher{}
+		switch dispatcherType {
+		default:
+			dispatcherSingleton = &discord{}
+		}
 	})
-
 	return dispatcherSingleton
 }

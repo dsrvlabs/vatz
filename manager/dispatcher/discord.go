@@ -6,13 +6,14 @@ import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"strings"
 	"time"
 )
 
 // DiscordColor describes color codes which are using for Discord msg.
+
 type DiscordColor int
 
 const (
@@ -25,7 +26,9 @@ const (
 	discordWebhookFormat string = "https://discord.com/api/webhooks/"
 )
 
-func (d dispatcher) SendNotification(request tp.ReqMsg) error {
+type discord struct{}
+
+func (d discord) SendNotification(request tp.ReqMsg) error {
 	cfg := config.GetConfig()
 
 	err := d.sendNotificationForDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
@@ -35,7 +38,7 @@ func (d dispatcher) SendNotification(request tp.ReqMsg) error {
 	return nil
 }
 
-func (d dispatcher) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error {
+func (d discord) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error {
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
 	}
@@ -71,12 +74,11 @@ func (d dispatcher) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) er
 		c := &http.Client{}
 		_, err = c.Do(req)
 		if err != nil {
-			log.Println("ERROR | Failed to send discord message")
+			log.Error().Str("module", "dispatcher").Msgf("dispatcher ch:discord-Send notification error: %s", err)
 		}
-
 		// TODO: Should handle response status.
 	} else {
-		log.Println("ERROR | Invalid discord webhook address")
+		log.Error().Str("module", "dispatcher").Msg("dispatcher ch:discord-Invalid discord webhook address")
 	}
 	return nil
 }

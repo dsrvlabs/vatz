@@ -45,7 +45,8 @@ type mockConstructorTestingTNewMockNotification interface {
 	Cleanup(func())
 }
 
-// NewMockNotification creates a new instance of MockNotification. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// NewMockNotification creates a new instance of MockNotification.
+// It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 func NewMockNotification(t mockConstructorTestingTNewMockNotification) *MockNotification {
 	mock := &MockNotification{}
 	mock.Mock.Test(t)
