@@ -28,16 +28,15 @@ const (
 )
 
 var (
-	healthChecker = health.NewHealthChecker()
-	dispatcher    = dp.GetDispatcher()
-	executor      = ex.NewExecutor()
+	healthChecker = health.NewHealthChecker("")
+	dispatcher    = dp.GetDispatcher("")
+	executor      = ex.NewExecutor("")
 
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
 
 func init() {
-	executor = ex.NewExecutor()
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
