@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
+	"time"
+
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
@@ -18,9 +22,6 @@ import (
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"os"
-	"time"
 )
 
 const (
@@ -28,7 +29,7 @@ const (
 )
 
 var (
-	healthChecker          = health.NewHealthChecker()
+	healthChecker          = health.GetHealthChecker()
 	executor               = ex.NewExecutor()
 	dispatchers            []dp.Dispatcher
 	defaultVerifyInterval  = 15
@@ -78,7 +79,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	startExecutor(cfg.PluginInfos, ch)
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 
-	InitHealthServer(s)
+	initHealthServer(s)
 	if err := s.Serve(listener); err != nil {
 		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
 	}
@@ -154,7 +155,7 @@ func multiPluginExecutor(plugin config.Plugin,
 	}
 }
 
-func InitHealthServer(s *grpc.Server) {
+func initHealthServer(s *grpc.Server) {
 	gRPCHealthServer := grpchealth.NewServer()
 	gRPCHealthServer.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
 	healthpb.RegisterHealthServer(s, gRPCHealthServer)
