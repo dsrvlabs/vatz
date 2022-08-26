@@ -2,13 +2,13 @@ package healthcheck
 
 import (
 	"errors"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"testing"
 
 	tp "github.com/dsrvlabs/vatz/manager/types"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -29,10 +29,8 @@ func TestPluginHealthCheckSuccess(t *testing.T) {
 		On("Verify", ctx, new(emptypb.Empty), []grpc.CallOption(nil)).
 		Return(&pluginpb.VerifyInfo{VerifyMsg: "test"}, nil)
 
-	mockDispatcher := dp.MockNotification{}
-
-	// Test
-	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "dummy"}, &mockDispatcher)
+	var mockDispatchers = []dp.Dispatcher{}
+	status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "dummy"}, mockDispatchers)
 
 	// Asserts
 	assert.Nil(t, err)
@@ -45,7 +43,6 @@ func TestPluginHealthCheckSuccess(t *testing.T) {
 	assert.Equal(t, tp.AliveStatusUp, statuses[0].IsAlive)
 
 	mockPluginCli.AssertExpectations(t)
-	mockDispatcher.AssertExpectations(t)
 }
 
 func TestPluginHealthCheckFailed(t *testing.T) {
@@ -78,7 +75,9 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 			On("Verify", ctx, new(emptypb.Empty), []grpc.CallOption(nil)).
 			Return(test.MockVerifyInfo, test.MockVerifyErr)
 
-		mockDispatcher := dp.MockNotification{}
+		mockDispatcher := dp.MockDispatcher{}
+		var mockDispatchers []dp.Dispatcher
+
 		mockJSONMsg := tp.ReqMsg{
 			FuncName:     "isPluginUp",
 			State:        pluginpb.STATE_FAILURE,
@@ -89,7 +88,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		mockDispatcher.On("SendNotification", mockJSONMsg).Return(nil)
 
 		// Test
-		status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "test"}, &mockDispatcher)
+		status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "test"}, mockDispatchers)
 
 		// Asserts
 		assert.Nil(t, err)
@@ -102,7 +101,6 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		assert.Equal(t, tp.AliveStatusDown, statuses[0].IsAlive)
 
 		mockPluginCli.AssertExpectations(t)
-		mockDispatcher.AssertExpectations(t)
 	}
 }
 

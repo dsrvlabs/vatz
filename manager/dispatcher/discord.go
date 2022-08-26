@@ -26,11 +26,12 @@ const (
 	discordWebhookFormat string = "https://discord.com/api/webhooks/"
 )
 
-type discord struct{}
+type discord struct {
+	channel tp.Channel
+}
 
 func (d discord) SendNotification(request tp.ReqMsg) error {
 	cfg := config.GetConfig()
-
 	err := d.sendNotificationForDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
 	if err != nil {
 		panic(err)

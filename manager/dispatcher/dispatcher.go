@@ -1,6 +1,7 @@
 package dispatcher
 
 import (
+	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"sync"
 )
@@ -21,13 +22,29 @@ type Dispatcher interface {
 	SendNotification(request tp.ReqMsg) error
 }
 
-// GetDispatcher To set up a channels, it has to return multiple Dispatchers
-func GetDispatcher(dispatcherType string) Dispatcher {
+func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
+	// !!Note!!
+	// This is a sample and will be modified with issue #226
+	// Please, remove this comment when you create a channel with notification.
+	sample1 := &discord{channel: tp.Discord}
+
+	type sampleSecret struct {
+		secret  string
+		channel tp.Channel
+	}
+
+	sampleSecrets := []sampleSecret{
+		{cfg.DiscordSecret, tp.Discord},
+	}
+
+	var dispatchers []Dispatcher
 	dispatcherOnce.Do(func() {
-		switch dispatcherType {
-		default:
-			dispatcherSingleton = &discord{}
+		for _, secretInfo := range sampleSecrets {
+			if secretInfo.channel == tp.Discord {
+				dispatcherSingleton = sample1
+				dispatchers = append(dispatchers, dispatcherSingleton)
+			}
 		}
 	})
-	return dispatcherSingleton
+	return dispatchers
 }

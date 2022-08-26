@@ -61,3 +61,12 @@ type NotifyInfo struct {
 	State      pluginpb.STATE    `json:"state"`
 	ExecuteMsg string            `json:"execute_msg"`
 }
+
+// Channel types for dispatchers
+type Channel string
+
+// AliveStatus is type that describes aliveness flags.
+const (
+	Discord  Channel = "discord"
+	Telegram Channel = "Telegram"
+)

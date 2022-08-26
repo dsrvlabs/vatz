@@ -17,7 +17,9 @@ var (
 
 // telegram: This is a sample code
 // that helps to multi methods for notification.
-type telegram struct{}
+type telegram struct {
+	channel tp.Channel
+}
 
 func (t telegram) SendTelegramNotification(text string) error {
 

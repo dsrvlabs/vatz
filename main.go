@@ -28,10 +28,9 @@ const (
 )
 
 var (
-	healthChecker = health.NewHealthChecker("")
-	dispatcher    = dp.GetDispatcher("")
-	executor      = ex.NewExecutor("")
-
+	healthChecker          = health.NewHealthChecker()
+	executor               = ex.NewExecutor()
+	dispatchers            []dp.Dispatcher
 	defaultVerifyInterval  = 15
 	defaultExecuteInterval = 30
 )
@@ -52,19 +51,21 @@ func main() {
 
 func initiateServer(ch <-chan os.Signal) error {
 	log.Info().Str("module", "main").Msgf("Initialize Servers: %s", serviceName)
-
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	cfg := config.GetConfig()
+	dispatchers = dp.GetDispatchers(cfg.Vatz.NotificationInfo)
 
 	s := grpc.NewServer()
 	serv := api.GrpcService{}
 	managerpb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	cfg := config.GetConfig()
 	vatzConfig := cfg.Vatz
+
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatcher)
+	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatchers)
 	if err != nil {
 		log.Error().Str("module", "main").Msgf("VATZHealthCheck Error: %s", err)
 	}
@@ -133,7 +134,7 @@ func multiPluginExecutor(plugin config.Plugin,
 	for {
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatcher)
+			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
 			if live == tp.AliveStatusUp {
 				isOkayToSend = true
 			} else {
@@ -141,7 +142,7 @@ func multiPluginExecutor(plugin config.Plugin,
 			}
 		case <-executeTicker.C:
 			if isOkayToSend == true {
-				err := executor.Execute(ctx, singleClient, plugin, dispatcher)
+				err := executor.Execute(ctx, singleClient, plugin, dispatchers)
 				if err != nil {
 					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
 				}

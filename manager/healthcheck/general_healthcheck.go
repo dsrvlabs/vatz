@@ -17,7 +17,7 @@ type healthChecker struct {
 	pluginStatus map[string]tp.PluginStatus
 }
 
-func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) (tp.AliveStatus, error) {
+func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 	if err != nil || verify == nil {
@@ -29,7 +29,10 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.
 			Severity:     pluginpb.SEVERITY_CRITICAL,
 			ResourceType: plugin.Name,
 		}
-		dispatcher.SendNotification(failErrorMessage)
+
+		for _, dispatcher := range dispatchers {
+			dispatcher.SendNotification(failErrorMessage)
+		}
 	}
 
 	h.pluginStatus[plugin.Name] = tp.PluginStatus{
@@ -41,10 +44,14 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.
 	return isAlive, nil
 }
 
-func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatcher dp.Dispatcher) error {
+func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatchers []dp.Dispatcher) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	for i := 0; i < len(healthCheckerSchedule); i++ {
-		c.AddFunc(healthCheckerSchedule[i], func() { dispatcher.SendNotification(h.healthMSG) })
+		c.AddFunc(healthCheckerSchedule[i], func() {
+			for _, dispatcher := range dispatchers {
+				dispatcher.SendNotification(h.healthMSG)
+			}
+		})
 	}
 	c.Start()
 	return nil
