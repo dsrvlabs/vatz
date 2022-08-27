@@ -65,8 +65,7 @@ type NotifyInfo struct {
 // Channel types for dispatchers
 type Channel string
 
-// AliveStatus is type that describes aliveness flags.
 const (
-	Discord  Channel = "discord"
-	Telegram Channel = "Telegram"
+	Discord  Channel = "DISCORD"
+	Telegram Channel = "TELEGRAM"
 )

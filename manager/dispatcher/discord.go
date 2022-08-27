@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-// DiscordColor describes color codes which are using for Discord msg.
-
 type DiscordColor int
 
 const (
