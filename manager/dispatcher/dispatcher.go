@@ -13,8 +13,8 @@ but dispatcher and dispatcher module should be splitted into two part.
 */
 
 var (
-	dispatcherSingleton Dispatcher
-	dispatcherOnce      sync.Once
+	dispatcherSingletons []Dispatcher
+	dispatcherOnce       sync.Once
 )
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
@@ -37,14 +37,12 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 		{cfg.DiscordSecret, tp.Discord},
 	}
 
-	var dispatchers []Dispatcher
 	dispatcherOnce.Do(func() {
 		for _, secretInfo := range sampleSecrets {
 			if secretInfo.channel == tp.Discord {
-				dispatcherSingleton = sample1
-				dispatchers = append(dispatchers, dispatcherSingleton)
+				dispatcherSingletons = append(dispatcherSingletons, sample1)
 			}
 		}
 	})
-	return dispatchers
+	return dispatcherSingletons
 }
