@@ -61,3 +61,11 @@ type NotifyInfo struct {
 	State      pluginpb.STATE    `json:"state"`
 	ExecuteMsg string            `json:"execute_msg"`
 }
+
+// Channel types for dispatchers
+type Channel string
+
+const (
+	Discord  Channel = "DISCORD"
+	Telegram Channel = "TELEGRAM"
+)

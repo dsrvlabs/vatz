@@ -3,13 +3,13 @@ package executor
 import (
 	"context"
 	"fmt"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"sync"
 	"testing"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -69,8 +69,8 @@ func TestExecutorSuccess(t *testing.T) {
 		mockClient := mockPluginClient{}
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
-		mockNotif := dp.MockNotification{}
-		dispatcher := &mockNotif
+		mockNotif := dp.MockDispatcher{}
+		var mockNotifs []dp.Dispatcher
 
 		if test.TestNotifInfo.State != pluginpb.STATE_SUCCESS {
 			dummyMsg := tp.ReqMsg{
@@ -88,7 +88,7 @@ func TestExecutorSuccess(t *testing.T) {
 			status: sync.Map{},
 		}
 
-		err = e.Execute(ctx, &mockClient, cfgPlugin, dispatcher)
+		err = e.Execute(ctx, &mockClient, cfgPlugin, mockNotifs)
 
 		fmt.Println("Status", e.status)
 
@@ -189,8 +189,8 @@ func TestExecutorFailure(t *testing.T) {
 		mockClient := mockPluginClient{}
 		mockClient.On("Execute", ctx, &exeReq, []grpc.CallOption(nil)).Return(test.TestExecResp, nil)
 
-		mockNotif := dp.MockNotification{}
-		dispatcher := &mockNotif
+		mockNotif := dp.MockDispatcher{}
+		var mockNotifs []dp.Dispatcher
 
 		mockNotif.On("SendNotification", test.ExpectReqMsg).Return(nil)
 
@@ -199,13 +199,12 @@ func TestExecutorFailure(t *testing.T) {
 			status: sync.Map{},
 		}
 
-		err = e.Execute(ctx, &mockClient, cfgPlugin, dispatcher)
+		err = e.Execute(ctx, &mockClient, cfgPlugin, mockNotifs)
 
 		fmt.Println("Status", e.status)
 
 		// Asserts
 		mockClient.AssertExpectations(t)
-		mockNotif.AssertExpectations(t)
 
 		assert.Nil(t, err)
 		mockStatus, _ := e.status.Load(testMethodName)

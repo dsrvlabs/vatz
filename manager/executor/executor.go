@@ -10,9 +10,12 @@ import (
 
 // Executor provides interfaces to execute plugin features.
 type Executor interface {
-	Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) error
+	Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) error
 }
 
-type executor struct {
-	status sync.Map
+// NewExecutor create new executor instance.
+func NewExecutor() Executor {
+	return &executor{
+		status: sync.Map{},
+	}
 }

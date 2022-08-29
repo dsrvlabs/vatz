@@ -11,8 +11,11 @@ import (
 	"sync"
 )
 
-func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatcher dp.Dispatcher) error {
-	//TODO: Find how to deal with multiple plugin methods.
+type executor struct {
+	status sync.Map
+}
+
+func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) error {
 	executeMethods := plugin.ExecutableMethods
 
 	for _, method := range executeMethods {
@@ -61,7 +64,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			ExecuteMsg: resp.GetMessage(),
 		}
 
-		s.executeNotify(notifyInfo, dispatcher)
+		s.executeNotify(notifyInfo, dispatchers)
 	}
 
 	return nil
@@ -81,7 +84,8 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
-func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatcher) error {
+//executeNotify function has to be moved to dispatcher.
+func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatchers []dp.Dispatcher) error {
 	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
 	methodName := notifyInfo.Method
 
@@ -95,8 +99,10 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatc
 				Severity:     pluginpb.SEVERITY_CRITICAL, // TODO: Error or Critical?
 				ResourceType: notifyInfo.Plugin,
 			}
+			for _, dp := range dispatchers {
+				dp.SendNotification(jsonMessage)
+			}
 
-			dispatcher.SendNotification(jsonMessage)
 		} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
 			jsonMessage := tp.ReqMsg{
 				FuncName:     notifyInfo.Method,
@@ -105,7 +111,9 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatc
 				Severity:     pluginpb.SEVERITY_CRITICAL,
 				ResourceType: notifyInfo.Plugin,
 			}
-			dispatcher.SendNotification(jsonMessage)
+			for _, dp := range dispatchers {
+				dp.SendNotification(jsonMessage)
+			}
 		}
 	} else {
 		if status, ok := s.status.Load(methodName); ok && status == false {
@@ -116,16 +124,11 @@ func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatcher dp.Dispatc
 				Severity:     pluginpb.SEVERITY_INFO,
 				ResourceType: notifyInfo.Plugin,
 			}
-			dispatcher.SendNotification(jsonMessage)
+			for _, dp := range dispatchers {
+				dp.SendNotification(jsonMessage)
+			}
 			s.status.Store(methodName, true)
 		}
 	}
 	return nil
-}
-
-// NewExecutor create new executor instance.
-func NewExecutor() Executor {
-	return &executor{
-		status: sync.Map{},
-	}
 }

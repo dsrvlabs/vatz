@@ -27,16 +27,18 @@ var (
 // Config is Vatz config structure.
 type Config struct {
 	Vatz struct {
-		ProtocolIdentifier string `yaml:"protocol_identifier"`
-		Port               int    `yaml:"port"`
-		NotificationInfo   struct {
-			DiscordSecret   string `yaml:"discord_secret"`
-			PagerDutySecret string `yaml:"pager_duty_secret"`
-		} `yaml:"notification_info"`
-		HealthCheckerSchedule []string `yaml:"health_checker_schedule"`
+		ProtocolIdentifier    string           `yaml:"protocol_identifier"`
+		Port                  int              `yaml:"port"`
+		NotificationInfo      NotificationInfo `yaml:"notification_info"`
+		HealthCheckerSchedule []string         `yaml:"health_checker_schedule"`
 	} `yaml:"vatz_protocol_info"`
 
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
+}
+
+type NotificationInfo struct {
+	DiscordSecret   string `yaml:"discord_secret"`
+	PagerDutySecret string `yaml:"pager_duty_secret"`
 }
 
 // PluginInfo contains general plugin info.

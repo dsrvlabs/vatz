@@ -1,6 +1,7 @@
 package dispatcher
 
 import (
+	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"sync"
 )
@@ -12,8 +13,8 @@ but dispatcher and dispatcher module should be splitted into two part.
 */
 
 var (
-	dispatcherSingleton Dispatcher
-	dispatcherOnce      sync.Once
+	dispatcherSingletons []Dispatcher
+	dispatcherOnce       sync.Once
 )
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
@@ -21,14 +22,27 @@ type Dispatcher interface {
 	SendNotification(request tp.ReqMsg) error
 }
 
-type dispatcher struct {
-}
+func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
+	// !!Note!!
+	// This is a sample and will be modified with issue #226
+	// Please, remove this comment when you create a channel with notification.
+	sample1 := &discord{channel: tp.Discord}
 
-// GetDispatcher create new dispatcher dispatcher.
-func GetDispatcher() Dispatcher {
+	type sampleSecret struct {
+		secret  string
+		channel tp.Channel
+	}
+
+	sampleSecrets := []sampleSecret{
+		{cfg.DiscordSecret, tp.Discord},
+	}
+
 	dispatcherOnce.Do(func() {
-		dispatcherSingleton = &dispatcher{}
+		for _, secretInfo := range sampleSecrets {
+			if secretInfo.channel == tp.Discord {
+				dispatcherSingletons = append(dispatcherSingletons, sample1)
+			}
+		}
 	})
-
-	return dispatcherSingleton
+	return dispatcherSingletons
 }
