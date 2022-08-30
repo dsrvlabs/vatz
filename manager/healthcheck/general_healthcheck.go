@@ -74,21 +74,3 @@ func (h *healthChecker) PluginStatus(ctx context.Context) []tp.PluginStatus {
 
 	return status
 }
-
-// GetHealthChecker creates instance of HealchChecker
-func GetHealthChecker() HealthCheck {
-	healthCheckerOnce.Do(func() {
-		healthCheckerSingle = healthChecker{
-			healthMSG: tp.ReqMsg{
-				FuncName:     "VATZHealthCheck",
-				State:        pluginpb.STATE_SUCCESS,
-				Msg:          "VATZ is Alive!!",
-				Severity:     pluginpb.SEVERITY_INFO,
-				ResourceType: "VATZ",
-			},
-			pluginStatus: sync.Map{},
-		}
-	})
-
-	return &healthCheckerSingle
-}

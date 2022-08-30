@@ -22,18 +22,18 @@ type HealthCheck struct {
 }
 
 // PluginHealthCheck provides a mock function with given fields: ctx, gClient, plugin, _a3
-func (_m *HealthCheck) PluginHealthCheck(ctx context.Context, gClient v1.PluginClient, plugin config.Plugin, _a3 dispatcher.Dispatcher) (types.AliveStatus, error) {
+func (_m *HealthCheck) PluginHealthCheck(ctx context.Context, gClient v1.PluginClient, plugin config.Plugin, _a3 []dispatcher.Dispatcher) (types.AliveStatus, error) {
 	ret := _m.Called(ctx, gClient, plugin, _a3)
 
 	var r0 types.AliveStatus
-	if rf, ok := ret.Get(0).(func(context.Context, v1.PluginClient, config.Plugin, dispatcher.Dispatcher) types.AliveStatus); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, v1.PluginClient, config.Plugin, []dispatcher.Dispatcher) types.AliveStatus); ok {
 		r0 = rf(ctx, gClient, plugin, _a3)
 	} else {
 		r0 = ret.Get(0).(types.AliveStatus)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, v1.PluginClient, config.Plugin, dispatcher.Dispatcher) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, v1.PluginClient, config.Plugin, []dispatcher.Dispatcher) error); ok {
 		r1 = rf(ctx, gClient, plugin, _a3)
 	} else {
 		r1 = ret.Error(1)
@@ -59,11 +59,11 @@ func (_m *HealthCheck) PluginStatus(ctx context.Context) []types.PluginStatus {
 }
 
 // VATZHealthCheck provides a mock function with given fields: schedule, _a1
-func (_m *HealthCheck) VATZHealthCheck(schedule []string, _a1 dispatcher.Dispatcher) error {
+func (_m *HealthCheck) VATZHealthCheck(schedule []string, _a1 []dispatcher.Dispatcher) error {
 	ret := _m.Called(schedule, _a1)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func([]string, dispatcher.Dispatcher) error); ok {
+	if rf, ok := ret.Get(0).(func([]string, []dispatcher.Dispatcher) error); ok {
 		r0 = rf(schedule, _a1)
 	} else {
 		r0 = ret.Error(0)
