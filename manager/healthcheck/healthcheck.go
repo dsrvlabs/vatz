@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"sync"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -17,15 +18,20 @@ type HealthCheck interface {
 	PluginStatus(ctx context.Context) []tp.PluginStatus
 }
 
-func NewHealthChecker() HealthCheck {
-	return &healthChecker{
-		healthMSG: tp.ReqMsg{
-			FuncName:     "VATZHealthCheck",
-			State:        pluginpb.STATE_SUCCESS,
-			Msg:          "VATZ is Alive!!",
-			Severity:     pluginpb.SEVERITY_INFO,
-			ResourceType: "VATZ",
-		},
-		pluginStatus: map[string]tp.PluginStatus{},
-	}
+// GetHealthChecker creates instance of HealchChecker
+func GetHealthChecker() HealthCheck {
+	healthCheckerOnce.Do(func() {
+		healthCheckerSingle = healthChecker{
+			healthMSG: tp.ReqMsg{
+				FuncName:     "VATZHealthCheck",
+				State:        pluginpb.STATE_SUCCESS,
+				Msg:          "VATZ is Alive!!",
+				Severity:     pluginpb.SEVERITY_INFO,
+				ResourceType: "VATZ",
+			},
+			pluginStatus: sync.Map{},
+		}
+	})
+
+	return &healthCheckerSingle
 }

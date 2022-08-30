@@ -2,8 +2,10 @@ package healthcheck
 
 import (
 	"errors"
-	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
+	"sync"
 	"testing"
+
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 
 	tp "github.com/dsrvlabs/vatz/manager/types"
 
@@ -19,7 +21,7 @@ import (
 
 func TestPluginHealthCheckSuccess(t *testing.T) {
 	h := healthChecker{
-		pluginStatus: map[string]tp.PluginStatus{},
+		pluginStatus: sync.Map{},
 	}
 	ctx := context.Background()
 
@@ -65,7 +67,7 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 
 	for _, test := range tests {
 		h := healthChecker{
-			pluginStatus: map[string]tp.PluginStatus{},
+			pluginStatus: sync.Map{},
 		}
 		ctx := context.Background()
 

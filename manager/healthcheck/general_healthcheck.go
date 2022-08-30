@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
@@ -12,9 +13,14 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
+var (
+	healthCheckerOnce   = sync.Once{}
+	healthCheckerSingle = healthChecker{}
+)
+
 type healthChecker struct {
 	healthMSG    tp.ReqMsg
-	pluginStatus map[string]tp.PluginStatus
+	pluginStatus sync.Map
 }
 
 func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
@@ -35,11 +41,11 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.
 		}
 	}
 
-	h.pluginStatus[plugin.Name] = tp.PluginStatus{
+	h.pluginStatus.Store(plugin.Name, &tp.PluginStatus{
 		Plugin:    plugin,
 		IsAlive:   isAlive,
 		LastCheck: time.Now(),
-	}
+	})
 
 	return isAlive, nil
 }
@@ -59,9 +65,12 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 
 func (h *healthChecker) PluginStatus(ctx context.Context) []tp.PluginStatus {
 	status := make([]tp.PluginStatus, 0)
-	for _, s := range h.pluginStatus {
-		status = append(status, s)
-	}
+
+	h.pluginStatus.Range(func(k, value any) bool {
+		curStatus := value.(*tp.PluginStatus)
+		status = append(status, *curStatus)
+		return true
+	})
 
 	return status
 }
