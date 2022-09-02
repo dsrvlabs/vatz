@@ -15,6 +15,7 @@ import (
 	ex "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/rpc"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -77,6 +78,12 @@ func initiateServer(ch <-chan os.Signal) error {
 	}
 	log.Info().Str("module", "main").Msgf("VATZ Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
+
+	rpcServ := rpc.NewRPCService()
+	go func() {
+		rpcServ.Start()
+	}()
+
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 
 	initHealthServer(s)

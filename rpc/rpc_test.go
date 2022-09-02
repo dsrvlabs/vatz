@@ -1,6 +1,10 @@
 package rpc
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"testing"
 	"time"
 
@@ -14,17 +18,39 @@ import (
 	"github.com/dsrvlabs/vatz/mocks"
 )
 
-func TestTerminateRPC(t *testing.T) {
+func TestRPCs(t *testing.T) {
 	rpc := NewRPCService()
+
+	go rpc.Start()
+
+	time.Sleep(time.Second * 1) // Wait ready
 
 	go func() {
 		time.Sleep(time.Millisecond * 100)
+
+		fmt.Println("Call Stop")
 		rpc.Stop()
 	}()
 
-	err := rpc.Start()
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:19091/v1/plugin_status", nil)
+	assert.Nil(t, err)
+
+	cli := http.Client{}
+	resp, err := cli.Do(req)
 
 	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	data, err := io.ReadAll(resp.Body)
+
+	assert.Nil(t, err)
+
+	respData := map[string]any{}
+	err = json.Unmarshal(data, &respData)
+
+	assert.Nil(t, err)
+	assert.Contains(t, respData, "status")
+	assert.Contains(t, respData, "pluginStatus")
 }
 
 func TestPluginStatus(t *testing.T) {
