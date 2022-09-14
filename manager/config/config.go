@@ -2,13 +2,14 @@ package config
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -37,8 +38,13 @@ type Config struct {
 }
 
 type NotificationInfo struct {
-	DiscordSecret   string `yaml:"discord_secret"`
-	PagerDutySecret string `yaml:"pager_duty_secret"`
+	DiscordSecret     string `yaml:"discord_secret"`
+	PagerDutySecret   string `yaml:"pager_duty_secret"`
+	HostName          string `yaml:"host_name"`
+	Dispatch_channels []struct {
+		Channel string `yaml:"channel"`
+		Secret  string `yaml:"secret"`
+	}
 }
 
 // PluginInfo contains general plugin info.
