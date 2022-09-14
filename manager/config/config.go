@@ -38,13 +38,13 @@ type Config struct {
 }
 
 type NotificationInfo struct {
-	DiscordSecret     string `yaml:"discord_secret"`
-	PagerDutySecret   string `yaml:"pager_duty_secret"`
-	HostName          string `yaml:"host_name"`
-	Dispatch_channels []struct {
+	DiscordSecret    string `yaml:"discord_secret"`
+	PagerDutySecret  string `yaml:"pager_duty_secret"`
+	HostName         string `yaml:"host_name"`
+	DispatchChannels []struct {
 		Channel string `yaml:"channel"`
 		Secret  string `yaml:"secret"`
-	}
+	} `yaml:"dispatch_channels"`
 }
 
 // PluginInfo contains general plugin info.
