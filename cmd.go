@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -14,11 +18,13 @@ import (
 const (
 	defaultFlagConfig = "default.yaml"
 	defaultFlagLog    = ""
+	defaultRPC        = "http://localhost:19091"
 )
 
 var (
 	configFile string
 	logfile    string
+	vatzRPC    string
 )
 
 func createInitCommand() *cobra.Command {
@@ -111,6 +117,62 @@ func createStartCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
 	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "log file export to.")
+
+	return cmd
+}
+
+func createPluginCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "plugin",
+		Short: "Plugin commands",
+	}
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "status",
+		Short: "Get statuses of Plugin",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v1/plugin_status", vatzRPC), nil)
+			if err != nil {
+				return err
+			}
+
+			cli := http.Client{}
+			resp, err := cli.Do(req)
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+
+			respData, err := io.ReadAll(resp.Body)
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+
+			statusResp := struct {
+				Status       string `json:"status"`
+				PluginStatus []struct {
+					Status     string `json:"status"`
+					PluginName string `json:"pluginName"`
+				} `json:"pluginStatus"`
+			}{}
+
+			err = json.Unmarshal(respData, &statusResp)
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+
+			fmt.Println("***** Plugin status *****")
+			for i, plugin := range statusResp.PluginStatus {
+				fmt.Printf("%d: %s [%s]\n", i+1, plugin.PluginName, plugin.Status)
+			}
+
+			return nil
+		},
+	})
+
+	cmd.PersistentFlags().StringVar(&vatzRPC, "rpc", defaultRPC, "RPC address of Vatz")
 
 	return cmd
 }
