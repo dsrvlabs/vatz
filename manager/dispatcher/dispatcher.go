@@ -1,9 +1,11 @@
 package dispatcher
 
 import (
+	"fmt"
+	"sync"
+
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
-	"sync"
 )
 
 /* TODO: Discussion.
@@ -23,24 +25,24 @@ type Dispatcher interface {
 }
 
 func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
-	// !!Note!!
-	// This is a sample and will be modified with issue #226
-	// Please, remove this comment when you create a channel with notification.
-	sample1 := &discord{channel: tp.Discord}
-
-	type sampleSecret struct {
-		secret  string
-		channel tp.Channel
-	}
-
-	sampleSecrets := []sampleSecret{
-		{cfg.DiscordSecret, tp.Discord},
-	}
-
 	dispatcherOnce.Do(func() {
-		for _, secretInfo := range sampleSecrets {
-			if secretInfo.channel == tp.Discord {
-				dispatcherSingletons = append(dispatcherSingletons, sample1)
+		for _, chanInfo := range cfg.DispatchChannels {
+			switch chanInfo.Channel {
+			case "discord":
+				discord := &discord{
+					channel: tp.Discord,
+					secret:  chanInfo.Secret,
+				}
+				dispatcherSingletons = append(dispatcherSingletons, discord)
+			case "telegram":
+				telegram := &telegram{
+					channel: tp.Telegram,
+					secret:  chanInfo.Secret,
+					chatID:  chanInfo.ChatID,
+				}
+				dispatcherSingletons = append(dispatcherSingletons, telegram)
+			default:
+				fmt.Println(chanInfo.Channel, "is not work")
 			}
 		}
 	})

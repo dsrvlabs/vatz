@@ -44,6 +44,7 @@ type NotificationInfo struct {
 	DispatchChannels []struct {
 		Channel string `yaml:"channel"`
 		Secret  string `yaml:"secret"`
+		ChatID  string `yaml:"chat_id"`
 	} `yaml:"dispatch_channels"`
 }
 
