@@ -38,7 +38,7 @@ func createInitCommand() *cobra.Command {
         secret: "Your channel secret"
       - channel: "telegram"
         secret: "Your channel secret"
-		chat_id: "482109801"
+        chat_id: "482109801"
   health_checker_schedule:
     - "0 1 * * *"
 plugins_infos:
