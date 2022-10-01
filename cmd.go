@@ -38,8 +38,13 @@ func createInitCommand() *cobra.Command {
   protocol_identifier: "Put Your Protocol here"
   port: 9090
   notification_info:
-    discord_secret: "Your Discord Webhook"
-    pager_duty_secret: "Your Events API V2 Integration Key"
+    host_name: "Your machine name"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "Your channel secret"
+      - channel: "telegram"
+        secret: "Your channel secret"
+        chat_id: "482109801"
   health_checker_schedule:
     - "0 1 * * *"
 plugins_infos:

@@ -27,12 +27,19 @@ type testConfigExpects struct {
 	ExpectVatzPort               int
 	ExpectDiscordSecret          string
 	ExpectPagerDutySecret        string
+	ExpectHostName               string
+	DispatchChannels             []testChannelsExpect
 	ExpectHealthCheckerSchedule  []string
 	ExpectDefaultVerifyInterval  int
 	ExpectDefaultExecuteInterval int
 	ExpectDefaultPluginName      string
 
 	Plugins []testPluginExpects
+}
+
+type testChannelsExpect struct {
+	ExpectChannel string
+	ExpectSecret  string
 }
 
 type testPluginExpects struct {
@@ -46,12 +53,26 @@ type testPluginExpects struct {
 
 func TestDefaultConfig(t *testing.T) {
 	test := testConfigExpects{
-		MockContents: configDefaultContents,
-
-		ExpectProtocolID:             "vatz",
-		ExpectVatzPort:               9090,
-		ExpectDiscordSecret:          "XXXXX",
-		ExpectPagerDutySecret:        "YYYYY",
+		MockContents:          configDefaultContents,
+		ExpectProtocolID:      "vatz",
+		ExpectVatzPort:        9090,
+		ExpectDiscordSecret:   "XXXXX",
+		ExpectPagerDutySecret: "YYYYY",
+		ExpectHostName:        "xxx-xxxx-xxxx",
+		DispatchChannels: []testChannelsExpect{
+			{
+				ExpectChannel: "discord",
+				ExpectSecret:  "https://xxxxx.xxxxxx",
+			},
+			{
+				ExpectChannel: "telegram",
+				ExpectSecret:  "https://yyyyy.yyyyyy",
+			},
+			{
+				ExpectChannel: "pagerduty",
+				ExpectSecret:  "https://zzzzz.zzzzzz",
+			},
+		},
 		ExpectHealthCheckerSchedule:  []string{"* 1 * * *"},
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
@@ -87,6 +108,11 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
+	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
+	for i, dispatchChannel := range test.DispatchChannels {
+		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
+		assert.Equal(t, dispatchChannel.ExpectSecret, cfg.Vatz.NotificationInfo.DispatchChannels[i].Secret)
+	}
 	assert.Equal(t, test.ExpectHealthCheckerSchedule, cfg.Vatz.HealthCheckerSchedule)
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
@@ -113,10 +139,25 @@ func TestOverrideDefaultValues(t *testing.T) {
 	test := testConfigExpects{
 		MockContents: configNoIntervalContents,
 
-		ExpectProtocolID:             "vatz",
-		ExpectVatzPort:               9090,
-		ExpectDiscordSecret:          "hello",
-		ExpectPagerDutySecret:        "world",
+		ExpectProtocolID:      "vatz",
+		ExpectVatzPort:        9090,
+		ExpectDiscordSecret:   "hello",
+		ExpectPagerDutySecret: "world",
+		ExpectHostName:        "dummy0",
+		DispatchChannels: []testChannelsExpect{
+			{
+				ExpectChannel: "discord",
+				ExpectSecret:  "dummy1",
+			},
+			{
+				ExpectChannel: "telegram",
+				ExpectSecret:  "dummy2",
+			},
+			{
+				ExpectChannel: "pagerduty",
+				ExpectSecret:  "dummy3",
+			},
+		},
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
 		ExpectDefaultPluginName:      "vatz-plugin",
@@ -141,7 +182,11 @@ func TestOverrideDefaultValues(t *testing.T) {
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
-	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
+	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
+	for i, dispatchChannel := range test.DispatchChannels {
+		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
+		assert.Equal(t, dispatchChannel.ExpectSecret, cfg.Vatz.NotificationInfo.DispatchChannels[i].Secret)
+	}
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
 	assert.Equal(t, test.ExpectDefaultExecuteInterval, cfg.PluginInfos.DefaultExecuteInterval)
@@ -258,10 +303,25 @@ func TestGetConfig(t *testing.T) {
 	test := testConfigExpects{
 		MockContents: configDefaultContents,
 
-		ExpectProtocolID:             "vatz",
-		ExpectVatzPort:               9090,
-		ExpectDiscordSecret:          "XXXXX",
-		ExpectPagerDutySecret:        "YYYYY",
+		ExpectProtocolID:      "vatz",
+		ExpectVatzPort:        9090,
+		ExpectDiscordSecret:   "XXXXX",
+		ExpectPagerDutySecret: "YYYYY",
+		ExpectHostName:        "xxx-xxxx-xxxx",
+		DispatchChannels: []testChannelsExpect{
+			{
+				ExpectChannel: "discord",
+				ExpectSecret:  "https://xxxxx.xxxxxx",
+			},
+			{
+				ExpectChannel: "telegram",
+				ExpectSecret:  "https://yyyyy.yyyyyy",
+			},
+			{
+				ExpectChannel: "pagerduty",
+				ExpectSecret:  "https://zzzzz.zzzzzz",
+			},
+		},
 		ExpectHealthCheckerSchedule:  []string{"* 1 * * *"},
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
@@ -305,8 +365,11 @@ func TestGetConfig(t *testing.T) {
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
 	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
-	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
-
+	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
+	for i, dispatchChannel := range test.DispatchChannels {
+		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
+		assert.Equal(t, dispatchChannel.ExpectSecret, cfg.Vatz.NotificationInfo.DispatchChannels[i].Secret)
+	}
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
 	assert.Equal(t, test.ExpectDefaultExecuteInterval, cfg.PluginInfos.DefaultExecuteInterval)
 

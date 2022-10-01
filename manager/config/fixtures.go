@@ -8,6 +8,14 @@ vatz_protocol_info:
   notification_info:
     discord_secret: "XXXXX"
     pager_duty_secret: "YYYYY"
+    host_name: "xxx-xxxx-xxxx"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "https://xxxxx.xxxxxx"
+      - channel: "telegram"
+        secret: "https://yyyyy.yyyyyy"
+      - channel: "pagerduty"
+        secret: "https://zzzzz.zzzzzz"
   health_checker_schedule:
     - "* 1 * * *"
 plugins_infos:
@@ -43,6 +51,14 @@ vatz_protocol_info:
   notification_info:
     discord_secret: "hello"
     pager_duty_secret: "world"
+    host_name: "dummy0"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "dummy1"
+      - channel: "telegram"
+        secret: "dummy2"
+      - channel: "pagerduty"
+        secret: "dummy3"
 
 plugins_infos:
   default_verify_interval:  15
@@ -62,9 +78,17 @@ const configInvalidYAMLContents = `
 vatz_protocol_info
   protocol_identifier: "vatz"
   port: 9090
-  "notification_info":
+  notification_info:
     discord_secret: "hello"
     pager_duty_secret: "world"
+    host_name: "dummy0"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "dummy1"
+      - channel: "telegram"
+        secret: "dummy2"
+      - channel: "pagerduty"
+        secret: "dummy3"
 
 plugins_infos:
   default_verify_interval:  15

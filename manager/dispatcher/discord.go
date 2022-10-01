@@ -3,13 +3,13 @@ package dispatcher
 import (
 	"bytes"
 	"encoding/json"
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	"github.com/dsrvlabs/vatz/manager/config"
-	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"strings"
 	"time"
+
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/rs/zerolog/log"
 )
 
 type DiscordColor int
@@ -26,11 +26,11 @@ const (
 
 type discord struct {
 	channel tp.Channel
+	secret  string
 }
 
 func (d discord) SendNotification(request tp.ReqMsg) error {
-	cfg := config.GetConfig()
-	err := d.sendNotificationForDiscord(request, cfg.Vatz.NotificationInfo.DiscordSecret)
+	err := d.sendNotificationForDiscord(request, d.secret)
 	if err != nil {
 		panic(err)
 	}

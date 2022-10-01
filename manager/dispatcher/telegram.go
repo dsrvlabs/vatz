@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
+
+	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -19,12 +20,17 @@ var (
 // that helps to multi methods for notification.
 type telegram struct {
 	channel tp.Channel
+	secret  string
+	chatID  string
 }
 
 func (t telegram) SendTelegramNotification(text string) error {
 
 	var err error
 	var response *http.Response
+
+	Token = t.secret
+	ChatId = t.chatID
 
 	url := fmt.Sprintf("%s/sendMessage", getUrl())
 	body, _ := json.Marshal(map[string]string{
