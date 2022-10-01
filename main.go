@@ -45,6 +45,7 @@ func main() {
 	rootCmd := &cobra.Command{}
 	rootCmd.AddCommand(createInitCommand())
 	rootCmd.AddCommand(createStartCommand())
+	rootCmd.AddCommand(createPluginCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
