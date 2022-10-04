@@ -65,10 +65,8 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 	var err error
 	var response *http.Response
-	emoji := ""
-	if msg.State == pb.STATE_FAILURE {
-		emoji = "❌"
-	} else if msg.State == pb.STATE_SUCCESS {
+	emoji := "🚨"
+	if msg.State == pb.STATE_SUCCESS {
 		if msg.Severity == pb.SEVERITY_CRITICAL {
 			emoji = "‼️"
 		} else if msg.Severity == pb.SEVERITY_WARNING {

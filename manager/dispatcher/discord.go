@@ -88,7 +88,7 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 	// Check discord secret
 	if strings.Contains(d.secret, discordWebhookFormat) {
 		sMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
-		emoji := "❌"
+		emoji := "🚨"
 		switch msg.Severity {
 		case pb.SEVERITY_CRITICAL:
 			sMsg.Embeds[0].Color = discordRed
@@ -99,7 +99,7 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
-		//"🚨"
+
 		if msg.State == pb.STATE_SUCCESS {
 			if msg.Severity == pb.SEVERITY_CRITICAL {
 				emoji = "‼️"
