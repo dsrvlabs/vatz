@@ -2,6 +2,7 @@ package types
 
 import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/robfig/cron/v3"
 	"time"
 )
 
@@ -14,6 +15,18 @@ type ReqMsg struct {
 	Msg          string            `json:"msg"`
 	Severity     pluginpb.SEVERITY `json:"severity"`
 	ResourceType string            `json:"resource_type"`
+}
+
+func (r *ReqMsg) UpdateState(stat pluginpb.STATE) {
+	r.State = stat
+}
+
+func (r *ReqMsg) UpdateSeverity(sev pluginpb.SEVERITY) {
+	r.Severity = sev
+}
+
+func (r *ReqMsg) UpdateMSG(message string) {
+	r.Msg = message
 }
 
 type DiscordMsg struct {
@@ -47,6 +60,25 @@ type Embed struct {
 	} `json:"footer,omitempty"`
 }
 
+type StateFlag struct {
+	State    pluginpb.STATE    `json:"state"`
+	Severity pluginpb.SEVERITY `json:"severity"`
+}
+
+type CronTabSt struct {
+	Crontab  *cron.Cron `json:"crontab"`
+	EntityID int        `json:"entity_id"`
+}
+
+func (in *CronTabSt) Update(entity int) {
+	in.EntityID = entity
+}
+
+type DispatchReminder struct {
+	NewReminder   bool     `json:"new_reminder"`
+	ReminderState Reminder `json:"reminder_state"`
+}
+
 type Field struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`
@@ -68,4 +100,12 @@ type Channel string
 const (
 	Discord  Channel = "DISCORD"
 	Telegram Channel = "TELEGRAM"
+)
+
+type Reminder string
+
+const (
+	ON   Reminder = "ON"
+	HANG Reminder = "HANG"
+	OFF  Reminder = "OFF"
 )

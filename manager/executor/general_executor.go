@@ -38,10 +38,6 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			log.Fatalf("failed to check command structpb: %v", err)
 		}
 
-		if _, ok := s.status.Load(method.Name); !ok {
-			s.status.Store(method.Name, true)
-		}
-
 		req := &pluginpb.ExecuteRequest{
 			ExecuteInfo: executeInfo,
 			Options:     options,
@@ -52,19 +48,17 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			return err
 		}
 
-		if resp.GetState() != pluginpb.STATE_SUCCESS {
-			s.status.Store(method.Name, false)
-		}
+		firstExe, preStatus := s.updateState(method.Name, resp)
 
-		notifyInfo := tp.NotifyInfo{
-			Plugin:     plugin.Name,
-			Method:     method.Name,
-			Severity:   resp.GetSeverity(),
-			State:      resp.GetState(),
-			ExecuteMsg: resp.GetMessage(),
+		for _, dp := range dispatchers {
+			dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
+				Plugin:     plugin.Name,
+				Method:     method.Name,
+				Severity:   resp.GetSeverity(),
+				State:      resp.GetState(),
+				ExecuteMsg: resp.GetMessage(),
+			})
 		}
-
-		s.executeNotify(notifyInfo, dispatchers)
 	}
 
 	return nil
@@ -84,51 +78,21 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
-//executeNotify function has to be moved to dispatcher.
-func (s *executor) executeNotify(notifyInfo tp.NotifyInfo, dispatchers []dp.Dispatcher) error {
-	// if response's state is not `SUCCESS` and then we consider all execute call has failed.
-	methodName := notifyInfo.Method
-
-	if notifyInfo.State != pluginpb.STATE_SUCCESS {
-		s.status.Store(methodName, false)
-		if notifyInfo.Severity == pluginpb.SEVERITY_ERROR {
-			jsonMessage := tp.ReqMsg{
-				FuncName:     notifyInfo.Method,
-				State:        pluginpb.STATE_FAILURE,
-				Msg:          "No response from Plugin",
-				Severity:     pluginpb.SEVERITY_CRITICAL, // TODO: Error or Critical?
-				ResourceType: notifyInfo.Plugin,
-			}
-			for _, dp := range dispatchers {
-				dp.SendNotification(jsonMessage)
-			}
-
-		} else if notifyInfo.Severity == pluginpb.SEVERITY_CRITICAL {
-			jsonMessage := tp.ReqMsg{
-				FuncName:     notifyInfo.Method,
-				State:        pluginpb.STATE_FAILURE,
-				Msg:          notifyInfo.ExecuteMsg,
-				Severity:     pluginpb.SEVERITY_CRITICAL,
-				ResourceType: notifyInfo.Plugin,
-			}
-			for _, dp := range dispatchers {
-				dp.SendNotification(jsonMessage)
-			}
-		}
+func (s *executor) updateState(methodName string, resp *pluginpb.ExecuteResponse) (bool, tp.StateFlag) {
+	isFirstRun := false
+	exeResp := tp.StateFlag{State: resp.GetState(), Severity: resp.GetSeverity()}
+	if _, ok := s.status.Load(methodName); !ok {
+		isFirstRun = true
+		s.status.Store(methodName, exeResp)
 	} else {
-		if status, ok := s.status.Load(methodName); ok && status == false {
-			jsonMessage := tp.ReqMsg{
-				FuncName:     notifyInfo.Method,
-				State:        pluginpb.STATE_SUCCESS,
-				Msg:          notifyInfo.ExecuteMsg,
-				Severity:     pluginpb.SEVERITY_INFO,
-				ResourceType: notifyInfo.Plugin,
-			}
-			for _, dp := range dispatchers {
-				dp.SendNotification(jsonMessage)
-			}
-			s.status.Store(methodName, true)
+		preStatus, _ := s.status.Load(methodName)
+		preVal := preStatus.(tp.StateFlag)
+		if preVal.State != resp.State || preVal.Severity != resp.Severity {
+			s.status.Store(methodName, exeResp)
+			exeResp = tp.StateFlag{State: preVal.State, Severity: preVal.Severity}
+		} else {
+			exeResp = tp.StateFlag{State: preVal.State, Severity: preVal.Severity}
 		}
 	}
-	return nil
+	return isFirstRun, exeResp
 }

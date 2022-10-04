@@ -38,13 +38,13 @@ type Config struct {
 }
 
 type NotificationInfo struct {
-	DiscordSecret    string `yaml:"discord_secret"`
-	PagerDutySecret  string `yaml:"pager_duty_secret"`
-	HostName         string `yaml:"host_name"`
-	DispatchChannels []struct {
-		Channel string `yaml:"channel"`
-		Secret  string `yaml:"secret"`
-		ChatID  string `yaml:"chat_id"`
+	HostName                string   `yaml:"host_name"`
+	DefaultReminderSchedule []string `yaml:"default_reminder_schedule"`
+	DispatchChannels        []struct {
+		Channel          string   `yaml:"channel"`
+		Secret           string   `yaml:"secret"`
+		ChatID           string   `yaml:"chat_id"`
+		ReminderSchedule []string `yaml:"reminder_schedule"`
 	} `yaml:"dispatch_channels"`
 }
 

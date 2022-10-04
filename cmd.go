@@ -37,27 +37,31 @@ func createInitCommand() *cobra.Command {
 			template := `vatz_protocol_info:
   protocol_identifier: "Put Your Protocol here"
   port: 9090
-  notification_info:
-    host_name: "Your machine name"
-    dispatch_channels:
-      - channel: "discord"
-        secret: "Your channel secret"
-      - channel: "telegram"
-        secret: "Your channel secret"
-        chat_id: "482109801"
   health_checker_schedule:
     - "0 1 * * *"
+  notification_info:
+    host_name: "Put your machine's host name"
+    default_reminder_schedule:
+      - "*/15 * * * *"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "Put your Discord Webhook"
+      - channel: "telegram"
+        secret: "Put Your Bot's Token"
+        chat_id: "Put Your Chat's chat_id'"
+        reminder_schedule:
+          - "*/5 * * * *"
 plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
   default_plugin_name: "vatz-plugin"
   plugins:
-    - plugin_name: "sample1"
+    - plugin_name: "samplePlugin1"
       plugin_address: "localhost"
       plugin_port: 9001
       executable_methods:
         - method_name: "sampleMethod1"
-    - plugin_name: "sample2"
+    - plugin_name: "samplePlugin2"
       plugin_address: "localhost"
       verify_interval: 7
       execute_interval: 9

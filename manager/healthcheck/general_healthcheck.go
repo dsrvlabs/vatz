@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
@@ -23,21 +23,45 @@ type healthChecker struct {
 	pluginStatus sync.Map
 }
 
-func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
+func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
+	sendMSG := false
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
-	if err != nil || verify == nil {
-		isAlive = tp.AliveStatusDown
-		failErrorMessage := tp.ReqMsg{
-			FuncName:     "isPluginUp",
-			State:        pluginpb.STATE_FAILURE,
-			Msg:          "Plugin is DOWN!!",
-			Severity:     pluginpb.SEVERITY_CRITICAL,
-			ResourceType: plugin.Name,
-		}
 
+	deliverMSG := tp.ReqMsg{
+		FuncName:     "isPluginUp",
+		State:        pb.STATE_FAILURE,
+		Msg:          "Plugin is DOWN!!",
+		Severity:     pb.SEVERITY_CRITICAL,
+		ResourceType: plugin.Name,
+	}
+
+	if _, ok := h.pluginStatus.Load(plugin.Name); !ok {
+		if err != nil || verify == nil {
+			isAlive = tp.AliveStatusDown
+			sendMSG = true
+		}
+	} else {
+		plStat, _ := h.pluginStatus.Load(plugin.Name)
+		pStruct := plStat.(*tp.PluginStatus)
+		if err != nil || verify == nil {
+			isAlive = tp.AliveStatusDown
+			if pStruct.IsAlive == tp.AliveStatusUp {
+				sendMSG = true
+			}
+		} else {
+			if pStruct.IsAlive == tp.AliveStatusDown {
+				sendMSG = true
+				deliverMSG.UpdateSeverity(pb.SEVERITY_INFO)
+				deliverMSG.UpdateState(pb.STATE_SUCCESS)
+				deliverMSG.UpdateMSG("Plugin is Alive.")
+			}
+		}
+	}
+
+	if sendMSG {
 		for _, dispatcher := range dispatchers {
-			dispatcher.SendNotification(failErrorMessage)
+			dispatcher.SendNotification(deliverMSG)
 		}
 	}
 
