@@ -74,11 +74,6 @@ func (in *CronTabSt) Update(entity int) {
 	in.EntityID = entity
 }
 
-type DispatchReminder struct {
-	NewReminder   bool     `json:"new_reminder"`
-	ReminderState Reminder `json:"reminder_state"`
-}
-
 type Field struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`

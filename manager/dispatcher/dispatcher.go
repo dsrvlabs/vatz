@@ -5,9 +5,11 @@ import (
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
 	"strings"
 	"sync"
+	"time"
 )
 
 /* TODO: Discussion.
@@ -41,25 +43,24 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 			}
 			switch channel := chanInfo.Channel; {
 			case strings.EqualFold(channel, string(tp.Discord)):
-				discord := &discord{
+				dispatcherSingletons = append(dispatcherSingletons, &discord{
 					host:             cfg.HostName,
 					channel:          tp.Discord,
 					secret:           chanInfo.Secret,
+					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chanInfo.ReminderSchedule,
-					reminderState:    sync.Map{},
-				}
-
-				dispatcherSingletons = append(dispatcherSingletons, discord)
+					entry:            sync.Map{},
+				})
 			case strings.EqualFold(channel, string(tp.Telegram)):
-				telegram := &telegram{
+				dispatcherSingletons = append(dispatcherSingletons, &telegram{
 					host:             cfg.HostName,
 					channel:          tp.Telegram,
 					secret:           chanInfo.Secret,
 					chatID:           chanInfo.ChatID,
+					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chanInfo.ReminderSchedule,
-					reminderState:    sync.Map{},
-				}
-				dispatcherSingletons = append(dispatcherSingletons, telegram)
+					entry:            sync.Map{},
+				})
 			}
 		}
 	})
@@ -67,41 +68,32 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 	return dispatcherSingletons
 }
 
-func messageHandler(isFirst bool, preStat tp.StateFlag, info tp.NotifyInfo) (bool, tp.DispatchReminder, tp.ReqMsg) {
-	deliverMSG := tp.ReqMsg{
+func messageHandler(isFirst bool, preStat tp.StateFlag, info tp.NotifyInfo) (bool, tp.Reminder, tp.ReqMsg) {
+	notifyOn := false
+	reminderState := tp.HANG
+	isFlagStateChanged := false
+
+	if preStat.State != info.State || preStat.Severity != info.Severity {
+		isFlagStateChanged = true
+	}
+
+	if info.State == pb.STATE_FAILURE ||
+		(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_WARNING) ||
+		(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_CRITICAL) {
+		if isFirst || isFlagStateChanged {
+			notifyOn = true
+			reminderState = tp.ON
+		}
+	} else if info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_INFO && isFlagStateChanged {
+		notifyOn = true
+		reminderState = tp.OFF
+	}
+
+	return notifyOn, reminderState, tp.ReqMsg{
 		FuncName:     info.Method,
 		State:        info.State,
 		Msg:          info.ExecuteMsg,
 		Severity:     info.Severity,
 		ResourceType: info.Plugin,
 	}
-
-	notifyOn := false
-	newReminder := false
-	reminderState := tp.HANG
-
-	if isFirst {
-		if info.State == pb.STATE_FAILURE ||
-			(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_WARNING) ||
-			(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_CRITICAL) {
-			notifyOn = true
-			newReminder = true
-			reminderState = tp.ON
-		}
-	} else {
-		if preStat.State != info.State || preStat.Severity != info.Severity {
-			newReminder = true
-			if info.State == pb.STATE_FAILURE ||
-				(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_WARNING) ||
-				(info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_CRITICAL) {
-				notifyOn = true
-				reminderState = tp.ON
-			} else if info.State == pb.STATE_SUCCESS && info.Severity == pb.SEVERITY_INFO {
-				notifyOn = true
-				reminderState = tp.OFF
-			}
-		}
-	}
-
-	return notifyOn, tp.DispatchReminder{NewReminder: newReminder, ReminderState: reminderState}, deliverMSG
 }

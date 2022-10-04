@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog/log"
 )
@@ -32,60 +32,52 @@ type discord struct {
 	channel          tp.Channel
 	secret           string
 	reminderSchedule []string
-	reminderState    sync.Map
+	reminderCron     *cron.Cron
+	entry            sync.Map
 }
 
-func (d discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
-	reqToNotify, setReminders, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
+func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	methodName := notifyInfo.Method
-	fmt.Println(`==== START === (SetDispatcher) with method:`, methodName)
 
 	if reqToNotify {
 		d.SendNotification(deliverMessage)
 	}
-	fmt.Println("Map Value", d.reminderState)
 
-	if setReminders.ReminderState == tp.ON {
-		fmt.Println("TP ON: Is going to Start!! 1")
-		dCron := &tp.CronTabSt{Crontab: cron.New(cron.WithLocation(time.UTC)), EntityID: 0}
-		if _, ok := d.reminderState.Load(methodName); ok {
-			fmt.Println("There's previous Cron")
-			preStore, _ := d.reminderState.Load(methodName)
-			dCron = preStore.(*tp.CronTabSt)
+	if reminderState == tp.ON {
+		newEntries := []cron.EntryID{}
+		//In case of reminder has to keep but stateFlag has changed,
+		//e.g.) CRITICAL -> WARNING
+		//e.g.) ERROR -> INFO -> ERROR
+		if entries, ok := d.entry.Load(methodName); ok {
+			for _, entry := range entries.([]cron.EntryID) {
+				d.reminderCron.Remove(entry)
+			}
+			d.reminderCron.Stop()
 		}
 		for _, schedule := range d.reminderSchedule {
-			id, _ := dCron.Crontab.AddFunc(schedule, func() {
+			id, _ := d.reminderCron.AddFunc(schedule, func() {
 				d.SendNotification(deliverMessage)
 			})
-			dCron.Update(int(id))
-			fmt.Println("id: ", id)
+			newEntries = append(newEntries, id)
 		}
-		dCron.Crontab.Start()
-		d.reminderState.Store(methodName, dCron)
-		fmt.Println("reminderState", d.reminderState)
-		fmt.Println("preStat", preStat)
-	} else if setReminders.ReminderState == tp.OFF {
-		fmt.Println("reminderState", d.reminderState)
-		preCron, _ := d.reminderState.Load(methodName)
-		c := preCron.(*tp.CronTabSt)
-		fmt.Println("Entries: ", c.Crontab.Entries())
-		fmt.Println("TP OFF: Is going to STOP!! 2")
-		fmt.Println("preStat", preStat)
-		c.Crontab.Remove(cron.EntryID(c.EntityID))
-		d := c.Crontab.Stop()
-		fmt.Println("STOP: ", d)
-	} else {
+		d.entry.Store(methodName, newEntries)
+		d.reminderCron.Start()
 
-		fmt.Println("TP HANG: Is going to HANG!! 3")
-		fmt.Println(setReminders.ReminderState)
+	} else if reminderState == tp.OFF {
+		entries, _ := d.entry.Load(methodName)
+		for _, entity := range entries.([]cron.EntryID) {
+			{
+				d.reminderCron.Remove(entity)
+			}
+			d.reminderCron.Stop()
+		}
 	}
 
-	fmt.Println(`==== END === (SetDispatcher) with method:`, methodName)
-	fmt.Println("")
 	return nil
 }
 
-func (d discord) SendNotification(msg tp.ReqMsg) error {
+func (d *discord) SendNotification(msg tp.ReqMsg) error {
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
 	}
@@ -96,18 +88,29 @@ func (d discord) SendNotification(msg tp.ReqMsg) error {
 	// Check discord secret
 	if strings.Contains(d.secret, discordWebhookFormat) {
 		sMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
+		emoji := "❌"
 		switch msg.Severity {
-		case pluginpb.SEVERITY_CRITICAL:
+		case pb.SEVERITY_CRITICAL:
 			sMsg.Embeds[0].Color = discordRed
-		case pluginpb.SEVERITY_WARNING:
+		case pb.SEVERITY_WARNING:
 			sMsg.Embeds[0].Color = discordYellow
-		case pluginpb.SEVERITY_INFO:
-			sMsg.Embeds[0].Color = discordBlue
+		case pb.SEVERITY_INFO:
+			sMsg.Embeds[0].Color = discordGreen
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
+		//"🚨"
+		if msg.State == pb.STATE_SUCCESS {
+			if msg.Severity == pb.SEVERITY_CRITICAL {
+				emoji = "‼️"
+			} else if msg.Severity == pb.SEVERITY_WARNING {
+				emoji = "❗"
+			} else if msg.Severity == pb.SEVERITY_INFO {
+				emoji = "✅"
+			}
+		}
 
-		sMsg.Embeds[0].Title = msg.Severity.String()
+		sMsg.Embeds[0].Title = fmt.Sprintf(`%s %s`, emoji, msg.Severity.String())
 		sMsg.Embeds[0].Fields = []tp.Field{{Name: "(" + d.host + ") " + msg.ResourceType, Value: msg.Msg, Inline: false}}
 		sMsg.Embeds[0].Timestamp = time.Now()
 
@@ -128,5 +131,4 @@ func (d discord) SendNotification(msg tp.ReqMsg) error {
 		log.Error().Str("module", "dispatcher").Msg("dispatcher ch:discord-Invalid discord webhook address")
 	}
 	return nil
-
 }

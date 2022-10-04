@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"sync"
-	"time"
 )
 
 // telegram: This is a sample code
@@ -22,50 +21,48 @@ type telegram struct {
 	secret           string
 	chatID           string
 	reminderSchedule []string
-	reminderState    sync.Map
+	reminderCron     *cron.Cron
+	entry            sync.Map
 }
 
-func (t telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
-	reqToNotify, setReminders, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	methodName := notifyInfo.Method
+func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
+
 	if reqToNotify {
 		t.SendNotification(deliverMessage)
 	}
 
-	if setReminders.ReminderState == tp.ON {
-		fmt.Println("TP ON: Is going to Start!! 1")
-		c := cron.New(cron.WithLocation(time.UTC))
-		if _, ok := t.reminderState.Load(methodName); ok {
-			preCron, _ := t.reminderState.Load(methodName)
-			c = preCron.(*cron.Cron)
+	if reminderState == tp.ON {
+		newEntries := []cron.EntryID{}
+		//In case of reminder has to keep but stateFlag has changed,
+		//e.g.) CRITICAL -> WARNING
+		//e.g.) ERROR -> INFO -> ERROR
+		if entries, ok := t.entry.Load(notifyInfo.Method); ok {
+			for _, entry := range entries.([]cron.EntryID) {
+				t.reminderCron.Remove(entry)
+			}
+			t.reminderCron.Stop()
 		}
 		for _, schedule := range t.reminderSchedule {
-			id, _ := c.AddFunc(schedule, func() {
+			id, _ := t.reminderCron.AddFunc(schedule, func() {
 				t.SendNotification(deliverMessage)
 			})
-			fmt.Println("id: ", id)
+			newEntries = append(newEntries, id)
 		}
-		c.Start()
-		t.reminderState.Store(methodName, c)
-		fmt.Println("preStat", preStat)
-	} else if setReminders.ReminderState == tp.OFF {
-		preCron, _ := t.reminderState.Load(methodName)
-		c := preCron.(*cron.Cron)
-		fmt.Println("Entries: ", c.Entries())
-		fmt.Println("TP OFF: Is going to STOP!! 2")
-		fmt.Println("preStat", preStat)
-		c.Remove(1)
-		d := c.Stop()
-		fmt.Println("STOP: ", d)
-	} else {
-		fmt.Println("TP HANG: Is going to HANG!! 3")
-		fmt.Println(setReminders.ReminderState)
-	}
+		t.entry.Store(notifyInfo.Method, newEntries)
+		t.reminderCron.Start()
 
+	} else if reminderState == tp.OFF {
+		entries, _ := t.entry.Load(notifyInfo.Method)
+		for _, entity := range entries.([]cron.EntryID) {
+			t.reminderCron.Remove(entity)
+		}
+		t.reminderCron.Stop()
+	}
 	return nil
 }
 
-func (t telegram) SendNotification(msg tp.ReqMsg) error {
+func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 	var err error
 	var response *http.Response
 	emoji := ""
@@ -115,9 +112,6 @@ _Plugin Name: %s_
 		if !respJSON["ok"].(bool) {
 			log.Error().Str("module", "dispatcher").Msg("dispatcher CH: Telegram-Invalid telegram token.")
 		}
-		//else{
-		//	log.Info().Str("module", "dispatcher").Msgf("dispatcher telegram response: %s", string(body))
-		//}
 	}
 	return nil
 }

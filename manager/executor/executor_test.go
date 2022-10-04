@@ -98,7 +98,7 @@ func TestExecutorSuccess(t *testing.T) {
 
 		assert.Nil(t, err)
 		mockStatus, _ := e.status.Load(testMethodName)
-		assert.True(t, mockStatus == true)
+		assert.True(t, mockStatus.(tp.StateFlag) == tp.StateFlag{State: pluginpb.STATE_SUCCESS, Severity: pluginpb.SEVERITY_UNKNOWN})
 	}
 }
 
