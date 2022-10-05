@@ -18,6 +18,12 @@ const (
 
 	// DefaultConfigFile is default file name of config.
 	DefaultConfigFile = "default.yaml"
+
+	// DefaultGRPCPort is default port number of grpc service.
+	DefaultGRPCPort = 19090
+
+	// DefaultHTTPPort is default port number of http service.
+	DefaultHTTPPort = 19091
 )
 
 var (
@@ -32,11 +38,13 @@ type Config struct {
 		Port                  int              `yaml:"port"`
 		NotificationInfo      NotificationInfo `yaml:"notification_info"`
 		HealthCheckerSchedule []string         `yaml:"health_checker_schedule"`
+		RPCInfo               RPCInfo          `yaml:"rpc_info"`
 	} `yaml:"vatz_protocol_info"`
 
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
 }
 
+// NotificationInfo is notification structure.
 type NotificationInfo struct {
 	HostName                string   `yaml:"host_name"`
 	DefaultReminderSchedule []string `yaml:"default_reminder_schedule"`
@@ -46,6 +54,14 @@ type NotificationInfo struct {
 		ChatID           string   `yaml:"chat_id"`
 		ReminderSchedule []string `yaml:"reminder_schedule"`
 	} `yaml:"dispatch_channels"`
+}
+
+// RPCInfo is structure for RPC service configuration.
+type RPCInfo struct {
+	Enabled  bool   `yaml:"enabled"`
+	Address  string `yaml:"address"`
+	GRPCPort int    `yaml:"grpc_port"`
+	HTTPPort int    `yaml:"http_port"`
 }
 
 // PluginInfo contains general plugin info.
@@ -112,6 +128,14 @@ func (p *parser) parseYAML(contents []byte) (*Config, error) {
 }
 
 func (p *parser) overrideDefault(config *Config) {
+	if config.Vatz.RPCInfo.GRPCPort == 0 {
+		config.Vatz.RPCInfo.GRPCPort = DefaultGRPCPort
+	}
+
+	if config.Vatz.RPCInfo.HTTPPort == 0 {
+		config.Vatz.RPCInfo.HTTPPort = DefaultHTTPPort
+	}
+
 	for i, plugin := range config.PluginInfos.Plugins {
 		if plugin.VerifyInterval == 0 {
 			config.PluginInfos.Plugins[i].VerifyInterval = config.PluginInfos.DefaultVerifyInterval

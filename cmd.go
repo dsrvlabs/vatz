@@ -51,6 +51,12 @@ func createInitCommand() *cobra.Command {
         chat_id: "Put Your Chat's chat_id'"
         reminder_schedule:
           - "*/5 * * * *"
+  rpc_info:
+    enabled: true
+    address: "127.0.0.1"
+    grpc_port: 19090
+    http_port: 19091
+
 plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30

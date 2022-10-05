@@ -18,6 +18,12 @@ vatz_protocol_info:
         secret: "https://zzzzz.zzzzzz"
   health_checker_schedule:
     - "* 1 * * *"
+  rpc_info:
+    enabled: true
+    address: "127.0.0.1"
+    grpc_port: 19090
+    http_port: 19091
+
 plugins_infos:
   default_verify_interval:  15
   default_execute_interval: 30
