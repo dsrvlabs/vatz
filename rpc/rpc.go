@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/http"
 
@@ -14,15 +15,9 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var (
-	// TODO: Address should be configurable.
-	grpcAddress = "localhost:19090"
-	httpAddress = "localhost:19091"
-)
-
 // VatzRPC provides RPC interfaces.
 type VatzRPC interface {
-	Start() error
+	Start(string, int, int) error
 	Stop()
 }
 
@@ -35,15 +30,16 @@ type rpcService struct {
 	httpServer     *http.Server
 }
 
-func (s *rpcService) Start() error {
+func (s *rpcService) Start(address string, grpcPort int, httpPort int) error {
 	log.Info().Str("module", "rpc").Msg("start rpc server")
 
 	errChan := make(chan error, 2)
 
 	go func(errChan chan<- error) {
-		log.Info().Str("module", "rpc").Msg("start gRPC server")
+		listenAddr := fmt.Sprintf("%s:%d", address, grpcPort)
+		log.Info().Str("module", "rpc").Msgf("start gRPC server %s", listenAddr)
 
-		l, err := net.Listen("tcp", grpcAddress)
+		l, err := net.Listen("tcp", listenAddr)
 		if err != nil {
 			log.Info().Str("module", "rpc").Err(err)
 			errChan <- err
@@ -67,15 +63,17 @@ func (s *rpcService) Start() error {
 	}(errChan)
 
 	go func(errChan chan<- error) {
-		log.Info().Str("module", "rpc").Msg("start gRPC gateway server")
+		httpAddr := fmt.Sprintf("%s:%d", address, httpPort)
+		log.Info().Str("module", "rpc").Msgf("start gRPC gateway server %s", httpAddr)
 
 		mux := runtime.NewServeMux()
 
-		// FIXME: Remove hardcoded address
 		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 		}
-		err := vatzpb.RegisterVatzRPCHandlerFromEndpoint(s.ctx, mux, grpcAddress, opts)
+
+		grpcAddr := fmt.Sprintf("%s:%d", address, grpcPort)
+		err := vatzpb.RegisterVatzRPCHandlerFromEndpoint(s.ctx, mux, grpcAddr, opts)
 		if err != nil {
 			log.Info().Str("module", "rpc").Err(err)
 			errChan <- err
@@ -83,7 +81,7 @@ func (s *rpcService) Start() error {
 		}
 
 		s.httpServer = &http.Server{
-			Addr:    httpAddress,
+			Addr:    httpAddr,
 			Handler: mux,
 		}
 

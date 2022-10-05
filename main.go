@@ -82,7 +82,7 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
-		rpcServ.Start()
+		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
