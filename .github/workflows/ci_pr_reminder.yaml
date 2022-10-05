@@ -1,0 +1,33 @@
+name: Notify PR has raised
+on:
+  pull_request:
+    types: [ opened, reopened ]
+  # Send notification from Monday to Sunday at 10 or when new PR is raised.
+  schedule:
+    - cron: "0 10 * * 1-5"
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: listPullRequests
+        uses: buildsville/list-pull-requests@v1
+        id: list
+        with:
+          token: ${{secrets.PR_ACTION_TOKEN}}
+          labels: '[]'
+          skip_hour: '0'
+      - name: Notify
+        if: ${{ steps.list.outputs.pulls }} != ''
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: "[VATZ](https://github.com/dsrvlabs/vatz/pulls) still has unclosed PRs. \n
+                 =============  \n
+
+                 ${{ steps.list.outputs.pulls }}
+
+                 =============   \n
+                  \n
+                 ‼️ Please, Review and Close Pull Request."
