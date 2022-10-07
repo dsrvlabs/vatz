@@ -66,7 +66,6 @@ func initiateServer(ch <-chan os.Signal) error {
 	reflection.Register(s)
 
 	vatzConfig := cfg.Vatz
-
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
 	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatchers)
 	if err != nil {
@@ -75,8 +74,9 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Error().Str("module", "main").Msgf("VATZ listener Error: %s", err)
+		log.Error().Str("module", "main").Msgf("VATZ Listener Error: %s", err)
 	}
+
 	log.Info().Str("module", "main").Msgf("VATZ Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
 
@@ -86,7 +86,6 @@ func initiateServer(ch <-chan os.Signal) error {
 	}()
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
-
 	initHealthServer(s)
 	if err := s.Serve(listener); err != nil {
 		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
@@ -133,7 +132,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 
 func multiPluginExecutor(plugin config.Plugin,
 	singleClient pluginpb.PluginClient,
-	isOkayToSend bool,
+	okToSend bool,
 	quit <-chan os.Signal) {
 
 	verifyTicker := time.NewTicker(time.Duration(plugin.VerifyInterval) * time.Second)
@@ -145,12 +144,12 @@ func multiPluginExecutor(plugin config.Plugin,
 		case <-verifyTicker.C:
 			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
 			if live == tp.AliveStatusUp {
-				isOkayToSend = true
+				okToSend = true
 			} else {
-				isOkayToSend = false
+				okToSend = false
 			}
 		case <-executeTicker.C:
-			if isOkayToSend == true {
+			if okToSend == true {
 				err := executor.Execute(ctx, singleClient, plugin, dispatchers)
 				if err != nil {
 					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)

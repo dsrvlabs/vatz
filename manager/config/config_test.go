@@ -106,8 +106,6 @@ func TestDefaultConfig(t *testing.T) {
 	// Asserts.
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
-	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
-	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
 	for i, dispatchChannel := range test.DispatchChannels {
 		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
@@ -180,8 +178,6 @@ func TestOverrideDefaultValues(t *testing.T) {
 	// Asserts.
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
-	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
-	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
 	for i, dispatchChannel := range test.DispatchChannels {
 		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
@@ -363,8 +359,6 @@ func TestGetConfig(t *testing.T) {
 	// Asserts.
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
-	assert.Equal(t, test.ExpectDiscordSecret, cfg.Vatz.NotificationInfo.DiscordSecret)
-	assert.Equal(t, test.ExpectPagerDutySecret, cfg.Vatz.NotificationInfo.PagerDutySecret)
 	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
 	for i, dispatchChannel := range test.DispatchChannels {
 		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)

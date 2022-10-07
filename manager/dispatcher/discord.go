@@ -3,11 +3,14 @@ package dispatcher
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/robfig/cron/v3"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog/log"
 )
@@ -25,19 +28,56 @@ const (
 )
 
 type discord struct {
-	channel tp.Channel
-	secret  string
+	host             string
+	channel          tp.Channel
+	secret           string
+	reminderSchedule []string
+	reminderCron     *cron.Cron
+	entry            sync.Map
 }
 
-func (d discord) SendNotification(request tp.ReqMsg) error {
-	err := d.sendNotificationForDiscord(request, d.secret)
-	if err != nil {
-		panic(err)
+func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
+	methodName := notifyInfo.Method
+
+	if reqToNotify {
+		d.SendNotification(deliverMessage)
 	}
+
+	if reminderState == tp.ON {
+		newEntries := []cron.EntryID{}
+		//In case of reminder has to keep but stateFlag has changed,
+		//e.g.) CRITICAL -> WARNING
+		//e.g.) ERROR -> INFO -> ERROR
+		if entries, ok := d.entry.Load(methodName); ok {
+			for _, entry := range entries.([]cron.EntryID) {
+				d.reminderCron.Remove(entry)
+			}
+			d.reminderCron.Stop()
+		}
+		for _, schedule := range d.reminderSchedule {
+			id, _ := d.reminderCron.AddFunc(schedule, func() {
+				d.SendNotification(deliverMessage)
+			})
+			newEntries = append(newEntries, id)
+		}
+		d.entry.Store(methodName, newEntries)
+		d.reminderCron.Start()
+
+	} else if reminderState == tp.OFF {
+		entries, _ := d.entry.Load(methodName)
+		for _, entity := range entries.([]cron.EntryID) {
+			{
+				d.reminderCron.Remove(entity)
+			}
+			d.reminderCron.Stop()
+		}
+	}
+
 	return nil
 }
 
-func (d discord) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error {
+func (d *discord) SendNotification(msg tp.ReqMsg) error {
 	if msg.ResourceType == "" {
 		msg.ResourceType = "No Resource Type"
 	}
@@ -46,21 +86,32 @@ func (d discord) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error
 	}
 
 	// Check discord secret
-	if strings.Contains(webhook, discordWebhookFormat) {
+	if strings.Contains(d.secret, discordWebhookFormat) {
 		sMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
+		emoji := "🚨"
 		switch msg.Severity {
-		case pluginpb.SEVERITY_CRITICAL:
+		case pb.SEVERITY_CRITICAL:
 			sMsg.Embeds[0].Color = discordRed
-		case pluginpb.SEVERITY_WARNING:
+		case pb.SEVERITY_WARNING:
 			sMsg.Embeds[0].Color = discordYellow
-		case pluginpb.SEVERITY_INFO:
-			sMsg.Embeds[0].Color = discordBlue
+		case pb.SEVERITY_INFO:
+			sMsg.Embeds[0].Color = discordGreen
 		default:
 			sMsg.Embeds[0].Color = discordGray
 		}
 
-		sMsg.Embeds[0].Title = msg.Severity.String()
-		sMsg.Embeds[0].Fields = []tp.Field{{Name: msg.ResourceType, Value: msg.Msg, Inline: false}}
+		if msg.State == pb.STATE_SUCCESS {
+			if msg.Severity == pb.SEVERITY_CRITICAL {
+				emoji = "‼️"
+			} else if msg.Severity == pb.SEVERITY_WARNING {
+				emoji = "❗"
+			} else if msg.Severity == pb.SEVERITY_INFO {
+				emoji = "✅"
+			}
+		}
+
+		sMsg.Embeds[0].Title = fmt.Sprintf(`%s %s`, emoji, msg.Severity.String())
+		sMsg.Embeds[0].Fields = []tp.Field{{Name: "(" + d.host + ") " + msg.ResourceType, Value: msg.Msg, Inline: false}}
 		sMsg.Embeds[0].Timestamp = time.Now()
 
 		message, err := json.Marshal(sMsg)
@@ -68,7 +119,7 @@ func (d discord) sendNotificationForDiscord(msg tp.ReqMsg, webhook string) error
 			return err
 		}
 
-		req, _ := http.NewRequest("POST", webhook, bytes.NewReader(message))
+		req, _ := http.NewRequest("POST", d.secret, bytes.NewReader(message))
 		req.Header.Set("Content-Type", "application/json")
 		c := &http.Client{}
 		_, err = c.Do(req)
