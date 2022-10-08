@@ -102,13 +102,13 @@ Plugin Name: <em>%s</em>
 
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram body parsing Error: %s", err)
+		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	} else {
 		respJSON := make(map[string]interface{})
 		json.Unmarshal(body, &respJSON)
 		if !respJSON["ok"].(bool) {
-			log.Error().Str("module", "dispatcher").Msg("dispatcher CH: Telegram-Invalid telegram token.")
+			log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
 		}
 	}
 	return nil
