@@ -77,15 +77,15 @@ func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 	}
 	url := fmt.Sprintf("%s/sendMessage", getUrl(t.secret))
 	sendingText := fmt.Sprintf(`
-%s**%s**%s
-**(%s)**
-_Plugin Name: %s_
+%s<strong>%s</strong>%s
+<strong>(%s)</strong>
+Plugin Name: <em>%s</em>
 %s`, emoji, msg.Severity.String(), emoji, t.host, msg.ResourceType, msg.Msg)
 
 	body, _ := json.Marshal(map[string]string{
 		"chat_id":    t.chatID,
 		"text":       sendingText,
-		"parse_mode": "markdown",
+		"parse_mode": "html",
 	})
 
 	response, err = http.Post(

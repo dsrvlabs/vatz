@@ -48,7 +48,7 @@ func createInitCommand() *cobra.Command {
         secret: "Put your Discord Webhook"
       - channel: "telegram"
         secret: "Put Your Bot's Token"
-        chat_id: "Put Your Chat's chat_id'"
+        chat_id: "Put Your Chat's chat_id"
         reminder_schedule:
           - "*/5 * * * *"
 plugins_infos:
