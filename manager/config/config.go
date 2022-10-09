@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
@@ -135,7 +136,8 @@ func InitConfig(configFile string) *Config {
 		if err != nil {
 			if strings.Contains(err.Error(), "no such file or directory") {
 				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
-				log.Error().Str("module", "config").Msg("Please, execute `.vatz init` first or set appropriate path for default.yaml")
+				log.Error().Str("module", "config").Msg("Please, initialize VATZ with command `.vatz init` first or set appropriate path for default.yaml")
+				os.Exit(1)
 			}
 			panic(err)
 		}
