@@ -33,6 +33,7 @@ type testConfigExpects struct {
 	ExpectDefaultVerifyInterval  int
 	ExpectDefaultExecuteInterval int
 	ExpectDefaultPluginName      string
+	ExpectRPCInfo                RPCInfo
 
 	Plugins []testPluginExpects
 }
@@ -77,6 +78,12 @@ func TestDefaultConfig(t *testing.T) {
 		ExpectDefaultVerifyInterval:  15,
 		ExpectDefaultExecuteInterval: 30,
 		ExpectDefaultPluginName:      "vatz-plugin",
+		ExpectRPCInfo: RPCInfo{
+			Enabled:  true,
+			Address:  "127.0.0.1",
+			GRPCPort: 19090,
+			HTTPPort: 19091,
+		},
 		Plugins: []testPluginExpects{
 			{
 				ExpectPluginName:      "vatz-plugin-node-checker",
@@ -115,6 +122,11 @@ func TestDefaultConfig(t *testing.T) {
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
 	assert.Equal(t, test.ExpectDefaultExecuteInterval, cfg.PluginInfos.DefaultExecuteInterval)
+
+	assert.True(t, test.ExpectRPCInfo.Enabled)
+	assert.Equal(t, "127.0.0.1", test.ExpectRPCInfo.Address)
+	assert.Equal(t, 19090, test.ExpectRPCInfo.GRPCPort)
+	assert.Equal(t, 19091, test.ExpectRPCInfo.HTTPPort)
 
 	assert.Equal(t, len(test.Plugins), len(cfg.PluginInfos.Plugins))
 
@@ -183,6 +195,10 @@ func TestOverrideDefaultValues(t *testing.T) {
 		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
 		assert.Equal(t, dispatchChannel.ExpectSecret, cfg.Vatz.NotificationInfo.DispatchChannels[i].Secret)
 	}
+
+	// On testcase, there is no RPCPort information and that means default value shoule be set.
+	assert.Equal(t, DefaultGRPCPort, cfg.Vatz.RPCInfo.GRPCPort)
+	assert.Equal(t, DefaultHTTPPort, cfg.Vatz.RPCInfo.HTTPPort)
 
 	assert.Equal(t, test.ExpectDefaultVerifyInterval, cfg.PluginInfos.DefaultVerifyInterval)
 	assert.Equal(t, test.ExpectDefaultExecuteInterval, cfg.PluginInfos.DefaultExecuteInterval)
