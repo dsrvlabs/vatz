@@ -77,15 +77,15 @@ func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 	}
 	url := fmt.Sprintf("%s/sendMessage", getUrl(t.secret))
 	sendingText := fmt.Sprintf(`
-%s**%s**%s
-**(%s)**
-_Plugin Name: %s_
+%s<strong>%s</strong>%s
+<strong>(%s)</strong>
+Plugin Name: <em>%s</em>
 %s`, emoji, msg.Severity.String(), emoji, t.host, msg.ResourceType, msg.Msg)
 
 	body, _ := json.Marshal(map[string]string{
 		"chat_id":    t.chatID,
 		"text":       sendingText,
-		"parse_mode": "markdown",
+		"parse_mode": "html",
 	})
 
 	response, err = http.Post(
@@ -102,13 +102,13 @@ _Plugin Name: %s_
 
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram body parsing Error: %s", err)
+		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	} else {
 		respJSON := make(map[string]interface{})
 		json.Unmarshal(body, &respJSON)
 		if !respJSON["ok"].(bool) {
-			log.Error().Str("module", "dispatcher").Msg("dispatcher CH: Telegram-Invalid telegram token.")
+			log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
 		}
 	}
 	return nil
