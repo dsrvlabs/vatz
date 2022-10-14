@@ -200,3 +200,17 @@ func createPluginCommand() *cobra.Command {
 
 	return cmd
 }
+
+func createVersionCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "version",
+		Short: "VATZ Version",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			verStr := GetVersion()
+			fmt.Println(verStr)
+			return nil
+		},
+	}
+
+	return cmd
+}
