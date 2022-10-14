@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"sync"
@@ -268,32 +269,28 @@ func TestURLConfig(t *testing.T) {
 }
 
 func TestNotExistConfigFile(t *testing.T) {
-	defer func() {
-		recover()
-	}()
+	configOnce = &sync.Once{} // Overrice Once
+	vatzConfig = nil
 
-	_ = InitConfig("not_existing_file.yaml")
+	cfg, err := InitConfig("not_existing_file.yaml")
 
-	// DO NOT REACH HERE
-	t.Error("no panic occures")
+	assert.Nil(t, cfg)
+	assert.NotNil(t, err)
+	assert.True(t, errors.Is(err, os.ErrNotExist))
 }
 
 func TestInvalidYAMLFormat(t *testing.T) {
-	defer func() {
-		recover()
-	}()
-
 	configOnce = &sync.Once{} // Overrice Once
+	vatzConfig = nil
 
 	f, err := createDefaultConfigFile(configInvalidYAMLContents)
 	defer os.Remove(f.Name())
 
 	assert.Nil(t, err)
 
-	_ = InitConfig(DefaultConfigFile)
+	_, err = InitConfig(DefaultConfigFile)
 
-	// DO NOT REACH HERE
-	t.Errorf("no panic")
+	assert.NotNil(t, err)
 }
 
 func createDefaultConfigFile(contents string) (*os.File, error) {
@@ -370,9 +367,10 @@ func TestGetConfig(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Init Config.
-	cfg := InitConfig(DefaultConfigFile)
+	cfg, err := InitConfig(DefaultConfigFile)
 
 	// Asserts.
+	assert.Nil(t, err)
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
