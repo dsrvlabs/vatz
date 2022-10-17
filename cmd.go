@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -123,7 +124,15 @@ func createStartCommand() *cobra.Command {
 			log.Info().Str("module", "main").Msgf("load config %s", configFile)
 			log.Info().Str("module", "main").Msgf("logfile %s", logfile)
 
-			config.InitConfig(configFile)
+			_, err := config.InitConfig(configFile)
+			if err != nil {
+				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
+				if errors.Is(err, os.ErrNotExist) {
+					msg := "Please, initialize VATZ with command `./vatz init` to create config file `default.yaml` first or set appropriate path for config file default.yaml."
+					log.Error().Str("module", "config").Msg(msg)
+				}
+				return err
+			}
 
 			ch := make(chan os.Signal, 1)
 			return initiateServer(ch)

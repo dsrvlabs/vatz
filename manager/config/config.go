@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 
@@ -153,28 +152,42 @@ func (p *parser) overrideDefault(config *Config) {
 }
 
 // InitConfig - initializes VATZ config.
-func InitConfig(configFile string) *Config {
+func InitConfig(configFile string) (*Config, error) {
+	if vatzConfig != nil {
+		log.Info().Str("module", "config").Msgf("Config already loaded")
+		return vatzConfig, nil
+	}
+
+	var configError error
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
 	configOnce.Do(func() {
+		defer wg.Done()
+
+		log.Error().Str("module", "config").Msgf("Load Config %s", configFile)
+
+		var (
+			configData []byte
+		)
+
 		p := parser{}
-		configData, err := p.loadConfigFile(configFile)
-		if err != nil {
-			if strings.Contains(err.Error(), "no such file or directory") {
-				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
-				log.Error().Str("module", "config").Msg("Please, initialize VATZ with command `./vatz init` to create config file `default.yaml` first or set appropriate path for config file `default.yaml`.")
-				os.Exit(1)
-			}
-			panic(err)
-		}
-		config, err := p.parseYAML(configData)
-		if err != nil {
-			log.Error().Str("module", "config").Msgf("parseYAML Error: %s", err)
-			panic(err)
+		configData, configError = p.loadConfigFile(configFile)
+		if configError != nil {
+			return
 		}
 
-		vatzConfig = config
+		vatzConfig, configError = p.parseYAML(configData)
+		if configError != nil {
+			log.Error().Str("module", "config").Msgf("parseYAML Error: %s", configError)
+			return
+		}
 	})
 
-	return vatzConfig
+	wg.Wait()
+
+	return vatzConfig, configError
 }
 
 // GetConfig returns current Vatz config.
