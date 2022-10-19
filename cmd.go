@@ -131,7 +131,7 @@ func createStartCommand() *cobra.Command {
 					msg := "Please, initialize VATZ with command `./vatz init` to create config file `default.yaml` first or set appropriate path for config file default.yaml."
 					log.Error().Str("module", "config").Msg(msg)
 				}
-				return err
+				return nil
 			}
 
 			ch := make(chan os.Signal, 1)
