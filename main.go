@@ -46,6 +46,7 @@ func main() {
 	rootCmd.AddCommand(createInitCommand())
 	rootCmd.AddCommand(createStartCommand())
 	rootCmd.AddCommand(createPluginCommand())
+	rootCmd.AddCommand(createVersionCommand())
 
 	if err := rootCmd.Execute(); err != nil {
 		panic(err)
