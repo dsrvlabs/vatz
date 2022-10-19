@@ -4,7 +4,7 @@ on:
     types: [ opened, reopened ]
   # Send notification from Monday to Sunday at 10 or when new PR is raised.
   schedule:
-    - cron: "0 10 * * 1-5"
+    - cron: "0 1,14 * * 1-5"
   workflow_dispatch:
 jobs:
   build:
