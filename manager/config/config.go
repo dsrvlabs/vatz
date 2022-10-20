@@ -164,13 +164,10 @@ func InitConfig(configFile string) (*Config, error) {
 	wg.Add(1)
 
 	configOnce.Do(func() {
+		log.Info().Str("module", "config").Msgf("Load Config %s", configFile)
+
 		defer wg.Done()
-
-		log.Error().Str("module", "config").Msgf("Load Config %s", configFile)
-
-		var (
-			configData []byte
-		)
+		var configData []byte
 
 		p := parser{}
 		configData, configError = p.loadConfigFile(configFile)
