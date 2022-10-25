@@ -2,6 +2,7 @@ package healthcheck
 
 import (
 	"context"
+	"strconv"
 	"sync"
 	"time"
 
@@ -26,6 +27,7 @@ type healthChecker struct {
 func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
 	sendMSG := false
+	pluginNPort := plugin.Name + strconv.Itoa(plugin.Port)
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 
 	deliverMSG := tp.ReqMsg{
@@ -36,13 +38,13 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		ResourceType: plugin.Name,
 	}
 
-	if _, ok := h.pluginStatus.Load(plugin.Name); !ok {
+	if _, ok := h.pluginStatus.Load(pluginNPort); !ok {
 		if err != nil || verify == nil {
 			isAlive = tp.AliveStatusDown
 			sendMSG = true
 		}
 	} else {
-		plStat, _ := h.pluginStatus.Load(plugin.Name)
+		plStat, _ := h.pluginStatus.Load(pluginNPort)
 		pStruct := plStat.(*tp.PluginStatus)
 		if err != nil || verify == nil {
 			isAlive = tp.AliveStatusDown
@@ -65,7 +67,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		}
 	}
 
-	h.pluginStatus.Store(plugin.Name, &tp.PluginStatus{
+	h.pluginStatus.Store(pluginNPort, &tp.PluginStatus{
 		Plugin:    plugin,
 		IsAlive:   isAlive,
 		LastCheck: time.Now(),
