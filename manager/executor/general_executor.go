@@ -2,13 +2,15 @@ package executor
 
 import (
 	"context"
+	"log"
+	"strconv"
+	"sync"
+
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"google.golang.org/protobuf/types/known/structpb"
-	"log"
-	"sync"
 )
 
 type executor struct {
@@ -48,7 +50,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 			return err
 		}
 
-		firstExe, preStatus := s.updateState(method.Name, resp)
+		firstExe, preStatus := s.updateState(plugin.Name, plugin.Port, resp)
 
 		for _, dp := range dispatchers {
 			dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
@@ -78,17 +80,18 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 	return resp, err
 }
 
-func (s *executor) updateState(methodName string, resp *pluginpb.ExecuteResponse) (bool, tp.StateFlag) {
+func (s *executor) updateState(pluginName string, port int, resp *pluginpb.ExecuteResponse) (bool, tp.StateFlag) {
 	isFirstRun := false
 	exeResp := tp.StateFlag{State: resp.GetState(), Severity: resp.GetSeverity()}
-	if _, ok := s.status.Load(methodName); !ok {
+	pluginNPort := pluginName + strconv.Itoa(port)
+	if _, ok := s.status.Load(pluginNPort); !ok {
 		isFirstRun = true
-		s.status.Store(methodName, exeResp)
+		s.status.Store(pluginNPort, exeResp)
 	} else {
-		preStatus, _ := s.status.Load(methodName)
+		preStatus, _ := s.status.Load(pluginNPort)
 		preVal := preStatus.(tp.StateFlag)
 		if preVal.State != resp.State || preVal.Severity != resp.Severity {
-			s.status.Store(methodName, exeResp)
+			s.status.Store(pluginNPort, exeResp)
 			exeResp = tp.StateFlag{State: preVal.State, Severity: preVal.Severity}
 		} else {
 			exeResp = tp.StateFlag{State: preVal.State, Severity: preVal.Severity}
