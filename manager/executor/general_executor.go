@@ -53,7 +53,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		firstExe, preStatus := s.updateState(plugin.Name, plugin.Port, resp)
 
 		for _, dp := range dispatchers {
-			dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
+			dp.SetDispatcher(firstExe, plugin.Port, preStatus, tp.NotifyInfo{
 				Plugin:     plugin.Name,
 				Method:     method.Name,
 				Severity:   resp.GetSeverity(),

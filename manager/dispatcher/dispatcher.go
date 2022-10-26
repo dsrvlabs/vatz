@@ -2,14 +2,15 @@ package dispatcher
 
 import (
 	"errors"
+	"strings"
+	"sync"
+	"time"
+
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
-	"strings"
-	"sync"
-	"time"
 )
 
 /* TODO: Discussion.
@@ -25,7 +26,7 @@ var (
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
 type Dispatcher interface {
-	SetDispatcher(firstExecution bool, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
+	SetDispatcher(firstExecution bool, port int, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
 	SendNotification(request tp.ReqMsg) error
 }
 

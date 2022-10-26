@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"sync"
+
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
-	"io/ioutil"
-	"net/http"
-	"sync"
 )
 
 // telegram: This is a sample code
@@ -25,19 +27,21 @@ type telegram struct {
 	entry            sync.Map
 }
 
-func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (t *telegram) SetDispatcher(firstRunMsg bool, port int, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 
 	if reqToNotify {
 		t.SendNotification(deliverMessage)
 	}
 
+	pluginNPort := notifyInfo.Plugin + strconv.Itoa(port)
+
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
 		//In case of reminder has to keep but stateFlag has changed,
 		//e.g.) CRITICAL -> WARNING
 		//e.g.) ERROR -> INFO -> ERROR
-		if entries, ok := t.entry.Load(notifyInfo.Method); ok {
+		if entries, ok := t.entry.Load(pluginNPort); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				t.reminderCron.Remove(entry)
 			}
@@ -49,11 +53,11 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 			})
 			newEntries = append(newEntries, id)
 		}
-		t.entry.Store(notifyInfo.Method, newEntries)
+		t.entry.Store(pluginNPort, newEntries)
 		t.reminderCron.Start()
 
 	} else if reminderState == tp.OFF {
-		entries, _ := t.entry.Load(notifyInfo.Method)
+		entries, _ := t.entry.Load(pluginNPort)
 		for _, entity := range entries.([]cron.EntryID) {
 			t.reminderCron.Remove(entity)
 		}
