@@ -151,7 +151,7 @@ func (p *parser) overrideDefault(config *Config) {
 	}
 }
 
-func (p *parser) dupplicatedPlugin(config *Config) error {
+func (p *parser) dupplicatedPlugin(config *Config) {
 	var b = make(map[string][]int)
 	for _, p := range config.PluginInfos.Plugins {
 		b[p.Name] = append(b[p.Name], p.Port)
@@ -163,8 +163,6 @@ func (p *parser) dupplicatedPlugin(config *Config) error {
 				Msgf(fmt.Sprintf("The plugin(%s) with the same name are currently up and running on %v ports.", pName, port))
 		}
 	}
-
-	return nil
 }
 
 // InitConfig - initializes VATZ config.
@@ -197,11 +195,7 @@ func InitConfig(configFile string) (*Config, error) {
 			return
 		}
 
-		configError = p.dupplicatedPlugin(vatzConfig)
-		if configError != nil {
-			log.Error().Str("module", "config").Msgf(" %s", configError)
-			return
-		}
+		p.dupplicatedPlugin(vatzConfig)
 	})
 
 	wg.Wait()
