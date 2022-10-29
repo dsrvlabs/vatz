@@ -61,6 +61,13 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 					reminderSchedule: chanInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
+			case strings.EqualFold(channel, string(tp.PagerDuty)):
+				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
+					host:       cfg.HostName,
+					channel:    tp.PagerDuty,
+					secret:     chanInfo.Secret,
+					pagerEntry: sync.Map{},
+				})
 			}
 		}
 	})

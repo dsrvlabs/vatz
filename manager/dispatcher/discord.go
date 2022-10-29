@@ -18,13 +18,11 @@ import (
 type DiscordColor int
 
 const (
-	discordRed    tp.DiscordColor = 15548997
-	discordYellow tp.DiscordColor = 16705372
-	discordGreen  tp.DiscordColor = 65340
-	discordGray   tp.DiscordColor = 9807270
-	discordBlue   tp.DiscordColor = 4037805
-
-	discordWebhookFormat string = "https://discord.com/api/webhooks/"
+	discordRed           tp.DiscordColor = 15548997
+	discordYellow        tp.DiscordColor = 16705372
+	discordGreen         tp.DiscordColor = 65340
+	discordGray          tp.DiscordColor = 9807270
+	discordWebhookFormat string          = "https://discord.com/api/webhooks/"
 )
 
 type discord struct {
@@ -46,9 +44,11 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
-		//In case of reminder has to keep but stateFlag has changed,
-		//e.g.) CRITICAL -> WARNING
-		//e.g.) ERROR -> INFO -> ERROR
+		/*
+			In case of reminder has to keep but stateFlag has changed,
+			e.g.) CRITICAL -> WARNING
+			e.g.) ERROR -> INFO -> ERROR
+		*/
 		if entries, ok := d.entry.Load(methodName); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				d.reminderCron.Remove(entry)
@@ -63,7 +63,6 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 		}
 		d.entry.Store(methodName, newEntries)
 		d.reminderCron.Start()
-
 	} else if reminderState == tp.OFF {
 		entries, _ := d.entry.Load(methodName)
 		for _, entity := range entries.([]cron.EntryID) {
@@ -88,24 +87,19 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 	// Check discord secret
 	if strings.Contains(d.secret, discordWebhookFormat) {
 		sMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
+		sMsg.Embeds[0].Color = discordGray
 		emoji := "🚨"
-		switch msg.Severity {
-		case pb.SEVERITY_CRITICAL:
-			sMsg.Embeds[0].Color = discordRed
-		case pb.SEVERITY_WARNING:
-			sMsg.Embeds[0].Color = discordYellow
-		case pb.SEVERITY_INFO:
-			sMsg.Embeds[0].Color = discordGreen
-		default:
-			sMsg.Embeds[0].Color = discordGray
-		}
 
 		if msg.State == pb.STATE_SUCCESS {
-			if msg.Severity == pb.SEVERITY_CRITICAL {
+			switch {
+			case msg.Severity == pb.SEVERITY_CRITICAL:
+				sMsg.Embeds[0].Color = discordRed
 				emoji = "‼️"
-			} else if msg.Severity == pb.SEVERITY_WARNING {
+			case msg.Severity == pb.SEVERITY_WARNING:
+				sMsg.Embeds[0].Color = discordYellow
 				emoji = "❗"
-			} else if msg.Severity == pb.SEVERITY_INFO {
+			case msg.Severity == pb.SEVERITY_INFO:
+				sMsg.Embeds[0].Color = discordGreen
 				emoji = "✅"
 			}
 		}

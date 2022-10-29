@@ -34,9 +34,9 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
-		//In case of reminder has to keep but stateFlag has changed,
-		//e.g.) CRITICAL -> WARNING
-		//e.g.) ERROR -> INFO -> ERROR
+		/*In case of reminder has to keep but stateFlag has changed,
+		e.g.) CRITICAL -> WARNING
+		e.g.) ERROR -> INFO -> ERROR */
 		if entries, ok := t.entry.Load(notifyInfo.Method); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				t.reminderCron.Remove(entry)
@@ -51,7 +51,6 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 		}
 		t.entry.Store(notifyInfo.Method, newEntries)
 		t.reminderCron.Start()
-
 	} else if reminderState == tp.OFF {
 		entries, _ := t.entry.Load(notifyInfo.Method)
 		for _, entity := range entries.([]cron.EntryID) {
@@ -93,23 +92,21 @@ Plugin Name: <em>%s</em>
 		"application/json",
 		bytes.NewBuffer(body),
 	)
-
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram Error: %s", err)
 		return err
 	}
 	defer response.Body.Close()
-
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
-	} else {
-		respJSON := make(map[string]interface{})
-		json.Unmarshal(body, &respJSON)
-		if !respJSON["ok"].(bool) {
-			log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
-		}
+	}
+
+	respJSON := make(map[string]interface{})
+	json.Unmarshal(body, &respJSON)
+	if !respJSON["ok"].(bool) {
+		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
 	}
 	return nil
 }
