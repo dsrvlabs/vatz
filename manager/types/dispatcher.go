@@ -1,9 +1,10 @@
 package types
 
 import (
+	"time"
+
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/robfig/cron/v3"
-	"time"
 )
 
 type DiscordColor int
@@ -84,6 +85,8 @@ type Field struct {
 type NotifyInfo struct {
 	Plugin     string            `json:"plugin"`
 	Method     string            `json:"method"`
+	Address    string            `json:"address"`
+	Port       int               `json:"port"`
 	Severity   pluginpb.SEVERITY `json:"severity"`
 	State      pluginpb.STATE    `json:"state"`
 	ExecuteMsg string            `json:"execute_msg"`

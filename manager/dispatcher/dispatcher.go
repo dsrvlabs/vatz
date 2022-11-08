@@ -26,7 +26,7 @@ var (
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
 type Dispatcher interface {
-	SetDispatcher(firstExecution bool, port int, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
+	SetDispatcher(firstExecution bool, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
 	SendNotification(request tp.ReqMsg) error
 }
 

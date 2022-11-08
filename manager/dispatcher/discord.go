@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +13,7 @@ import (
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -38,9 +38,9 @@ type discord struct {
 	entry            sync.Map
 }
 
-func (d *discord) SetDispatcher(firstRunMsg bool, port int, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	pluginNPort := notifyInfo.Plugin + strconv.Itoa(port)
+	pUnique := utils.MakeUniqueValue(notifyInfo.Plugin, notifyInfo.Address, notifyInfo.Port)
 
 	if reqToNotify {
 		d.SendNotification(deliverMessage)
@@ -51,7 +51,7 @@ func (d *discord) SetDispatcher(firstRunMsg bool, port int, preStat tp.StateFlag
 		//In case of reminder has to keep but stateFlag has changed,
 		//e.g.) CRITICAL -> WARNING
 		//e.g.) ERROR -> INFO -> ERROR
-		if entries, ok := d.entry.Load(pluginNPort); ok {
+		if entries, ok := d.entry.Load(pUnique); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				d.reminderCron.Remove(entry)
 			}
@@ -63,11 +63,11 @@ func (d *discord) SetDispatcher(firstRunMsg bool, port int, preStat tp.StateFlag
 			})
 			newEntries = append(newEntries, id)
 		}
-		d.entry.Store(pluginNPort, newEntries)
+		d.entry.Store(pUnique, newEntries)
 		d.reminderCron.Start()
 
 	} else if reminderState == tp.OFF {
-		entries, _ := d.entry.Load(pluginNPort)
+		entries, _ := d.entry.Load(pUnique)
 		for _, entity := range entries.([]cron.EntryID) {
 			{
 				d.reminderCron.Remove(entity)

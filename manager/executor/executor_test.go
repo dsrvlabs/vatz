@@ -3,10 +3,12 @@ package executor
 import (
 	"context"
 	"fmt"
-	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"sync"
 	"testing"
+
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
+	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -17,8 +19,10 @@ import (
 
 func TestExecutorSuccess(t *testing.T) {
 	const (
-		testMethodName = "is_up"
-		testPluginName = "unittest_plugin"
+		testMethodName    = "is_up"
+		testPluginName    = "unittest_plugin"
+		testPluginAddress = "127.0.0.1"
+		testPluginPort    = 10002
 	)
 
 	tests := []struct {
@@ -35,6 +39,8 @@ func TestExecutorSuccess(t *testing.T) {
 			TestNotifInfo: tp.NotifyInfo{
 				Plugin:   testPluginName,
 				Method:   testMethodName,
+				Address:  testPluginAddress,
+				Port:     testPluginPort,
 				State:    pluginpb.STATE_SUCCESS,
 				Severity: pluginpb.SEVERITY_UNKNOWN,
 			},
@@ -44,7 +50,9 @@ func TestExecutorSuccess(t *testing.T) {
 	for _, test := range tests {
 		ctx := context.Background()
 		cfgPlugin := config.Plugin{
-			Name: testPluginName,
+			Name:    testPluginName,
+			Address: testPluginAddress,
+			Port:    testPluginPort,
 			ExecutableMethods: []struct {
 				Name string `yaml:"method_name"`
 			}{
@@ -97,7 +105,8 @@ func TestExecutorSuccess(t *testing.T) {
 		mockNotif.AssertExpectations(t)
 
 		assert.Nil(t, err)
-		mockStatus, _ := e.status.Load(testMethodName)
+		pUnique := utils.MakeUniqueValue(testPluginName, testPluginAddress, testPluginPort)
+		mockStatus, _ := e.status.Load(pUnique)
 		assert.True(t, mockStatus.(tp.StateFlag) == tp.StateFlag{State: pluginpb.STATE_SUCCESS, Severity: pluginpb.SEVERITY_UNKNOWN})
 	}
 }
