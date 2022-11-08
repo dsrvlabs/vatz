@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const SUCCESS = "success"
+
 type pagerdutyMSGEvent struct {
 	flag  string
 	deKey string
@@ -64,10 +66,11 @@ func (p *pagerduty) SendNotification(msg tp.ReqMsg) error {
 		Source:    fmt.Sprintf(`(%s)`, p.host),
 		Component: msg.ResourceType,
 		Severity:  pagerdutySeverity,
-		Summary: fmt.Sprintf(`%s %s %s 
-									 (%s)
-									 Plugin Name: %s 
-									 %s`, emoji, msg.Severity.String(), emoji, p.host, msg.ResourceType, msg.Msg)}
+		Summary: fmt.Sprintf(`
+%s %s %s 
+(%s)
+Plugin Name: %s 
+%s`, emoji, msg.Severity.String(), emoji, p.host, msg.ResourceType, msg.Msg)}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -78,7 +81,7 @@ func (p *pagerduty) SendNotification(msg tp.ReqMsg) error {
 			log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Connection failed due to Error: %s", err)
 			return err
 		}
-		if resp.Status == "success" {
+		if resp.Status == SUCCESS {
 			preps := make([]pagerdutyMSGEvent, 0)
 			if prepTriggers, ok := p.pagerEntry.Load(methodName); ok {
 				preps = prepTriggers.([]pagerdutyMSGEvent)
