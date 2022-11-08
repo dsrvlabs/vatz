@@ -19,6 +19,13 @@ As I see this code, dispatcher itself is described is dispatcher
 but dispatcher and dispatcher module should be splitted into two part.
 */
 
+const (
+	emojiER       string = "🚨"
+	emojiDoubleEX string = "‼️"
+	emojiSingleEx string = "❗"
+	emojiCheck    string = "✅"
+)
+
 var (
 	dispatcherSingletons []Dispatcher
 	dispatcherOnce       sync.Once
@@ -33,7 +40,7 @@ type Dispatcher interface {
 func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 	if len(cfg.DispatchChannels) == 0 {
 		dpError := errors.New("Error: No Dispatcher has set.")
-		log.Error().Str("module", "dispatcher").Msg("Please, Set at least a channel for dispatcher, e.g.) Discord or Telegram")
+		log.Error().Str("module", "dispatcher").Msg("Please, Set at least a single channel for dispatcher, e.g.) Discord or Telegram")
 		panic(dpError)
 	}
 
@@ -61,6 +68,13 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chanInfo.ReminderSchedule,
 					entry:            sync.Map{},
+				})
+			case strings.EqualFold(channel, string(tp.PagerDuty)):
+				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
+					host:       cfg.HostName,
+					channel:    tp.PagerDuty,
+					secret:     chanInfo.Secret,
+					pagerEntry: sync.Map{},
 				})
 			}
 		}

@@ -1,7 +1,7 @@
 VERSION := $(shell git describe --tags)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT_HASH := $(shell git rev-parse --short HEAD)
-LDFLAGS := -ldflags="-X 'main.Version=$(BRANCH)' -X 'main.Commit=$(COMMIT_HASH)'"
+LDFLAGS := -ldflags="-X 'github.com/dsrvlabs/vatz/utils.Version=$(BRANCH)' -X 'github.com/dsrvlabs/vatz/utils.Commit=$(COMMIT_HASH)'"
 
 .PHONY: test build coverage clean
 

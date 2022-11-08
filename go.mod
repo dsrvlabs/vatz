@@ -3,6 +3,7 @@ module github.com/dsrvlabs/vatz
 go 1.18
 
 require (
+	github.com/PagerDuty/go-pagerduty v1.6.0
 	github.com/dsrvlabs/vatz-proto v0.0.0-20220908182122-4c28400b195f
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/jarcoal/httpmock v1.2.0
@@ -15,6 +16,7 @@ require (
 )
 
 require (
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
