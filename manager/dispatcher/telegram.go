@@ -34,9 +34,11 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
-		/*In case of reminder has to keep but stateFlag has changed,
-		e.g.) CRITICAL -> WARNING
-		e.g.) ERROR -> INFO -> ERROR */
+		/*
+			In case of reminder has to keep but stateFlag has changed,
+			e.g.) CRITICAL -> WARNING
+			e.g.) ERROR -> INFO -> ERROR
+		*/
 		if entries, ok := t.entry.Load(notifyInfo.Method); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				t.reminderCron.Remove(entry)
@@ -62,18 +64,23 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 }
 
 func (t *telegram) SendNotification(msg tp.ReqMsg) error {
-	var err error
-	var response *http.Response
-	emoji := "🚨"
+	var (
+		err      error
+		response *http.Response
+		emoji    = emojiER
+	)
+
 	if msg.State == pb.STATE_SUCCESS {
-		if msg.Severity == pb.SEVERITY_CRITICAL {
-			emoji = "‼️"
-		} else if msg.Severity == pb.SEVERITY_WARNING {
-			emoji = "❗"
-		} else if msg.Severity == pb.SEVERITY_INFO {
-			emoji = "✅"
+		switch {
+		case msg.Severity == pb.SEVERITY_CRITICAL:
+			emoji = emojiDoubleEX
+		case msg.Severity == pb.SEVERITY_WARNING:
+			emoji = emojiSingleEx
+		case msg.Severity == pb.SEVERITY_INFO:
+			emoji = emojiCheck
 		}
 	}
+
 	url := fmt.Sprintf("%s/sendMessage", getUrl(t.secret))
 	sendingText := fmt.Sprintf(`
 %s<strong>%s</strong>%s
@@ -87,11 +94,7 @@ Plugin Name: <em>%s</em>
 		"parse_mode": "html",
 	})
 
-	response, err = http.Post(
-		url,
-		"application/json",
-		bytes.NewBuffer(body),
-	)
+	response, err = http.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram Error: %s", err)
 		return err
@@ -102,7 +105,6 @@ Plugin Name: <em>%s</em>
 		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	}
-
 	respJSON := make(map[string]interface{})
 	json.Unmarshal(body, &respJSON)
 	if !respJSON["ok"].(bool) {

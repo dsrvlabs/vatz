@@ -32,6 +32,12 @@ func (p *pagerduty) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notify
 }
 
 func (p *pagerduty) SendNotification(msg tp.ReqMsg) error {
+
+	var (
+		pagerdutySeverity string
+		emoji             string
+		methodName        = msg.FuncName
+	)
 	/*
 		Pagerduty severity Allowed values:
 		- critical
@@ -39,21 +45,19 @@ func (p *pagerduty) SendNotification(msg tp.ReqMsg) error {
 		- error
 		- info
 	*/
-
-	methodName := msg.FuncName
-	pagerdutySeverity := "error"
-	emoji := "🚨"
-
 	switch {
 	case msg.Severity == pb.SEVERITY_INFO:
 		pagerdutySeverity = "info"
-		emoji = "✅"
+		emoji = emojiCheck
 	case msg.Severity == pb.SEVERITY_CRITICAL:
 		pagerdutySeverity = "critical"
 		emoji = "‼️"
 	case msg.Severity == pb.SEVERITY_WARNING:
 		pagerdutySeverity = "warning"
 		emoji = "❗"
+	default:
+		emoji = emojiER
+		pagerdutySeverity = "error"
 	}
 
 	v2EventPayload := &pd.V2Payload{

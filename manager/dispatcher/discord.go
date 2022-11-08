@@ -77,38 +77,38 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 }
 
 func (d *discord) SendNotification(msg tp.ReqMsg) error {
-	if msg.ResourceType == "" {
-		msg.ResourceType = "No Resource Type"
-	}
-	if msg.Msg == "" {
-		msg.Msg = "No Message"
-	}
-
-	// Check discord secret
 	if strings.Contains(d.secret, discordWebhookFormat) {
-		sMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
-		sMsg.Embeds[0].Color = discordGray
-		emoji := "🚨"
+		sendingMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
+		sendingMsg.Embeds[0].Color = discordGray
+		emoji := emojiER
+
+		if msg.ResourceType == "" {
+			msg.ResourceType = "No Resource Type"
+		}
+
+		if msg.Msg == "" {
+			msg.Msg = "No Message"
+		}
 
 		if msg.State == pb.STATE_SUCCESS {
 			switch {
 			case msg.Severity == pb.SEVERITY_CRITICAL:
-				sMsg.Embeds[0].Color = discordRed
-				emoji = "‼️"
+				sendingMsg.Embeds[0].Color = discordRed
+				emoji = emojiDoubleEX
 			case msg.Severity == pb.SEVERITY_WARNING:
-				sMsg.Embeds[0].Color = discordYellow
-				emoji = "❗"
+				sendingMsg.Embeds[0].Color = discordYellow
+				emoji = emojiSingleEx
 			case msg.Severity == pb.SEVERITY_INFO:
-				sMsg.Embeds[0].Color = discordGreen
-				emoji = "✅"
+				sendingMsg.Embeds[0].Color = discordGreen
+				emoji = emojiCheck
 			}
 		}
 
-		sMsg.Embeds[0].Title = fmt.Sprintf(`%s %s`, emoji, msg.Severity.String())
-		sMsg.Embeds[0].Fields = []tp.Field{{Name: "(" + d.host + ") " + msg.ResourceType, Value: msg.Msg, Inline: false}}
-		sMsg.Embeds[0].Timestamp = time.Now()
+		sendingMsg.Embeds[0].Title = fmt.Sprintf(`%s %s`, emoji, msg.Severity.String())
+		sendingMsg.Embeds[0].Fields = []tp.Field{{Name: "(" + d.host + ") " + msg.ResourceType, Value: msg.Msg, Inline: false}}
+		sendingMsg.Embeds[0].Timestamp = time.Now()
 
-		message, err := json.Marshal(sMsg)
+		message, err := json.Marshal(sendingMsg)
 		if err != nil {
 			return err
 		}
