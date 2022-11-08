@@ -93,8 +93,9 @@ type NotifyInfo struct {
 type Channel string
 
 const (
-	Discord  Channel = "DISCORD"
-	Telegram Channel = "TELEGRAM"
+	Discord   Channel = "DISCORD"
+	Telegram  Channel = "TELEGRAM"
+	PagerDuty Channel = "PAGERDUTY"
 )
 
 type Reminder string
