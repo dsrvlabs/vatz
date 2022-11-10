@@ -151,7 +151,7 @@ func (p *parser) overrideDefault(config *Config) {
 	}
 }
 
-func (p *parser) dupplicatedPlugin(config *Config) {
+func (p *parser) duplicatedPlugin(config *Config) {
 	var b = make(map[string][]int)
 	for _, p := range config.PluginInfos.Plugins {
 		b[p.Name] = append(b[p.Name], p.Port)
