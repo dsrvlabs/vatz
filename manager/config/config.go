@@ -195,7 +195,7 @@ func InitConfig(configFile string) (*Config, error) {
 			return
 		}
 
-		p.dupplicatedPlugin(vatzConfig)
+		p.duplicatedPlugin(vatzConfig)
 	})
 
 	wg.Wait()
