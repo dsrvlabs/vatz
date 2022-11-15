@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/robfig/cron/v3"
+
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -36,7 +38,7 @@ type discord struct {
 
 func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	methodName := notifyInfo.Method
+	pUnique := utils.MakeUniqueValue(notifyInfo.Plugin, notifyInfo.Address, notifyInfo.Port)
 
 	if reqToNotify {
 		d.SendNotification(deliverMessage)
@@ -49,7 +51,7 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 			e.g.) CRITICAL -> WARNING
 			e.g.) ERROR -> INFO -> ERROR
 		*/
-		if entries, ok := d.entry.Load(methodName); ok {
+		if entries, ok := d.entry.Load(pUnique); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				d.reminderCron.Remove(entry)
 			}
@@ -61,10 +63,10 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 			})
 			newEntries = append(newEntries, id)
 		}
-		d.entry.Store(methodName, newEntries)
+		d.entry.Store(pUnique, newEntries)
 		d.reminderCron.Start()
 	} else if reminderState == tp.OFF {
-		entries, _ := d.entry.Load(methodName)
+		entries, _ := d.entry.Load(pUnique)
 		for _, entity := range entries.([]cron.EntryID) {
 			{
 				d.reminderCron.Remove(entity)

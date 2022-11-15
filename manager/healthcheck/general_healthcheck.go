@@ -9,6 +9,7 @@ import (
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
@@ -26,6 +27,7 @@ type healthChecker struct {
 func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
 	isAlive := tp.AliveStatusUp
 	sendMSG := false
+	pUnique := utils.MakeUniqueValue(plugin.Name, plugin.Address, plugin.Port)
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 
 	deliverMSG := tp.ReqMsg{
@@ -36,13 +38,13 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		ResourceType: plugin.Name,
 	}
 
-	if _, ok := h.pluginStatus.Load(plugin.Name); !ok {
+	if _, ok := h.pluginStatus.Load(pUnique); !ok {
 		if err != nil || verify == nil {
 			isAlive = tp.AliveStatusDown
 			sendMSG = true
 		}
 	} else {
-		plStat, _ := h.pluginStatus.Load(plugin.Name)
+		plStat, _ := h.pluginStatus.Load(pUnique)
 		pStruct := plStat.(*tp.PluginStatus)
 		if err != nil || verify == nil {
 			isAlive = tp.AliveStatusDown
@@ -65,7 +67,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		}
 	}
 
-	h.pluginStatus.Store(plugin.Name, &tp.PluginStatus{
+	h.pluginStatus.Store(pUnique, &tp.PluginStatus{
 		Plugin:    plugin,
 		IsAlive:   isAlive,
 		LastCheck: time.Now(),

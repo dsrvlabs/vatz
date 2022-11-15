@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/robfig/cron/v3"
-	"github.com/rs/zerolog/log"
 	"io/ioutil"
 	"net/http"
 	"sync"
+
+	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
+	"github.com/robfig/cron/v3"
+	"github.com/rs/zerolog/log"
 )
 
 // telegram: This is a sample code
@@ -32,6 +34,8 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 		t.SendNotification(deliverMessage)
 	}
 
+	pUnique := utils.MakeUniqueValue(notifyInfo.Plugin, notifyInfo.Address, notifyInfo.Port)
+
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
 		/*
@@ -39,7 +43,7 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 			e.g.) CRITICAL -> WARNING
 			e.g.) ERROR -> INFO -> ERROR
 		*/
-		if entries, ok := t.entry.Load(notifyInfo.Method); ok {
+		if entries, ok := t.entry.Load(pUnique); ok {
 			for _, entry := range entries.([]cron.EntryID) {
 				t.reminderCron.Remove(entry)
 			}
@@ -51,10 +55,10 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 			})
 			newEntries = append(newEntries, id)
 		}
-		t.entry.Store(notifyInfo.Method, newEntries)
+		t.entry.Store(pUnique, newEntries)
 		t.reminderCron.Start()
 	} else if reminderState == tp.OFF {
-		entries, _ := t.entry.Load(notifyInfo.Method)
+		entries, _ := t.entry.Load(pUnique)
 		for _, entity := range entries.([]cron.EntryID) {
 			t.reminderCron.Remove(entity)
 		}
