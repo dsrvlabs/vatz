@@ -7,6 +7,7 @@ require (
 	github.com/dsrvlabs/vatz-proto v0.0.0-20220908182122-4c28400b195f
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/jarcoal/httpmock v1.2.0
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
