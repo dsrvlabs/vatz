@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/dsrvlabs/vatz/manager/plugin"
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 /*
@@ -108,6 +109,37 @@ var (
 			return mgr.Start(pluginName, exeArgs)
 		},
 	}
+
+	listCommand = &cobra.Command{
+		Use:     "list",
+		Short:   "List installed plugin",
+		Example: "vats plugin list",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Info().Str("module", "plugin").Msgf("List plugins")
+
+			mgr := plugin.NewManager(pluginDir)
+			plugins, err := mgr.List()
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+
+			w := table.NewWriter()
+			w.SetOutputMirror(os.Stdout)
+			w.AppendHeader(table.Row{"Name", "Install Data", "Repository", "Version"})
+
+			for _, plugin := range plugins {
+				dateStr := plugin.InstalledAt.Format("2006-01-02 15:04:05")
+				w.AppendRow([]interface{}{
+					plugin.Name, dateStr, plugin.Repository, plugin.Version,
+				})
+			}
+
+			w.Render()
+
+			return nil
+		},
+	}
 )
 
 func createPluginCommand() *cobra.Command {
@@ -127,6 +159,7 @@ func createPluginCommand() *cobra.Command {
 	cmd.AddCommand(statusCommand)
 	cmd.AddCommand(installCommand)
 	cmd.AddCommand(startCommand)
+	cmd.AddCommand(listCommand)
 
 	return cmd
 }

@@ -46,12 +46,14 @@ func (p *pluginDB) AddPlugin(e pluginEntry) error {
 
 	err := p.createPluginTable()
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
@@ -61,10 +63,12 @@ INSERT INTO plugin(name, repository, binary_location, version, installed_at) VAL
 
 	_, err = tx.Exec(q, e.Name, e.Repository, e.BinaryLocation, e.Version, e.InstalledAt)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
@@ -89,10 +93,12 @@ CREATE TABLE IF NOT EXISTS plugin (
 
 	_, err = tx.Exec(q)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
@@ -105,15 +111,18 @@ func (p *pluginDB) DeletePlugin(name string) error {
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
 	_, err = tx.Exec("DELETE FROM plugin WHERE name = ?", name)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
@@ -122,12 +131,36 @@ func (p *pluginDB) DeletePlugin(name string) error {
 
 func (p *pluginDB) UpdatePlugin() error {
 	// TODO:
+
 	return nil
 }
 
 func (p *pluginDB) List() ([]pluginEntry, error) {
-	// TODO:
-	return nil, nil
+	log.Info().Str("module", "db").Msg("List Plugin")
+
+	q := `SELECT name, repository, binary_location, version, installed_at FROM plugin`
+	rows, err := p.conn.QueryContext(p.ctx, q)
+	if err != nil {
+		log.Info().Str("module", "db").Err(err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	retPlugins := make([]pluginEntry, 0)
+
+	for rows.Next() {
+		e := pluginEntry{}
+		err := rows.Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
+		if err != nil {
+			log.Info().Str("module", "db").Err(err)
+			return nil, err
+		}
+
+		retPlugins = append(retPlugins, e)
+	}
+
+	return retPlugins, nil
 }
 
 func (p *pluginDB) Get(name string) (*pluginEntry, error) {
@@ -140,6 +173,7 @@ func (p *pluginDB) Get(name string) (*pluginEntry, error) {
 		Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
 
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return nil, err
 	}
 
@@ -201,11 +235,13 @@ func newReader(dbfile string) (dbReader, error) {
 func getDBConnection(ctx context.Context, dbfile string) (*sql.Conn, error) {
 	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return nil, err
 	}
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
+		log.Info().Str("module", "db").Err(err)
 		return nil, err
 	}
 
