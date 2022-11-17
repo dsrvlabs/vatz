@@ -19,7 +19,7 @@ type VatzPluginManager interface {
 	Install(repo, name, version string) error
 	Update() error
 
-	//Installed() error
+	Start(name, args string) error
 }
 
 type vatzPluginManager struct {
@@ -33,6 +33,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	exeCmd := exec.Command("go", "install", repo+"@"+version)
 	err := exeCmd.Run()
 	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
 		return err
 	}
 
@@ -45,13 +46,13 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	// Binary name should be changed.
 	err = os.Rename(origPath, newPath)
 	if err != nil {
-		log.Info().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err)
 		return err
 	}
 
 	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Info().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err)
 		return err
 	}
 
@@ -66,7 +67,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 		Repository: repo,
 	})
 	if err != nil {
-		log.Info().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err)
 		return err
 	}
 
@@ -80,9 +81,24 @@ func (m *vatzPluginManager) Update() error {
 	return nil
 }
 
-//func (*vatzPluginManager) Installed() error {
-//	return nil
-//}
+func (m *vatzPluginManager) Start(name, args string) error {
+	log.Info().Str("module", "plugin").Msgf("Start plugin %s", name)
+
+	// TODO: How to handle log?
+
+	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
+	if err != nil {
+		return err
+	}
+
+	e, err := dbRd.Get(name)
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command(m.home+"/"+e.Name, args)
+	return cmd.Start()
+}
 
 // NewManager creates new plugin manager.
 func NewManager(vatzHome string) VatzPluginManager {

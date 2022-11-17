@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -9,13 +9,19 @@ import (
 )
 
 func TestPluginInstall(t *testing.T) {
+	defer os.Remove("cosmos-status")
+	defer os.Remove("./vatz.db")
+
+	pluginDir = os.Getenv("PWD")
+
 	root := cobra.Command{}
 	root.AddCommand(createPluginCommand())
-	root.SetArgs([]string{"plugin", "install", "github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/active_status@latest"})
+	root.SetArgs([]string{
+		"plugin",
+		"install",
+		"github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/active_status",
+		"cosmos-status"})
 
 	err := root.Execute()
-
-	fmt.Println(err)
-
 	assert.Nil(t, err)
 }
