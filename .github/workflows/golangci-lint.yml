@@ -36,5 +36,5 @@ jobs:
           # latest patch version.
           version: v1.49.0
           args: --timeout 10m
-          github-token: ${{ secrets.GOLANG_LINT_ACTION_TOKEN }}
+          github-token: ${{ secrets.PR_ACTION_TOKEN }}
         if: env.GIT_DIFF    
