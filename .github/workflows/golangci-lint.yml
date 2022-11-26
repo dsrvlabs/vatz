@@ -36,5 +36,4 @@ jobs:
           # latest patch version.
           version: v1.49.0
           args: --timeout 10m
-          github-token: ${{ secrets.PR_ACTION_TOKEN }}
         if: env.GIT_DIFF    
