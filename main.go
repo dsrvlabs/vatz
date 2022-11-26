@@ -13,6 +13,7 @@ func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 }
 
+// This is main function
 func main() {
 	rootCmd := cmd.CreateRootCommand()
 
