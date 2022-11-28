@@ -5,6 +5,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,15 +23,27 @@ func TestDBWrite(t *testing.T) {
 		once = sync.Once{}
 	}()
 
+	installedAt := time.Now()
+
 	// Test insert.
-	err = wr.AddPlugin(pluginEntry{Name: "test", Repository: "dummy"})
+	err = wr.AddPlugin(pluginEntry{
+		Name:           "test",
+		Repository:     "dummy",
+		BinaryLocation: "home/status",
+		Version:        "latest",
+		InstalledAt:    installedAt,
+	})
 	assert.Nil(t, err)
 
 	// Confirm insertion.
 	plugin, err := rd.Get("test")
 
+	assert.Nil(t, err)
 	assert.Equal(t, "test", plugin.Name)
 	assert.Equal(t, "dummy", plugin.Repository)
+	assert.Equal(t, "home/status", plugin.BinaryLocation)
+	assert.Equal(t, "latest", plugin.Version)
+	assert.Equal(t, installedAt.UnixMilli(), plugin.InstalledAt.UnixMilli())
 
 	// Test delete.
 	err = wr.DeletePlugin("test")

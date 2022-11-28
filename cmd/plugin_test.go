@@ -19,9 +19,11 @@ func TestPluginInstall(t *testing.T) {
 	root.SetArgs([]string{
 		"plugin",
 		"install",
-		"github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/active_status",
+		"github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/node_active_status",
 		"cosmos-status"})
 
 	err := root.Execute()
 	assert.Nil(t, err)
 }
+
+// TODO: Test Start.

@@ -13,8 +13,8 @@ func TestPluginManager(t *testing.T) {
 	defer os.Remove("./cosmos-active")
 	defer os.Remove("./" + pluginDBName)
 
-	// FIXME: could be better using mocks.
-	repo := "github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/active_status"
+	// TODO: could be better using mocks.
+	repo := "github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/node_active_status"
 
 	binName := "cosmos-active"
 
@@ -26,6 +26,10 @@ func TestPluginManager(t *testing.T) {
 	assert.True(t, errors.Is(err, os.ErrNotExist))
 
 	_, err = os.Open(binName)
+	assert.Nil(t, err)
+
+	// Test Execute
+	err = mgr.Start(binName, "-valoperAddr=dummy")
 	assert.Nil(t, err)
 
 	// Test DB.

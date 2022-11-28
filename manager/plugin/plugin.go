@@ -1,10 +1,12 @@
 package plugin
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -29,11 +31,17 @@ type vatzPluginManager struct {
 func (m *vatzPluginManager) Install(repo, name, version string) error {
 	log.Info().Str("module", "plugin").Msgf("Install new plugin %s", repo)
 
+	var stdout, stderr bytes.Buffer
+
 	os.Setenv("GOBIN", m.home)
+
 	exeCmd := exec.Command("go", "install", repo+"@"+version)
+	exeCmd.Stdout = &stdout
+	exeCmd.Stderr = &stderr
+
 	err := exeCmd.Run()
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Msg(string(stderr.Bytes()))
 		return err
 	}
 
@@ -56,23 +64,18 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 		return err
 	}
 
-	// TODO
-	// Do we need additional info?
-	// version
-	// binary path
-	// install date
-	// etc.
 	err = dbWr.AddPlugin(pluginEntry{
-		Name:       name,
-		Repository: repo,
+		Name:           name,
+		Repository:     repo,
+		BinaryLocation: newPath,
+		Version:        version,
+		InstalledAt:    time.Now(),
 	})
+
 	if err != nil {
 		log.Error().Str("module", "plugin").Err(err)
 		return err
 	}
-
-	// Required parameters: github repository.
-	//  - But how can I confirm the repository is the implementation of Vatz plugin?
 
 	return nil
 }
@@ -96,7 +99,7 @@ func (m *vatzPluginManager) Start(name, args string) error {
 		return err
 	}
 
-	cmd := exec.Command(m.home+"/"+e.Name, args)
+	cmd := exec.Command(e.BinaryLocation, args)
 	return cmd.Start()
 }
 

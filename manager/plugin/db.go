@@ -3,6 +3,7 @@ package plugin
 import (
 	"database/sql"
 	"sync"
+	"time"
 
 	// Load sqlite3 driver
 	_ "github.com/mattn/go-sqlite3"
@@ -17,8 +18,11 @@ var (
 )
 
 type pluginEntry struct {
-	Name       string
-	Repository string
+	Name           string
+	Repository     string
+	BinaryLocation string
+	Version        string
+	InstalledAt    time.Time
 }
 
 type dbWriter interface {
@@ -38,6 +42,8 @@ type pluginDB struct {
 }
 
 func (p *pluginDB) AddPlugin(e pluginEntry) error {
+	log.Info().Str("module", "db").Msg("AddPlugin")
+
 	err := p.createPluginTable()
 	if err != nil {
 		return err
@@ -49,7 +55,11 @@ func (p *pluginDB) AddPlugin(e pluginEntry) error {
 		return err
 	}
 
-	_, err = tx.Exec("INSERT INTO plugin(name, repository) VALUES(?, ?)", e.Name, e.Repository)
+	q := `
+INSERT INTO plugin(name, repository, binary_location, version, installed_at) VALUES(?, ?, ?, ?, ?)
+`
+
+	_, err = tx.Exec(q, e.Name, e.Repository, e.BinaryLocation, e.Version, e.InstalledAt)
 	if err != nil {
 		return err
 	}
@@ -68,7 +78,16 @@ func (p *pluginDB) createPluginTable() error {
 		return err
 	}
 
-	_, err = tx.Exec("CREATE TABLE IF NOT EXISTS plugin (name varchar(256) PRIMARY KEY, repository varchar(256))")
+	q := `
+CREATE TABLE IF NOT EXISTS plugin (
+	name varchar(256) PRIMARY KEY,
+	repository varchar(256),
+	binary_location varchar(256),
+	version varchar(256),
+	installed_at DATE)
+`
+
+	_, err = tx.Exec(q)
 	if err != nil {
 		return err
 	}
@@ -81,6 +100,8 @@ func (p *pluginDB) createPluginTable() error {
 }
 
 func (p *pluginDB) DeletePlugin(name string) error {
+	log.Info().Str("module", "db").Msg("DeletePlugin")
+
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
@@ -110,10 +131,13 @@ func (p *pluginDB) List() ([]pluginEntry, error) {
 }
 
 func (p *pluginDB) Get(name string) (*pluginEntry, error) {
+	log.Info().Str("module", "db").Msgf("Get %s", name)
+
+	q := `SELECT name, repository, binary_location, version, installed_at FROM plugin WHERE name=?`
 	e := pluginEntry{}
 	err := p.conn.
-		QueryRowContext(p.ctx, "SELECT name, repository FROM plugin WHERE name=?", name).
-		Scan(&e.Name, &e.Repository)
+		QueryRowContext(p.ctx, q, name).
+		Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
 
 	if err != nil {
 		return nil, err
@@ -123,7 +147,7 @@ func (p *pluginDB) Get(name string) (*pluginEntry, error) {
 }
 
 func newWriter(dbfile string) (dbWriter, error) {
-	log.Info().Str("module", "db").Msg("newWriter")
+	log.Info().Str("module", "db").Msgf("newWriter %s", dbfile)
 
 	chanErr := make(chan error, 1)
 
@@ -149,7 +173,8 @@ func newWriter(dbfile string) (dbWriter, error) {
 }
 
 func newReader(dbfile string) (dbReader, error) {
-	log.Info().Str("module", "db").Msg("newReader")
+	log.Info().Str("module", "db").Msgf("newReader %s", dbfile)
+
 	chanErr := make(chan error, 1)
 
 	once.Do(func() {
