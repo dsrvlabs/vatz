@@ -29,13 +29,21 @@ type vatzPluginManager struct {
 }
 
 func (m *vatzPluginManager) Install(repo, name, version string) error {
-	log.Info().Str("module", "plugin").Msgf("Install new plugin %s", repo)
+	var fixedRepo string
+	strTokens := strings.Split(repo, "://")
+	if len(strTokens) >= 2 {
+		fixedRepo = strTokens[1]
+	} else {
+		fixedRepo = strTokens[0]
+	}
+
+	log.Info().Str("module", "plugin").Msgf("Install new plugin %s", fixedRepo)
 
 	var stdout, stderr bytes.Buffer
 
 	os.Setenv("GOBIN", m.home)
 
-	exeCmd := exec.Command("go", "install", repo+"@"+version)
+	exeCmd := exec.Command("go", "install", fixedRepo+"@"+version)
 	exeCmd.Stdout = &stdout
 	exeCmd.Stderr = &stderr
 
