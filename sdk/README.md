@@ -17,17 +17,7 @@ Initialize go.mod file.
 ~$ go mod init <project name>
 ```
 
-### Step 2: Set GOPRIVATE
-
-For now, `vatz` project is in private so extra configurations are required to use SDK module.
-
-```
-~$ export GOPRIVATE=github.com/dsrvlabs/vatz,github.com/dsrvlabs/vatz-proto
-~$ export GIT_TERMINAL_PROMPT=1
-~$ go get github.com/dsrvlabs/vatz
-```
-
-### Step 3: Start main
+### Step 2: Start main
 
 Create `main.go` file with below contents.
 
