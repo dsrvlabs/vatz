@@ -38,7 +38,7 @@ func (p *pagerduty) SendNotification(msg tp.ReqMsg) error {
 	var (
 		pagerdutySeverity string
 		emoji             string
-		methodName        = msg.FuncName
+		methodName        = msg.Option["pUnique"].(string)
 	)
 	/*
 		Pagerduty severity Allowed values:

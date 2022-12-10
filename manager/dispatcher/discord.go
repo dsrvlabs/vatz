@@ -13,7 +13,6 @@ import (
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -38,7 +37,7 @@ type discord struct {
 
 func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	pUnique := utils.MakeUniqueValue(notifyInfo.Plugin, notifyInfo.Address, notifyInfo.Port)
+	pUnique := deliverMessage.Option["pUnique"].(string)
 
 	if reqToNotify {
 		d.SendNotification(deliverMessage)

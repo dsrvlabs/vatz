@@ -10,7 +10,6 @@ import (
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
 )
@@ -29,12 +28,11 @@ type telegram struct {
 
 func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
+	pUnique := deliverMessage.Option["pUnique"].(string)
 
 	if reqToNotify {
 		t.SendNotification(deliverMessage)
 	}
-
-	pUnique := utils.MakeUniqueValue(notifyInfo.Plugin, notifyInfo.Address, notifyInfo.Port)
 
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
