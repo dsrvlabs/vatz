@@ -86,7 +86,6 @@ plugins_infos:
 
 ### Plugin Infos
 > **You can find further plugins here.**
-> - [vatz-plugin-common](https://github.com/dsrvlabs/vatz-plugin-common)
 > - [vatz-plugin-sysutill](https://github.com/dsrvlabs/vatz-plugin-sysutil)
 > - [vztz-plugin-cosmoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
 
