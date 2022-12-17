@@ -190,13 +190,13 @@ func initHealthServer(s *grpc.Server) {
 	healthpb.RegisterHealthServer(s, gRPCHealthServer)
 }
 
-type ClusterManager struct {
+type PrometheusManager struct {
 	Protocol string
 	// Contains many more fields not listed in this example.
 }
 
-type ClusterManagerCollector struct {
-	ClusterManager *ClusterManager
+type PrometheusManagerCollector struct {
+	PrometheusManager *PrometheusManager
 }
 
 func initPrometheus(port, protocol string) error {
@@ -236,20 +236,20 @@ func initPrometheus(port, protocol string) error {
 	//	return nil
 }
 
-func NewPrometheusManager(protocol string, reg prometheus.Registerer) *ClusterManager {
-	c := &ClusterManager{
+func NewPrometheusManager(protocol string, reg prometheus.Registerer) *PrometheusManager {
+	c := &PrometheusManager{
 		Protocol: protocol,
 	}
-	cc := ClusterManagerCollector{ClusterManager: c}
+	cc := PrometheusManagerCollector{PrometheusManager: c}
 	prometheus.WrapRegistererWith(prometheus.Labels{"protocol": protocol}, reg).MustRegister(cc)
 	return c
 }
 
-func (cc ClusterManagerCollector) Describe(ch chan<- *prometheus.Desc) {
+func (cc PrometheusManagerCollector) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(cc, ch)
 }
 
-func (cc ClusterManagerCollector) Collect(ch chan<- prometheus.Metric) {
+func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	var (
 		pluginUpDesc = prometheus.NewDesc(
 			"plugin_up",
@@ -263,7 +263,7 @@ func (cc ClusterManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	plugins = append(plugins, "b")
 	plugins = append(plugins, "c")
 
-	upByPlugin := cc.ClusterManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
+	upByPlugin := cc.PrometheusManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
 	for plugin, up := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
 			pluginUpDesc,
@@ -274,7 +274,7 @@ func (cc ClusterManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c *ClusterManager) ReallyExpensiveAssessmentOfTheSystemState(plugins []string) (
+func (c *PrometheusManager) ReallyExpensiveAssessmentOfTheSystemState(plugins []string) (
 	pluginUp map[string]int,
 ) {
 	pluginUp = make(map[string]int)
