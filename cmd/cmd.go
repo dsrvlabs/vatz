@@ -12,6 +12,7 @@ const (
 	defaultFlagConfig = "default.yaml"
 	defaultFlagLog    = ""
 	defaultRPC        = "http://localhost:19091"
+	defaultPromPort   = "18080"
 )
 
 var (
@@ -24,6 +25,7 @@ var (
 	configFile string
 	logfile    string
 	vatzRPC    string
+	promPort   string
 )
 
 // CreateRootCommand creates root command of Cobra.

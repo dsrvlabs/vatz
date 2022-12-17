@@ -5,12 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -64,6 +67,7 @@ func createStartCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
 	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "log file export to.")
+	cmd.PersistentFlags().StringVar(&promPort, "prometheus port", defaultPromPort, "prometheus port number.")
 
 	return cmd
 }
@@ -100,6 +104,8 @@ func initiateServer(ch <-chan os.Signal) error {
 	go func() {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
+
+	go initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -182,4 +188,98 @@ func initHealthServer(s *grpc.Server) {
 	gRPCHealthServer := grpchealth.NewServer()
 	gRPCHealthServer.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
 	healthpb.RegisterHealthServer(s, gRPCHealthServer)
+}
+
+type ClusterManager struct {
+	Protocol string
+	// Contains many more fields not listed in this example.
+}
+
+type ClusterManagerCollector struct {
+	ClusterManager *ClusterManager
+}
+
+func initPrometheus(port, protocol string) error {
+	log.Info().Str("module", "main").Msgf("Prometheus port: %s", port)
+
+	reg := prometheus.NewPedanticRegistry()
+
+	NewPrometheusManager(protocol, reg)
+
+	reg.MustRegister(
+		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
+	)
+
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+
+	err := http.ListenAndServe(":"+port, nil)
+
+	if err != nil {
+		log.Error().Str("module", "main").Msgf("Prometheus Error: %s", err)
+	}
+
+	return nil
+	// Just check vatz status
+	//	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+	//		h := promhttp.HandlerFor(prometheus.Gatherers{
+	//			prometheus.DefaultGatherer,
+	//		}, promhttp.HandlerOpts{})
+	//		h.ServeHTTP(w, r)
+	//	})
+	//
+	//	err := http.ListenAndServe(":"+port, nil)
+	//
+	//	if err != nil {
+	//		log.Error().Str("module", "main").Msgf("Prometheus Error: %s", err)
+	//	}
+	//
+	//	return nil
+}
+
+func NewPrometheusManager(protocol string, reg prometheus.Registerer) *ClusterManager {
+	c := &ClusterManager{
+		Protocol: protocol,
+	}
+	cc := ClusterManagerCollector{ClusterManager: c}
+	prometheus.WrapRegistererWith(prometheus.Labels{"protocol": protocol}, reg).MustRegister(cc)
+	return c
+}
+
+func (cc ClusterManagerCollector) Describe(ch chan<- *prometheus.Desc) {
+	prometheus.DescribeByCollect(cc, ch)
+}
+
+func (cc ClusterManagerCollector) Collect(ch chan<- prometheus.Metric) {
+	var (
+		pluginUpDesc = prometheus.NewDesc(
+			"plugin_up",
+			"Plugin liveness checks.",
+			[]string{"plugin"}, nil,
+		)
+		plugins []string
+	)
+
+	plugins = append(plugins, "a")
+	plugins = append(plugins, "b")
+	plugins = append(plugins, "c")
+
+	upByPlugin := cc.ClusterManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
+	for plugin, up := range upByPlugin {
+		ch <- prometheus.MustNewConstMetric(
+			pluginUpDesc,
+			prometheus.CounterValue,
+			float64(up),
+			plugin,
+		)
+	}
+}
+
+func (c *ClusterManager) ReallyExpensiveAssessmentOfTheSystemState(plugins []string) (
+	pluginUp map[string]int,
+) {
+	pluginUp = make(map[string]int)
+	for _, plugin := range plugins {
+		pluginUp[plugin] = 1
+	}
+	return
 }
