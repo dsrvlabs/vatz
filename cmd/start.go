@@ -106,7 +106,7 @@ func initiateServer(ch <-chan os.Signal) error {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
-	initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
+	go initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -246,6 +246,9 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		plugins []string
 	)
 
+	plugins = append(plugins, "a")
+	plugins = append(plugins, "b")
+	plugins = append(plugins, "c")
 	fmt.Println("COLLECT")
 
 	upByPlugin := cc.PrometheusManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
