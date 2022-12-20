@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -105,7 +106,7 @@ func initiateServer(ch <-chan os.Signal) error {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
-	go initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
+	initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -208,6 +209,7 @@ func initPrometheus(port, protocol string) error {
 
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
+		prometheus.NewGoCollector(),
 	)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
@@ -219,21 +221,6 @@ func initPrometheus(port, protocol string) error {
 	}
 
 	return nil
-	// Just check vatz status
-	//	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-	//		h := promhttp.HandlerFor(prometheus.Gatherers{
-	//			prometheus.DefaultGatherer,
-	//		}, promhttp.HandlerOpts{})
-	//		h.ServeHTTP(w, r)
-	//	})
-	//
-	//	err := http.ListenAndServe(":"+port, nil)
-	//
-	//	if err != nil {
-	//		log.Error().Str("module", "main").Msgf("Prometheus Error: %s", err)
-	//	}
-	//
-	//	return nil
 }
 
 func NewPrometheusManager(protocol string, reg prometheus.Registerer) *PrometheusManager {
@@ -259,15 +246,13 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		plugins []string
 	)
 
-	plugins = append(plugins, "a")
-	plugins = append(plugins, "b")
-	plugins = append(plugins, "c")
+	fmt.Println("COLLECT")
 
 	upByPlugin := cc.PrometheusManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
 	for plugin, up := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
 			pluginUpDesc,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			float64(up),
 			plugin,
 		)
@@ -277,9 +262,11 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 func (c *PrometheusManager) ReallyExpensiveAssessmentOfTheSystemState(plugins []string) (
 	pluginUp map[string]int,
 ) {
+	//TODO: How to check status of Vatz plugins
 	pluginUp = make(map[string]int)
 	for _, plugin := range plugins {
-		pluginUp[plugin] = 1
+		//live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
+		pluginUp[plugin] = rand.Intn(100) % 2
 	}
 	return
 }
