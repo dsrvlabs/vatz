@@ -40,7 +40,7 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 	pUnique := deliverMessage.Option["pUnique"].(string)
 
 	if reqToNotify {
-		d.SendNotification(deliverMessage)
+		_ = d.SendNotification(deliverMessage)
 	}
 
 	if reminderState == tp.ON {
@@ -58,7 +58,7 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 		}
 		for _, schedule := range d.reminderSchedule {
 			id, _ := d.reminderCron.AddFunc(schedule, func() {
-				d.SendNotification(deliverMessage)
+				_ = d.SendNotification(deliverMessage)
 			})
 			newEntries = append(newEntries, id)
 		}
