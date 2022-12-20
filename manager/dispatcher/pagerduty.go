@@ -28,7 +28,7 @@ type pagerduty struct {
 func (p *pagerduty) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, _, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	if reqToNotify {
-		p.SendNotification(deliverMessage)
+		_ = p.SendNotification(deliverMessage)
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ Plugin Name: %s
 	if pb.STATE_SUCCESS != msg.State || pb.SEVERITY_INFO != msg.Severity {
 		resp, err := pd.ManageEventWithContext(ctx, pd.V2Event{RoutingKey: p.secret, Action: "trigger", Payload: v2EventPayload})
 		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Connection failed due to Error: %s", err)
+			log.Error().Str("module", "dispatcher:pagerduty").Msgf("Channel(Pagerduty): Connection failed due to Error: %s", err)
 			return err
 		}
 		if resp.Status == SUCCESS {
@@ -99,7 +99,7 @@ Plugin Name: %s
 				Payload:    v2EventPayload,
 			})
 			if err != nil {
-				log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Connection failed due to Error: %s", err)
+				log.Error().Str("module", "dispatcher:pagerduty").Msgf("Channel(Pagerduty): Connection failed due to Error: %s", err)
 				return err
 			}
 		}

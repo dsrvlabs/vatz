@@ -105,7 +105,7 @@ func (s *rpcService) Stop() {
 	defer s.cancel()
 
 	if s.httpServer != nil {
-		s.httpServer.Shutdown(s.ctx)
+		_ = s.httpServer.Shutdown(s.ctx)
 	}
 
 	log.Info().Str("module", "rpc").Msg("stop")

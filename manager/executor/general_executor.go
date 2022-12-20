@@ -54,7 +54,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		firstExe, preStatus := s.updateState(pUnique, resp)
 
 		for _, dp := range dispatchers {
-			dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
+			err = dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
 				Plugin:     plugin.Name,
 				Method:     method.Name,
 				Address:    plugin.Address,
@@ -63,6 +63,9 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 				State:      resp.GetState(),
 				ExecuteMsg: resp.GetMessage(),
 			})
+			if err != nil {
+				return err
+			}
 		}
 	}
 

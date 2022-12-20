@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"testing"
@@ -21,7 +22,12 @@ import (
 func TestRPCs(t *testing.T) {
 	rpc := NewRPCService()
 
-	go rpc.Start("127.0.0.1", 19090, 19091)
+	go func() {
+		err := rpc.Start("127.0.0.1", 19090, 19091)
+		if err != nil {
+			log.Error().Str("module", "test_RPC").Msgf("Channel(Test): RPC start Error: %s", err)
+		}
+	}()
 
 	time.Sleep(time.Second * 1) // Wait ready
 

@@ -119,11 +119,11 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 		c := &http.Client{}
 		_, err = c.Do(req)
 		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
+			log.Error().Str("module", "dispatcher:discord").Msgf("Channel(Discord): Send notification error: %s", err)
 		}
 		// TODO: Should handle response status.
 	} else {
-		log.Error().Str("module", "dispatcher").Msg("Channel(Discord): Connection failed due to Invalid discord webhook address")
+		log.Error().Str("module", "dispatcher:discord").Msg("Channel(Discord): Connection failed due to Invalid discord webhook address")
 	}
 	return nil
 }

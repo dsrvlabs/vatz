@@ -31,7 +31,7 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 	pUnique := deliverMessage.Option["pUnique"].(string)
 
 	if reqToNotify {
-		t.SendNotification(deliverMessage)
+		_ = t.SendNotification(deliverMessage)
 	}
 
 	if reminderState == tp.ON {
@@ -49,7 +49,7 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 		}
 		for _, schedule := range t.reminderSchedule {
 			id, _ := t.reminderCron.AddFunc(schedule, func() {
-				t.SendNotification(deliverMessage)
+				_ = t.SendNotification(deliverMessage)
 			})
 			newEntries = append(newEntries, id)
 		}
@@ -98,19 +98,23 @@ Plugin Name: <em>%s</em>
 
 	response, err = http.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram Error: %s", err)
+		log.Error().Str("module", "dispatcher:telegram").Msgf("dispatcher telegram Error: %s", err)
 		return err
 	}
 	defer response.Body.Close()
 	body, err = ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
+		log.Error().Str("module", "dispatcher:telegram").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	}
 	respJSON := make(map[string]interface{})
-	json.Unmarshal(body, &respJSON)
+	err = json.Unmarshal(body, &respJSON)
+	if err != nil {
+		log.Error().Str("module", "dispatcher:telegram").Msgf("Channel(Telegram): body unmarshal Error: %s", err)
+		return err
+	}
 	if !respJSON["ok"].(bool) {
-		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
+		log.Error().Str("module", "dispatcher:telegram").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
 	}
 	return nil
 }

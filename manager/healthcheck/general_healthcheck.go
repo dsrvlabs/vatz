@@ -67,7 +67,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 
 	if sendMSG {
 		for _, dispatcher := range dispatchers {
-			dispatcher.SendNotification(deliverMSG)
+			_ = dispatcher.SendNotification(deliverMSG)
 		}
 	}
 
@@ -83,7 +83,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatchers []dp.Dispatcher) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	for i := 0; i < len(healthCheckerSchedule); i++ {
-		c.AddFunc(healthCheckerSchedule[i], func() {
+		_, _ = c.AddFunc(healthCheckerSchedule[i], func() {
 			for _, dispatcher := range dispatchers {
 				dispatcher.SendNotification(h.healthMSG)
 			}
@@ -92,7 +92,6 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	c.Start()
 	return nil
 }
-
 func (h *healthChecker) PluginStatus(ctx context.Context) []tp.PluginStatus {
 	status := make([]tp.PluginStatus, 0)
 
