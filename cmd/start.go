@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
@@ -22,6 +22,7 @@ import (
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dsrvlabs/vatz/manager/api"
 	config "github.com/dsrvlabs/vatz/manager/config"
@@ -106,7 +107,7 @@ func initiateServer(ch <-chan os.Signal) error {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
-	go initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
+	initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -200,6 +201,11 @@ type PrometheusManagerCollector struct {
 	PrometheusManager *PrometheusManager
 }
 
+type PrometheusValue struct {
+	Up   int
+	Name string
+}
+
 func initPrometheus(port, protocol string) error {
 	log.Info().Str("module", "main").Msgf("Prometheus port: %s", port)
 
@@ -209,7 +215,6 @@ func initPrometheus(port, protocol string) error {
 
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		prometheus.NewGoCollector(),
 	)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
@@ -241,35 +246,39 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		pluginUpDesc = prometheus.NewDesc(
 			"plugin_up",
 			"Plugin liveness checks.",
-			[]string{"plugin"}, nil,
+			[]string{"plugin", "port"}, nil,
 		)
-		plugins []string
 	)
 
-	plugins = append(plugins, "a")
-	plugins = append(plugins, "b")
-	plugins = append(plugins, "c")
-	fmt.Println("COLLECT")
+	upByPlugin := cc.PrometheusManager.GetPluginUp(config.GetConfig().PluginInfos.Plugins)
 
-	upByPlugin := cc.PrometheusManager.ReallyExpensiveAssessmentOfTheSystemState(plugins)
-	for plugin, up := range upByPlugin {
+	for port, value := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
 			pluginUpDesc,
 			prometheus.GaugeValue,
-			float64(up),
-			plugin,
+			float64(value.Up),
+			value.Name,
+			strconv.Itoa(port),
 		)
 	}
 }
 
-func (c *PrometheusManager) ReallyExpensiveAssessmentOfTheSystemState(plugins []string) (
-	pluginUp map[string]int,
+func (c *PrometheusManager) GetPluginUp(plugins []config.Plugin) (
+	pluginUp map[int]*PrometheusValue,
 ) {
-	//TODO: How to check status of Vatz plugins
-	pluginUp = make(map[string]int)
-	for _, plugin := range plugins {
-		//live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
-		pluginUp[plugin] = rand.Intn(100) % 2
+	gClients := getClients(plugins)
+	pluginUp = make(map[int]*PrometheusValue)
+
+	for idx, plugin := range plugins {
+		pluginUp[plugin.Port] = &PrometheusValue{
+			Up:   1,
+			Name: plugin.Name,
+		}
+		verify, err := gClients[idx].Verify(context.Background(), new(emptypb.Empty))
+		if err != nil || verify == nil {
+			pluginUp[plugin.Port].Up = 0
+		}
 	}
+
 	return
 }
