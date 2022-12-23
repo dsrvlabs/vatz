@@ -98,7 +98,10 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
-		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
+		err = rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
+		if err != nil {
+			log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
+		}
 	}()
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
@@ -146,11 +149,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 	return grpcClients
 }
 
-func multiPluginExecutor(plugin config.Plugin,
-	singleClient pluginpb.PluginClient,
-	okToSend bool,
-	quit <-chan os.Signal) {
-
+func multiPluginExecutor(plugin config.Plugin, singleClient pluginpb.PluginClient, okToSend bool, quit <-chan os.Signal) {
 	verifyTicker := time.NewTicker(time.Duration(plugin.VerifyInterval) * time.Second)
 	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
 
@@ -165,7 +164,7 @@ func multiPluginExecutor(plugin config.Plugin,
 				okToSend = false
 			}
 		case <-executeTicker.C:
-			if okToSend == true {
+			if okToSend {
 				err := executor.Execute(ctx, singleClient, plugin, dispatchers)
 				if err != nil {
 					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)

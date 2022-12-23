@@ -117,7 +117,7 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 		req, _ := http.NewRequest("POST", d.secret, bytes.NewReader(message))
 		req.Header.Set("Content-Type", "application/json")
 		c := &http.Client{}
-		_, err = c.Do(req)
+		_, err = c.Do(req) //nolint:bodyclose
 		if err != nil {
 			log.Error().Str("module", "dispatcher:discord").Msgf("Channel(Discord): Send notification error: %s", err)
 		}

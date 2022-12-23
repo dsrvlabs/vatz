@@ -85,7 +85,7 @@ type Plugin struct {
 }
 
 type parser struct {
-	rawConfig map[string]interface{}
+	rawConfig map[string]interface{} //nolint:golint,unused
 }
 
 func (p *parser) loadConfigFile(path string) ([]byte, error) {
@@ -95,7 +95,7 @@ func (p *parser) loadConfigFile(path string) ([]byte, error) {
 	)
 
 	if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
-		resp, err := http.Get(path)
+		resp, err := http.Get(path) //nolint:gosec
 		if err != nil {
 			return nil, err
 		}

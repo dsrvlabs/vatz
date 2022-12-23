@@ -18,8 +18,8 @@ var (
 	healthChecker          = health.GetHealthChecker()
 	executor               = ex.NewExecutor()
 	dispatchers            []dp.Dispatcher
-	defaultVerifyInterval  = 15
-	defaultExecuteInterval = 30
+	defaultVerifyInterval  = 15 //nolint:golint,unused
+	defaultExecuteInterval = 30 //nolint:golint,unused
 
 	configFile string
 	logfile    string
