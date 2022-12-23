@@ -11,11 +11,12 @@ type DiscordColor int
 
 //Let's Setup this message into GRPC Type
 type ReqMsg struct {
-	FuncName     string            `json:"func_name"`
-	State        pluginpb.STATE    `json:"state"`
-	Msg          string            `json:"msg"`
-	Severity     pluginpb.SEVERITY `json:"severity"`
-	ResourceType string            `json:"resource_type"`
+	FuncName     string                 `json:"func_name"`
+	State        pluginpb.STATE         `json:"state"`
+	Msg          string                 `json:"msg"`
+	Severity     pluginpb.SEVERITY      `json:"severity"`
+	ResourceType string                 `json:"resource_type"`
+	Options      map[string]interface{} `json:"options"`
 }
 
 func (r *ReqMsg) UpdateState(stat pluginpb.STATE) {

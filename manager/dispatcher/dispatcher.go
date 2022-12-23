@@ -2,6 +2,7 @@ package dispatcher
 
 import (
 	"errors"
+	"github.com/dsrvlabs/vatz/utils"
 	"strings"
 	"sync"
 	"time"
@@ -88,6 +89,8 @@ func messageHandler(isFirst bool, preStat tp.StateFlag, info tp.NotifyInfo) (boo
 	reminderState := tp.HANG
 	isFlagStateChanged := false
 
+	pUnique := utils.MakeUniqueValue(info.Plugin, info.Address, info.Port)
+
 	if preStat.State != info.State || preStat.Severity != info.Severity {
 		isFlagStateChanged = true
 	}
@@ -110,5 +113,6 @@ func messageHandler(isFirst bool, preStat tp.StateFlag, info tp.NotifyInfo) (boo
 		Msg:          info.ExecuteMsg,
 		Severity:     info.Severity,
 		ResourceType: info.Plugin,
+		Options:      map[string]interface{}{"pUnique": pUnique},
 	}
 }
