@@ -30,12 +30,15 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 	pUnique := utils.MakeUniqueValue(plugin.Name, plugin.Address, plugin.Port)
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 
+	option := map[string]interface{}{"pUnique": pUnique}
+
 	deliverMSG := tp.ReqMsg{
 		FuncName:     "isPluginUp",
 		State:        pb.STATE_FAILURE,
 		Msg:          "Plugin is DOWN!!",
 		Severity:     pb.SEVERITY_CRITICAL,
 		ResourceType: plugin.Name,
+		Options:      option,
 	}
 
 	if _, ok := h.pluginStatus.Load(pUnique); !ok {
