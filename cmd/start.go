@@ -107,7 +107,7 @@ func initiateServer(ch <-chan os.Signal) error {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
-	initPrometheus(promPort, cfg.Vatz.ProtocolIdentifier)
+	initMetricsServer(promPort, cfg.Vatz.ProtocolIdentifier)
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -206,7 +206,7 @@ type PrometheusValue struct {
 	Name string
 }
 
-func initPrometheus(port, protocol string) error {
+func initMetricsServer(port, protocol string) error {
 	log.Info().Str("module", "main").Msgf("Prometheus port: %s", port)
 
 	reg := prometheus.NewPedanticRegistry()
