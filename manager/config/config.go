@@ -39,6 +39,7 @@ type Config struct {
 		NotificationInfo      NotificationInfo `yaml:"notification_info"`
 		HealthCheckerSchedule []string         `yaml:"health_checker_schedule"`
 		RPCInfo               RPCInfo          `yaml:"rpc_info"`
+		MonitoringInfo        MonitoringInfo   `yaml:"monitoring_info"`
 	} `yaml:"vatz_protocol_info"`
 
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
@@ -62,6 +63,15 @@ type RPCInfo struct {
 	Address  string `yaml:"address"`
 	GRPCPort int    `yaml:"grpc_port"`
 	HTTPPort int    `yaml:"http_port"`
+}
+
+// MonitoringInfo is structure for RPC service configuration.
+type MonitoringInfo struct {
+	Prometheus struct {
+		Enabled bool   `yaml:"enabled"`
+		Address string `yaml:"address"`
+		Port    int    `yaml:"port"`
+	} `yaml:"prometheus"`
 }
 
 // PluginInfo contains general plugin info.

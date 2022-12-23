@@ -70,7 +70,7 @@ func createStartCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
 	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "log file export to.")
-	cmd.PersistentFlags().StringVar(&promPort, "prometheus port", defaultPromPort, "prometheus port number.")
+	cmd.PersistentFlags().StringVar(&promPort, "prometheus", defaultPromPort, "prometheus port number.")
 
 	return cmd
 }
@@ -108,7 +108,13 @@ func initiateServer(ch <-chan os.Signal) error {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
 
-	initMetricsServer(promPort, cfg.Vatz.ProtocolIdentifier)
+	if cfg.Vatz.MonitoringInfo.Prometheus.Enabled {
+		if defaultPromPort == promPort {
+			initMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, strconv.Itoa(cfg.Vatz.MonitoringInfo.Prometheus.Port), cfg.Vatz.ProtocolIdentifier)
+		} else {
+			initMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, promPort, cfg.Vatz.ProtocolIdentifier)
+		}
+	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -207,14 +213,16 @@ type prometheusValue struct {
 	Name string
 }
 
-func initMetricsServer(port, protocol string) error {
-	log.Info().Str("module", "main").Msgf("Prometheus port: %s", port)
+func initMetricsServer(addr, port, protocol string) error {
+	log.Info().Str("module", "main").Msgf("start metric server: %s:%s", addr, port)
 
 	reg := prometheus.NewPedanticRegistry()
 
 	var prometheusOnce sync.Once
 
-	prometheusOnce.Do(newPrometheusManager(protocol, reg))
+	prometheusOnce.Do(func() {
+		newPrometheusManager(protocol, reg)
+	})
 
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
@@ -222,7 +230,7 @@ func initMetricsServer(port, protocol string) error {
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 
-	err := http.ListenAndServe(":"+port, nil)
+	err := http.ListenAndServe(addr+":"+port, nil)
 
 	if err != nil {
 		log.Error().Str("module", "main").Msgf("Prometheus Error: %s", err)
