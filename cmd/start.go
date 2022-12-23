@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
@@ -211,7 +212,9 @@ func initMetricsServer(port, protocol string) error {
 
 	reg := prometheus.NewPedanticRegistry()
 
-	newPrometheusManager(protocol, reg)
+	var prometheusOnce sync.Once
+
+	prometheusOnce.Do(newPrometheusManager(protocol, reg))
 
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
