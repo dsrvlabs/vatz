@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
@@ -128,7 +129,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 
 	if len(plugins) > 0 {
 		for _, plugin := range plugins {
-			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithInsecure())
+			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", plugin.Name, err)
 			}
@@ -137,7 +138,7 @@ func getClients(plugins []config.Plugin) []pluginpb.PluginClient {
 	} else {
 		// TODO: Is this really neccessary???
 		defaultConnectedTarget := "localhost:9091"
-		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
+		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatal().Str("module", "main").Msgf("gRPC Dial Error: %s", err)
 		}

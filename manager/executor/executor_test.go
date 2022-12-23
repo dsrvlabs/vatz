@@ -61,11 +61,11 @@ func TestExecutorSuccess(t *testing.T) {
 		}
 
 		// Mocks.
-		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{
+		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{ //nolint:ineffassign
 			"execute_method": testMethodName,
 		})
 
-		mockOpts, err := structpb.NewStruct(map[string]interface{}{
+		mockOpts, err := structpb.NewStruct(map[string]interface{}{ //nolint:ineffassign
 			"plugin_name": testPluginName,
 		})
 
@@ -182,11 +182,12 @@ func TestExecutorFailure(t *testing.T) {
 		}
 
 		// Mocks.
-		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{
+
+		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{ //nolint:ineffassign
 			"execute_method": testMethodName,
 		})
 
-		mockOpts, err := structpb.NewStruct(map[string]interface{}{
+		mockOpts, err := structpb.NewStruct(map[string]interface{}{ //nolint:ineffassign
 			"plugin_name": testPluginName,
 		})
 
@@ -210,7 +211,7 @@ func TestExecutorFailure(t *testing.T) {
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin, mockNotifs)
 
-		fmt.Println("Status", e.status)
+		fmt.Println("Status", e.status) //nolint:govet
 
 		// Asserts
 		mockClient.AssertExpectations(t)

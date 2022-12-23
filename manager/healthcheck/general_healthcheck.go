@@ -85,7 +85,7 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	for i := 0; i < len(healthCheckerSchedule); i++ {
 		_, _ = c.AddFunc(healthCheckerSchedule[i], func() {
 			for _, dispatcher := range dispatchers {
-				dispatcher.SendNotification(h.healthMSG)
+				_ = dispatcher.SendNotification(h.healthMSG)
 			}
 		})
 	}

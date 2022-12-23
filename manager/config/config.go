@@ -103,7 +103,7 @@ func (p *parser) loadConfigFile(path string) ([]byte, error) {
 			return nil, fmt.Errorf("invalid response status %d", resp.StatusCode)
 		}
 
-		rawYAML, err = io.ReadAll(resp.Body)
+		rawYAML, _ = io.ReadAll(resp.Body)
 	} else {
 		rawYAML, err = ioutil.ReadFile(path)
 	}
