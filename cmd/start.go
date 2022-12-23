@@ -192,16 +192,16 @@ func initHealthServer(s *grpc.Server) {
 	healthpb.RegisterHealthServer(s, gRPCHealthServer)
 }
 
-type PrometheusManager struct {
+type prometheusManager struct {
 	Protocol string
 	// Contains many more fields not listed in this example.
 }
 
-type PrometheusManagerCollector struct {
-	PrometheusManager *PrometheusManager
+type prometheusManagerCollector struct {
+	prometheusManager *prometheusManager
 }
 
-type PrometheusValue struct {
+type prometheusValue struct {
 	Up   int
 	Name string
 }
@@ -211,7 +211,7 @@ func initMetricsServer(port, protocol string) error {
 
 	reg := prometheus.NewPedanticRegistry()
 
-	NewPrometheusManager(protocol, reg)
+	newPrometheusManager(protocol, reg)
 
 	reg.MustRegister(
 		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
@@ -228,20 +228,20 @@ func initMetricsServer(port, protocol string) error {
 	return nil
 }
 
-func NewPrometheusManager(protocol string, reg prometheus.Registerer) *PrometheusManager {
-	c := &PrometheusManager{
+func newPrometheusManager(protocol string, reg prometheus.Registerer) *prometheusManager {
+	c := &prometheusManager{
 		Protocol: protocol,
 	}
-	cc := PrometheusManagerCollector{PrometheusManager: c}
+	cc := prometheusManagerCollector{prometheusManager: c}
 	prometheus.WrapRegistererWith(prometheus.Labels{"protocol": protocol}, reg).MustRegister(cc)
 	return c
 }
 
-func (cc PrometheusManagerCollector) Describe(ch chan<- *prometheus.Desc) {
+func (cc prometheusManagerCollector) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(cc, ch)
 }
 
-func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
+func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	var (
 		pluginUpDesc = prometheus.NewDesc(
 			"plugin_up",
@@ -250,7 +250,7 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		)
 	)
 
-	upByPlugin := cc.PrometheusManager.GetPluginUp(config.GetConfig().PluginInfos.Plugins)
+	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins)
 
 	for port, value := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
@@ -263,14 +263,14 @@ func (cc PrometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c *PrometheusManager) GetPluginUp(plugins []config.Plugin) (
-	pluginUp map[int]*PrometheusValue,
+func (c *prometheusManager) getPluginUp(plugins []config.Plugin) (
+	pluginUp map[int]*prometheusValue,
 ) {
 	gClients := getClients(plugins)
-	pluginUp = make(map[int]*PrometheusValue)
+	pluginUp = make(map[int]*prometheusValue)
 
 	for idx, plugin := range plugins {
-		pluginUp[plugin.Port] = &PrometheusValue{
+		pluginUp[plugin.Port] = &prometheusValue{
 			Up:   1,
 			Name: plugin.Name,
 		}
