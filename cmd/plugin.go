@@ -79,7 +79,7 @@ var (
 		Use:     "install",
 		Short:   "Install new plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
-		Example: "vats plugin install github.com/dsrvlabs/<somewhere> name",
+		Example: "vatz plugin install github.com/dsrvlabs/<somewhere> name",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s", args[0], pluginDir)
 
@@ -98,7 +98,7 @@ var (
 	startCommand = &cobra.Command{
 		Use:     "start",
 		Short:   "Start installed plugin",
-		Example: "vats plugin start pluginName",
+		Example: "vatz plugin start pluginName",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginName := viper.GetString("plugin")
 			exeArgs := viper.GetString("args")
