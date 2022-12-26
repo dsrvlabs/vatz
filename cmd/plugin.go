@@ -113,7 +113,7 @@ var (
 	listCommand = &cobra.Command{
 		Use:     "list",
 		Short:   "List installed plugin",
-		Example: "vats plugin list",
+		Example: "vatz plugin list",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Str("module", "plugin").Msgf("List plugins")
 

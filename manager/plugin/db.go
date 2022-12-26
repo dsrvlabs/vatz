@@ -131,7 +131,6 @@ func (p *pluginDB) DeletePlugin(name string) error {
 
 func (p *pluginDB) UpdatePlugin() error {
 	// TODO:
-
 	return nil
 }
 
