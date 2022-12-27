@@ -35,7 +35,7 @@ func TestMessageHandler(t *testing.T) {
 		Severity:   pb.SEVERITY_CRITICAL,
 		ExecuteMsg: "ExecuteMsg",
 	}
-
+	dummyOptions := map[string]interface{}{"pUnique": "SamplePlugin0"}
 	no1, reminderSt1, deliverMessage1 := messageHandler(true, preStat, notifyInfoTPOn)
 	no2, reminderSt2, deliverMessage2 := messageHandler(false, preStat, notifyInfoTPOff)
 	no3, reminderSt3, deliverMessage3 := messageHandler(false, preStat, notifyInfoTPHang)
@@ -48,6 +48,7 @@ func TestMessageHandler(t *testing.T) {
 		Msg:          "ExecuteMsg",
 		Severity:     pb.SEVERITY_WARNING,
 		ResourceType: "SamplePlugin",
+		Options:      dummyOptions,
 	}, deliverMessage1)
 
 	assert.False(t, false == no2)
@@ -58,6 +59,7 @@ func TestMessageHandler(t *testing.T) {
 		Msg:          "ExecuteMsg",
 		Severity:     pb.SEVERITY_INFO,
 		ResourceType: "SamplePlugin",
+		Options:      dummyOptions,
 	}, deliverMessage2)
 
 	assert.False(t, no3)
@@ -68,5 +70,6 @@ func TestMessageHandler(t *testing.T) {
 		Msg:          "ExecuteMsg",
 		Severity:     pb.SEVERITY_CRITICAL,
 		ResourceType: "SamplePlugin",
+		Options:      dummyOptions,
 	}, deliverMessage3)
 }
