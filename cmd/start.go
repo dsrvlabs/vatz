@@ -209,8 +209,9 @@ type prometheusManagerCollector struct {
 }
 
 type prometheusValue struct {
-	Up   int
-	Name string
+	Up         int
+	PluginName string
+	HostName   string
 }
 
 func initMetricsServer(addr, port, protocol string) error {
@@ -257,24 +258,25 @@ func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		pluginUpDesc = prometheus.NewDesc(
 			"plugin_up",
 			"Plugin liveness checks.",
-			[]string{"plugin", "port"}, nil,
+			[]string{"plugin", "port", "host_name"}, nil,
 		)
 	)
 
-	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins)
+	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins, config.GetConfig().Vatz.NotificationInfo.HostName)
 
 	for port, value := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
 			pluginUpDesc,
 			prometheus.GaugeValue,
 			float64(value.Up),
-			value.Name,
+			value.PluginName,
 			strconv.Itoa(port),
+			value.HostName,
 		)
 	}
 }
 
-func (c *prometheusManager) getPluginUp(plugins []config.Plugin) (
+func (c *prometheusManager) getPluginUp(plugins []config.Plugin, hostName string) (
 	pluginUp map[int]*prometheusValue,
 ) {
 	gClients := getClients(plugins)
@@ -282,8 +284,9 @@ func (c *prometheusManager) getPluginUp(plugins []config.Plugin) (
 
 	for idx, plugin := range plugins {
 		pluginUp[plugin.Port] = &prometheusValue{
-			Up:   1,
-			Name: plugin.Name,
+			Up:         1,
+			PluginName: plugin.Name,
+			HostName:   hostName,
 		}
 		verify, err := gClients[idx].Verify(context.Background(), new(emptypb.Empty))
 		if err != nil || verify == nil {
