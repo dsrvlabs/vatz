@@ -5,12 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
+	"strconv"
+	"sync"
 	"time"
 
 	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/rpc"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -18,6 +23,7 @@ import (
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dsrvlabs/vatz/manager/api"
 	config "github.com/dsrvlabs/vatz/manager/config"
@@ -64,6 +70,7 @@ func createStartCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
 	cmd.PersistentFlags().StringVar(&logfile, "log", defaultFlagLog, "log file export to.")
+	cmd.PersistentFlags().StringVar(&promPort, "prometheus", defaultPromPort, "prometheus port number.")
 
 	return cmd
 }
@@ -100,6 +107,14 @@ func initiateServer(ch <-chan os.Signal) error {
 	go func() {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
+
+	if cfg.Vatz.MonitoringInfo.Prometheus.Enabled {
+		if defaultPromPort == promPort {
+			initMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, strconv.Itoa(cfg.Vatz.MonitoringInfo.Prometheus.Port), cfg.Vatz.ProtocolIdentifier)
+		} else {
+			initMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, promPort, cfg.Vatz.ProtocolIdentifier)
+		}
+	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
 	initHealthServer(s)
@@ -182,4 +197,102 @@ func initHealthServer(s *grpc.Server) {
 	gRPCHealthServer := grpchealth.NewServer()
 	gRPCHealthServer.SetServingStatus("vatz-health-status", healthpb.HealthCheckResponse_SERVING)
 	healthpb.RegisterHealthServer(s, gRPCHealthServer)
+}
+
+type prometheusManager struct {
+	Protocol string
+	// Contains many more fields not listed in this example.
+}
+
+type prometheusManagerCollector struct {
+	prometheusManager *prometheusManager
+}
+
+type prometheusValue struct {
+	Up         int
+	PluginName string
+	HostName   string
+}
+
+func initMetricsServer(addr, port, protocol string) error {
+	log.Info().Str("module", "main").Msgf("start metric server: %s:%s", addr, port)
+
+	reg := prometheus.NewPedanticRegistry()
+
+	var prometheusOnce sync.Once
+
+	prometheusOnce.Do(func() {
+		newPrometheusManager(protocol, reg)
+	})
+
+	reg.MustRegister(
+		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
+	)
+
+	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+
+	err := http.ListenAndServe(addr+":"+port, nil)
+
+	if err != nil {
+		log.Error().Str("module", "main").Msgf("Prometheus Error: %s", err)
+	}
+
+	return nil
+}
+
+func newPrometheusManager(protocol string, reg prometheus.Registerer) *prometheusManager {
+	c := &prometheusManager{
+		Protocol: protocol,
+	}
+	cc := prometheusManagerCollector{prometheusManager: c}
+	prometheus.WrapRegistererWith(prometheus.Labels{"protocol": protocol}, reg).MustRegister(cc)
+	return c
+}
+
+func (cc prometheusManagerCollector) Describe(ch chan<- *prometheus.Desc) {
+	prometheus.DescribeByCollect(cc, ch)
+}
+
+func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
+	var (
+		pluginUpDesc = prometheus.NewDesc(
+			"plugin_up",
+			"Plugin liveness checks.",
+			[]string{"plugin", "port", "host_name"}, nil,
+		)
+	)
+
+	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins, config.GetConfig().Vatz.NotificationInfo.HostName)
+
+	for port, value := range upByPlugin {
+		ch <- prometheus.MustNewConstMetric(
+			pluginUpDesc,
+			prometheus.GaugeValue,
+			float64(value.Up),
+			value.PluginName,
+			strconv.Itoa(port),
+			value.HostName,
+		)
+	}
+}
+
+func (c *prometheusManager) getPluginUp(plugins []config.Plugin, hostName string) (
+	pluginUp map[int]*prometheusValue,
+) {
+	gClients := getClients(plugins)
+	pluginUp = make(map[int]*prometheusValue)
+
+	for idx, plugin := range plugins {
+		pluginUp[plugin.Port] = &prometheusValue{
+			Up:         1,
+			PluginName: plugin.Name,
+			HostName:   hostName,
+		}
+		verify, err := gClients[idx].Verify(context.Background(), new(emptypb.Empty))
+		if err != nil || verify == nil {
+			pluginUp[plugin.Port].Up = 0
+		}
+	}
+
+	return
 }
