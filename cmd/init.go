@@ -39,7 +39,7 @@ func createInitCommand() *cobra.Command {
     grpc_port: 19090
     http_port: 19091
   monitoring_info:
-    promtheus:
+    prometheus:
       enabled: true
       address: "127.0.0.1"
       port: 18080
