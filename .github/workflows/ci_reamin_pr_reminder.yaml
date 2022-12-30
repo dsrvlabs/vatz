@@ -1,0 +1,26 @@
+name: Notify PR has raised
+on:
+  schedule:
+    - cron: "0 1,14 * * 1-5"
+  workflow_dispatch:
+env:
+  DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get list of open or reopened pull requests
+        id: prs
+        run: |
+          PRS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]')
+      - name: Send Discord notification
+        uses: peter-evans/create-discord-webhook-action@v1
+        if: |
+          PRS=$(echo $PRS | jq -r 'length')
+          test $PRS -gt 0
+        with:
+          url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          username: ${{ secrets.DISCORD_USERNAME }}
+          content: |
+            There are currently $PRS open or reopened pull requests:
+            $(echo $PRS | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")')
