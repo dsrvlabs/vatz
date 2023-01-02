@@ -35,7 +35,14 @@ func TestPluginManager(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Test Execute
-	err = mgr.Start(binName, "-valoperAddr=dummy")
+	logfile, err := os.OpenFile("./vatz.log", os.O_RDWR|os.O_CREATE, 0644)
+	assert.Nil(t, err)
+
+	defer func() {
+		os.Remove("./vatz..log")
+	}()
+
+	err = mgr.Start(binName, "-valoperAddr=dummy", logfile)
 	assert.Nil(t, err)
 
 	// Test DB.
