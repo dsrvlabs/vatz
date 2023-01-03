@@ -15,7 +15,7 @@ jobs:
           curl -s \
             https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
           echo -e "\n\n"
-          echo "NUM_OF_PRS=$(jq -r 'length' pullRequest.json)" >> "$GITHUB_ENV"
+          echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v5.3.0
         if: env.NUM_OF_PRS != 0
