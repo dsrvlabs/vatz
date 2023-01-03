@@ -10,7 +10,10 @@ jobs:
         id: pr
         run: |
           PR_NUMBER=${{ github.event.number }}
-          PR=$(curl -s -H https://api.github.com/repos/xellos00/pulls/$PR_NUMBER)
+          PR=$(curl -s \
+                 -H "Accept: application/vnd.github+json" \
+                 -H "X-GitHub-Api-Version: 2022-11-28" \
+                 https://api.github.com/repos/xellos00/vatz/$PR_NUMBER)
           PR_TITLE=$(echo $PR | jq -r '.title')
           PR_URL=$(echo $PR | jq -r '.html_url')
           PR_USER=$(echo $PR | jq -r '.user.login')
