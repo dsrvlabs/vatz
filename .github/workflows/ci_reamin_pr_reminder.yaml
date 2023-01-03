@@ -19,7 +19,7 @@ jobs:
           run: DRS=$(jq -r 'length' pullRequest.json)
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v5.3.0
-        if: DRS != 0
+        if: $DRS != 0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
           content: |
