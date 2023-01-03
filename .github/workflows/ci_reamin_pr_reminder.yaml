@@ -13,7 +13,7 @@ jobs:
         id: prs
         run: |
           curl -s \
-            https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
+            https://api.github.com/repos/xellos00/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
           echo -e "\n\n"
           echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
       - name: Get list of open or reopened pull requests
@@ -29,7 +29,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests at [VATZ](https://github.com/dsrvlabs/vatz/pulls) : \n
+          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests at VATZ : \n
                  =============  \n
 
                   ${{join(steps.contents.outputs.*, '\n')}}
