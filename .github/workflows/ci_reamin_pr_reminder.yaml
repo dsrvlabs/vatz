@@ -17,18 +17,13 @@ jobs:
           echo -e "\n\n"
           echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
       - name: Send Discord notification
-        uses: tsickert/discord-webhook@v5.3.0
-        if: env.NUM_OF_PRS != 0
+        uses: peter-evans/create-discord-webhook-action@v1
+        if: |
+          PRS=$(cat pullRequest.json | jq -r 'length')
+          test $PRS -gt 0
         with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          url: ${{ secrets.DISCORD_WEBHOOK }}
+          username: ${{ secrets.DISCORD_USERNAME }}
           content: |
-            There are currently env.NUM_OF_PRS open or reopened pull requests:
-            $(cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")' )
-      - name: Discord notification
-        if: env.NUM_OF_PRS != 0
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            `There are currently {{env.NUM_OF_PRS}} open or reopened pull requests:`
+            There are currently $PRS open or reopened pull requests:
+            $(cat pullRequest.json | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")')
