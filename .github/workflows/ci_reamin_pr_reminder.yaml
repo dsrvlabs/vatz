@@ -32,7 +32,7 @@ jobs:
           args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests: \n
                  =============  \n
 
-                 ${{ steps.contents.outputs.* }} \n
+                  ${{join(steps.contents.outputs.*, '\n')}}
 
                  =============   \n
                   \n
