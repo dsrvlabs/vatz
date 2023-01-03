@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 env:
   NUM_OF_PRS: 0
-  PR_LIST: ""
+  PR_LIST: "NO PRS"
 jobs:
   build:
     runs-on: ubuntu-latest
