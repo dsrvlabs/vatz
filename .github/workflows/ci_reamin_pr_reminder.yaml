@@ -10,14 +10,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Get list of open or reopened pull requests
+      - name: Get list of open or reopened pull requests from github
         id: prs
         run: |
           curl -s \
             https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
           echo -e "\n\n"
           echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
-          echo "PR_LIST=$(cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")' )" >> "$GITHUB_ENV"
+      - name: Get list of open or reopened pull requests
+        id: contents
+        if: env.NUM_OF_PRS != 0
+        run: |
+          cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")'  >> list
+          echo "PR_LIST=$(cat list)" >> "$GITHUB_ENV"
       - name: Notify
         if: env.NUM_OF_PRS != 0
         uses: Ilshidur/action-discord@master
