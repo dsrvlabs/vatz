@@ -10,14 +10,15 @@ jobs:
       - name: Get list of open or reopened pull requests
         id: prs
         run: |
-          PRS=$(curl -s -H "Authorization: token ${{ secrets.VATZ_ACTION_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]')
+          curl -s \
+            https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v5.3.0
         if: |
-          PRS=$(echo $PRS | jq -r 'length')
-          test $PRS -gt 0
+          DRS=$(jq -r 'length' pullRequest.json)
+          test $DRS -gt 0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
           content: |
             There are currently $PRS open or reopened pull requests:
-            $(echo $PRS | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")')
+            $(jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")' )
