@@ -31,7 +31,9 @@ jobs:
         with:
           args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests: \n
                  =============  \n
-                 ${{ steps.contents.outputs.* }}
+
+                 ${{ steps.contents.outputs.PR_LIST }} \n
+
                  =============   \n
                   \n
                  ‼️ Please, Review and Close Pull Request."
