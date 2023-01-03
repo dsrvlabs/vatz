@@ -29,7 +29,7 @@ The key features of **VATZ** are:
 - [Installation guide](docs/installation.md)
 
 ## 2. Our Mission ##
-
+aaaa
 We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
 As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future blockchain technology.
 
