@@ -3,6 +3,8 @@ on:
   schedule:
     - cron: "0 1,14 * * 1-5"
   workflow_dispatch:
+env:
+  NUM_OF_PRS: 0
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,11 +14,12 @@ jobs:
         run: |
           curl -s \
             https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
+      - name: Check how many PRs remained as [open, reopened]
+          id: drs
+          run: DRS=$(jq -r 'length' pullRequest.json)
       - name: Send Discord notification
         uses: tsickert/discord-webhook@v5.3.0
-        if: |
-          DRS=$(jq -r 'length' pullRequest.json)
-          test $DRS -gt 0
+        if: DRS != 0
         with:
           webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
           content: |
