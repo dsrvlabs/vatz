@@ -1,4 +1,4 @@
-name: Pull Request Reminder in open or reopened status.
+name: Pull Request Reminder in [open,reopened] status.
 on:
   schedule:
     - cron: "0 1,14 * * 1-5"
