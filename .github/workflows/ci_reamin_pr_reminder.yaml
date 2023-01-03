@@ -29,11 +29,11 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests: \n
+          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests at [VATZ](https://github.com/dsrvlabs/vatz/pulls) : \n
                  =============  \n
 
                   ${{join(steps.contents.outputs.*, '\n')}}
 
-                 =============   \n
+                 \n =============   \n
                   \n
                  ‼️ Please, Review and Close Pull Request."
