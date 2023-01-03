@@ -1,0 +1,30 @@
+name: New PR Notifications
+on:
+  pull_request:
+    types: [opened]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get pull request details
+        id: pr
+        run: |
+          curl -s \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/dsrvlabs/vatz/pulls/${{ github.event.number }} >> new_pull.json
+          echo -e "\n\n"
+          echo $(PRS=cat new_pull.json)
+          echo $PRS
+          echo PR_TITLE=$(cat new_pull.json | jq -r '.title') >> $GITHUB_OUTPUT
+          echo PR_URL=$(cat new_pull.json | jq -r '.html_url') >> $GITHUB_OUTPUT
+          echo PR_USER=$(cat new_pull.json | jq -r '.user.login') >> $GITHUB_OUTPUT
+      - name: Notify
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: "\n🚀A new Pull Request has just opened by ${{ steps.pr.outputs.PR_USER }} at VATZ🚀:
+                 \n--------------------------------------------------------------
+                 \n- [${{ steps.pr.outputs.PR_TITLE }}](${{ steps.pr.outputs.PR_URL }})
+                 \n\n‼️ Please, Check & Review a new PR."
