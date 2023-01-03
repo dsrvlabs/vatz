@@ -5,7 +5,6 @@ on:
   workflow_dispatch:
 env:
   NUM_OF_PRS: 0
-  PR_LIST: "NO PRS"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +20,7 @@ jobs:
         id: contents
         if: env.NUM_OF_PRS != 0
         run: |
-          cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")'  >> list
+          echo "cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")'"  >> $GITHUB_OUTPUT
       - name: Notify
         if: env.NUM_OF_PRS != 0
         uses: Ilshidur/action-discord@master
@@ -30,7 +29,7 @@ jobs:
         with:
           args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests: \n
                  =============  \n
-                 ${{ env.PR_LIST }}
+                 ${{ steps.contents.outputs.* }}
                  =============   \n
                   \n
                  ‼️ Please, Review and Close Pull Request."
