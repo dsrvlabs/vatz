@@ -31,5 +31,4 @@ jobs:
         uses: Ilshidur/action-discord@master
         with:
           args: |
-            `There are currently {{env.NUM_OF_PRS}} open or reopened pull requests:
-            {{ $(cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")') }} `
+            `There are currently {{env.NUM_OF_PRS}} open or reopened pull requests:`
