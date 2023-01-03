@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 env:
   NUM_OF_PRS: 0
+  PR_LIST: ""
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,13 +17,16 @@ jobs:
             https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
           echo -e "\n\n"
           echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
-      - name: Send Discord notification
-        uses: peter-evans/create-discord-webhook-action@v1
-        if: |
-          env.NUM_OF_PRS != 0
+          echo "PR_LIST=$(cat pullRequest.json | jq -r 'map("- [Title: \(.title)]-(URL: \(.html_url))") | join("\n")' )" >> "$GITHUB_ENV"
+      - name: Notify
+        if: env.NUM_OF_PRS != 0
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          url: ${{ secrets.DISCORD_WEBHOOK }}
-          username: ${{ secrets.DISCORD_USERNAME }}
-          content: |
-            There are currently $(cat pullRequest.json | jq -r 'length') open or reopened pull requests:
-            $(cat pullRequest.json | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")')
+          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests: \n
+                 =============  \n
+                 ${{ env.PR_LIST }}
+                 =============   \n
+                  \n
+                 ‼️ Please, Review and Close Pull Request."
