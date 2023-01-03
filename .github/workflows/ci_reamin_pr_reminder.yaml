@@ -19,11 +19,10 @@ jobs:
       - name: Send Discord notification
         uses: peter-evans/create-discord-webhook-action@v1
         if: |
-          PRS=$(cat pullRequest.json | jq -r 'length')
-          test $PRS -gt 0
+          env.NUM_OF_PRS != 0
         with:
           url: ${{ secrets.DISCORD_WEBHOOK }}
           username: ${{ secrets.DISCORD_USERNAME }}
           content: |
-            There are currently $PRS open or reopened pull requests:
+            There are currently $(cat pullRequest.json | jq -r 'length') open or reopened pull requests:
             $(cat pullRequest.json | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")')
