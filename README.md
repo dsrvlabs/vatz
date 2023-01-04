@@ -37,7 +37,7 @@ For further information, check [VATZ Project Design](docs/design.md)
   ### Infrastructure as Code
   **VATZ** is described using a high-level configuration syntax. You can divide your plugins into modular components that can then be combined in different ways to behave through automation.
   ### Data Analysis
-   **VATZ** helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafaka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q4)
+   **VATZ** helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafaka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
   ### Change automation
   Complex sets of node's operational tasks can be done through **VATZ** with minimal human interaction. (2023-Q4)
   
