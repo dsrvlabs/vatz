@@ -1,0 +1,36 @@
+name: PR Weekdays Reminder in [open,reopened] status.
+on:
+  schedule:
+    - cron: "0 1,14 * * 1-5"
+  workflow_dispatch:
+env:
+  NUM_OF_PRS: 0
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get list of open or reopened pull requests from github
+        id: prs
+        run: |
+          curl -s \
+            https://api.github.com/repos/dsrvlabs/vatz/pulls | jq -r '[.[] | select(.state == "open" or .state == "reopened")]' >> pullRequest.json
+          echo -e "\n\n"
+          echo "NUM_OF_PRS=$(cat pullRequest.json | jq -r 'length')" >> "$GITHUB_ENV"
+      - name: Get list of open or reopened pull requests
+        id: contents
+        if: env.NUM_OF_PRS != 0
+        run: |
+          cat pullRequest.json | jq -r 'map("- [\(.title)](\(.html_url))") | join("\n")' >> list
+          PR_LIST=$(cat list)
+          echo -e "text<<EOF\n$PR_LIST\nEOF" >> $GITHUB_OUTPUT
+      - name: Notify
+        if: env.NUM_OF_PRS != 0
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: "There are currently  ${{ env.NUM_OF_PRS }} open or reopened pull requests at VATZ :
+                 \n==================================================================================\n
+                  ${{join(steps.contents.outputs.*, '\n')}}
+                 \n==================================================================================\n
+                 \n‼️ Please, Review and Close Pull Request."
