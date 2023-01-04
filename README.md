@@ -25,7 +25,7 @@ To this end, it consists of 3 components:
 
 1. VATZ : VATZ executes plugin APIs based on configs, checks the health of plugins, and sends notifications to configured channels
 2. Plugins (SDK): Various features like checking node status, collecting node metrics and executing certain commands, can be integrated to VATZ through separate plugins. 
-3. Monitoring: Various logs and data of nodes are exported by a node exporter and monitored through the 3rd party applications like Graphana. 
+3. Monitoring: Various logs and data of nodes are exported by a node exporter and monitored through the 3rd party applications like Grafana. 
 
 For further information, check [VATZ Project Design](docs/design.md)
 
