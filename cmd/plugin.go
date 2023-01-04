@@ -105,8 +105,21 @@ var (
 
 			log.Info().Str("module", "plugin").Msgf("Start plugin %s %s", pluginName, exeArgs)
 
+			logfile := viper.GetString("log")
+			if logfile == "" {
+				logfile = fmt.Sprintf("%s/%s.log", pluginDir, pluginName)
+			}
+
+			f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+			if err != nil {
+				log.Info().Str("module", "plugin").Err(err)
+				return err
+			}
+
+			log.Info().Str("module", "plugin").Msgf("Plugin log redirect to %s", logfile)
+
 			mgr := plugin.NewManager(pluginDir)
-			return mgr.Start(pluginName, exeArgs)
+			return mgr.Start(pluginName, exeArgs, f)
 		},
 	}
 
@@ -152,9 +165,11 @@ func createPluginCommand() *cobra.Command {
 
 	startCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
 	startCommand.PersistentFlags().StringP("args", "a", "", "Arguments")
+	startCommand.PersistentFlags().StringP("log", "l", "", "Logfile")
 
 	viper.BindPFlag("plugin", startCommand.PersistentFlags().Lookup("plugin"))
 	viper.BindPFlag("args", startCommand.PersistentFlags().Lookup("args"))
+	viper.BindPFlag("log", startCommand.PersistentFlags().Lookup("log"))
 
 	cmd.AddCommand(statusCommand)
 	cmd.AddCommand(installCommand)

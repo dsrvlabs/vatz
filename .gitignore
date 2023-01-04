@@ -5,6 +5,7 @@ cover.out
 vatz
 default.yaml
 
+*.log
 
 /.idea/modules.xml
 /.idea/vatz.iml

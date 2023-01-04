@@ -33,7 +33,7 @@ type VatzPluginManager interface {
 
 	Update() error
 
-	Start(name, args string) error
+	Start(name, args string, logfile *os.File) error
 }
 
 type vatzPluginManager struct {
@@ -133,10 +133,8 @@ func (m *vatzPluginManager) Update() error {
 	return nil
 }
 
-func (m *vatzPluginManager) Start(name, args string) error {
+func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 	log.Info().Str("module", "plugin").Msgf("Start plugin %s", name)
-
-	// TODO: How to handle log?
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
@@ -149,6 +147,8 @@ func (m *vatzPluginManager) Start(name, args string) error {
 	}
 
 	cmd := exec.Command(e.BinaryLocation, args)
+	cmd.Stdout = logfile
+
 	return cmd.Start()
 }
 
