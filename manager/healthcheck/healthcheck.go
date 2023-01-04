@@ -20,6 +20,7 @@ type HealthCheck interface {
 // GetHealthChecker creates instance of HealchChecker
 func GetHealthChecker() HealthCheck {
 	healthCheckerOnce.Do(func() {
+		option := map[string]interface{}{"pUnique": "VATZHealthChecker"}
 		healthCheckerSingle = healthChecker{
 			healthMSG: tp.ReqMsg{
 				FuncName:     "VATZHealthCheck",
@@ -27,6 +28,7 @@ func GetHealthChecker() HealthCheck {
 				Msg:          "VATZ is Alive!!",
 				Severity:     pluginpb.SEVERITY_INFO,
 				ResourceType: "VATZ",
+				Options:      option,
 			},
 			pluginStatus: sync.Map{},
 		}
