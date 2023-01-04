@@ -110,7 +110,7 @@ var (
 				logfile = fmt.Sprintf("%s/%s.log", pluginDir, pluginName)
 			}
 
-			f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE, 0644)
+			f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 			if err != nil {
 				log.Info().Str("module", "plugin").Err(err)
 				return err
