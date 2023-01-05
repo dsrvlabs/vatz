@@ -69,7 +69,12 @@ The most validator teams have trouble managing logs from running nodes due to lo
 **AS-IS** <br/>
 ![monitoring-as-is](../docs/images/monitoring_as_is.png)
 
-Currnetly VATZ supported to send metrics like liveness of plugins for promethues. Metrics may be added in the future.
+`VATZ` currently supports sending metrics for followings for Prometheus: <br/>
+
+- VATZ:`service` liveness
+- VATZ:`plugins` liveness
+
+More metrics will be available in the future.
 
 **TO-BE**<br/>
 ![monitoring-as-is](../docs/images/monitoring_to_be.png)
