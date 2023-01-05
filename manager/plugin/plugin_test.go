@@ -42,7 +42,7 @@ func TestPluginManager(t *testing.T) {
 		os.Remove("./vatz..log")
 	}()
 
-	err = mgr.Start(binName, "-valoperAddr=dummy", logfile)
+	err = mgr.Start(binName, "-valoperAddr=dummy -port 9999", logfile)
 	assert.Nil(t, err)
 
 	// Test DB.
