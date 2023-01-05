@@ -146,7 +146,12 @@ func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 		return err
 	}
 
-	cmd := exec.Command(e.BinaryLocation, args)
+	f := func(r rune) bool {
+		return r == '=' || r == ' '
+	}
+
+	splits := strings.FieldsFunc(args, f)
+	cmd := exec.Command(e.BinaryLocation, splits...)
 	cmd.Stdout = logfile
 
 	return cmd.Start()
