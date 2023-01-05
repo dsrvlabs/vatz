@@ -62,14 +62,24 @@ Plugins that allow you to perform followings per protocols
    
 
 ### 3. Monitoring
-The blockchain protocols have so many unique logs, and it brings a lot of data which causes difficulties in finding meaningful data by standardizing it to make it easier to view.
-The most validator teams have trouble managing logs from running nodes due to log's varieties.
-**VATZ**'s monitoring service is designed to find a way to manage all logs from nodes efficiently with minimum cost.
+The blockchain protocols have so many unique logs, and it brings a lot of data which causes difficulties in finding meaningful data by standardizing it to make it easier to view.<br/>
+The most validator teams have trouble managing logs from running nodes due to log's varieties.<br/>
+**VATZ**'s monitoring service is designed to find a way to manage all logs from nodes efficiently with minimum cost.<br/>
 
-We are targeting for followings:
+**AS-IS** <br/>
+![monitoring-as-is](../docs/images/monitoring_as_is.png)
 
-> 1. Manage **VATZ** with Dashboard  (2022-Q3)
-> 2. Unified Log exporter (2023-Q2)
+`VATZ` currently supports sending metrics for followings for Prometheus: <br/>
+
+- VATZ:`service` liveness
+- VATZ:`plugins` liveness
+
+More metrics will be available in the future.
+
+**TO-BE**<br/>
+![monitoring-as-is](../docs/images/monitoring_to_be.png)
+
+We can also add monitoring services as shown in the diagram above.
 
 ## 3rd Party Applications
 We are trying to provide functions that can be easily integrated with the 3rd party applications most of the Validator teams are currently using now.
