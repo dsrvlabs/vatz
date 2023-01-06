@@ -71,7 +71,7 @@ The code owner(@xellos00) sets an assignee if there's an appropriate assignee av
 
 
 ## DSRV Validator Team's development process
-(This part is used only for the internal processes)
+(Note: This section is only for DSRV's internal development process)
 
 >The ultimate goal of the validator team is to:
 >- Maximizing uptime
