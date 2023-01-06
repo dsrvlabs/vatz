@@ -18,18 +18,17 @@ There are 4 types of issue templates in [dsrvlabs/vatz](https://github.com/dsrvl
 
 ### Step 2. Register Issue
  
-- `Bug Report`
-  
+- `Bug Report`:
    This template is used for raising an issue to report a bug or bug fix that's been reported. 
 
-- `Feature Development`
+- `Feature Development`:
    This template is used to set the next step of development once the discussion is over in the previous step(`Feature request`).
    You can specify the purpose when you create an issue for feature development.
    - New Feature for the Service/Plugin (Vatz)
    - Enhancement (Vatz)
    - others(etc. e.g, documentation, project policy management)
    
-- `CI/CD Implementation`
+- `CI/CD Implementation`:
    Please use this template for the purpose of setting a CI/CD pipeline for Vatz (i.e, labeling, and discussion for new policies.)
 
 ### step 3. Fill out the info
