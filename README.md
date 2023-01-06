@@ -49,7 +49,7 @@ For further information, check [VATZ Project Design](docs/design.md)
 Please follow [Installation guide](docs/installation.md) to install and start VATZ.
 
 ## How to use **VATZ** CLIs?
-Please check [VATZ CLIs guide] to find available CLI arguments.
+Please check [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
 
 ---
 # Release Note
