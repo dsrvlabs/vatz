@@ -11,30 +11,17 @@
 3. VATZ Plugins (Official)
    - [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil)
    - [vatz-plugin-cosmoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
-
 ### **VATZ** service supports extension to 3rd party apps for alert notifications & metric analysis.
 4. Dispatchers
-   - [Discord](https://discord.com/)
-   - [Pagerduty](https://www.pagerduty.com/)
-   - [Telegram Messenger](https://telegram.org/)
-   
 5. Monitoring (Metric Exporter)
-   - `Available Now`
-      - [Prometheus - Grafana](https://prometheus.io/docs/visualization/grafana/)
-   - `Upcoming soon`
-      - Elastic - Kibana
-      - Google drive - Big Query
 
 ---
 
-## Proto Repository (gRPC protocols)
+### 1. VATZ-Proto Repository (gRPC protocols)
 
 **VATZ** is a total node management tool that is designed to be customizable and expandable through plug-in and gRPC protocol from the initial design stage. End-users can develop their own plugins to add new features with their own needs regardless of the programming language by using gRPC protocol.
 
-
-## Protocol Node
-
-### 1. Manager
+### 2. VATZ Service
 
 - This is a main service of **VATZ** that executes plugin APIs based on configs.
 
@@ -93,31 +80,40 @@ plugins_infos:
 
 `vatz_protocol_info` & `plugins_infos` must be declared in default.yaml to get started with **VATZ** properly.
 
-### 2. Plugins
-
+### 3. Plugins
 **VATZ** Plugins are designed with maximum flexibility and expandability to perform following actions for Blockchain protocols nodes
+- `Check`: Node & Machine status
+- `Collect`: Node's metric + more
+- `Execute`: Command on machine for certain behaviors (e.g, Restart Node)
+- `Automation`: Node operation orchestration  
+- `more` : You can develop your own plugins to manage your own nodes. 
 
-   - `Check`: Node & Machine status
-   - `Collect`: Node's metric + more
-   - `Execute`: Command on machine for certain behaviors (e.g, Restart Node)
-   - `Automation`: Node operation orchestration  
-   - `more` : You can develop your own plugins to manage your own nodes. 
-   
 
-### 3. Monitoring
+### 4. Dispatchers(Notification)
+**VATZ** Supports 3rd party apps for notification to alert users when there's any trouble on hardware or blockchain metrics. 
+- [Discord](https://discord.com/)
+- [Pagerduty](https://www.pagerduty.com/)
+- [Telegram Messenger](https://telegram.org/)
+
+### 5. Monitoring
 The blockchain protocols have so many unique logs, and it brings a lot of data which causes difficulties in finding meaningful data by standardizing it to make it easier to view 
 and most of the validator teams have trouble managing logs from running nodes due to log's varieties. <br/>
-**VATZ**'s monitoring service is designed to find a way to manage all logs from nodes efficiently with minimum efforts and cost. 
+**VATZ**'s monitoring service is designed to find a way to manage all logs from nodes efficiently with minimum efforts and cost.
+
+- `Available Now`
+   - [Prometheus - Grafana](https://prometheus.io/docs/visualization/grafana/)
+- `Upcoming soon`
+   - Elastic - Kibana
+   - Google drive - Big Query
+
 
 #### - **AS-IS**
 ![monitoring_as_is](https://user-images.githubusercontent.com/6308023/210969218-f9548c35-ff3d-456f-9c70-0c175dfb24c9.png)
 
 `VATZ` currently supports sending metrics for followings for Prometheus: <br/>
-
+(Note: More metrics will be available in the future) <br>
 - VATZ:`service` Liveness
 - VATZ:`plugins` Liveness
-
-More metrics will be available in the future.
 
 #### - **TO-BE**
 ![monitoring_to_be](https://user-images.githubusercontent.com/6308023/210969235-4aa505ee-28cc-4e16-8129-843dbc4f2ca0.png)
