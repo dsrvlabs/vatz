@@ -74,7 +74,7 @@ In near future, below subcommands will be added as soon as possible.
 - Stop: Stop executing plugin.
 - Status: Show running plugin's status. There is already subcommand but should be enhanced more.
 - Remove: Remove installed plugin.
-- Update: Update the pluging to new version.
+- Update: Update the plugin to new version.
 
 ## Help
 
