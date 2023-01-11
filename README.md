@@ -54,7 +54,7 @@ Please check [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
 ---
 # Release Note
 
-Please check the [Release Note] for details of the latest releases.
+Please check the [Release Note](https://github.com/dsrvlabs/vatz/releases) for details of the latest releases.
 
 # Contributing
 
