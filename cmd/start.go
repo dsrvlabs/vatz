@@ -39,12 +39,12 @@ func createStartCommand() *cobra.Command {
 			if logfile == defaultFlagLog {
 				log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
 			} else {
-				f, err := os.Create(logfile)
+				f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 				if err != nil {
 					return err
 				}
 
-				log.Logger = log.Output(f)
+				log.Logger = log.Output(zerolog.ConsoleWriter{Out: f, TimeFormat: time.RFC3339})
 			}
 			return nil
 		},
