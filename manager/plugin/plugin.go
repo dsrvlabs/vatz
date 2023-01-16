@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"github.com/shirou/gopsutil/process"
 )
 
 const (
@@ -34,6 +36,7 @@ type VatzPluginManager interface {
 	Update() error
 
 	Start(name, args string, logfile *os.File) error
+	Stop(name string) error
 }
 
 type vatzPluginManager struct {
@@ -155,6 +158,46 @@ func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 	cmd.Stdout = logfile
 
 	return cmd.Start()
+}
+
+func (m *vatzPluginManager) Stop(name string) error {
+	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", name)
+
+	ps, err := m.findProcessByName(name)
+	if err != nil {
+		return err
+	}
+
+	err = ps.Kill()
+	if err != nil {
+		log.Info().Str("module", "plugin").Msgf("Stop plugin %s", err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *vatzPluginManager) findProcessByName(name string) (*process.Process, error) {
+	log.Info().Str("module", "plugin").Msgf("Find Process %s", name)
+
+	processes, err := process.Processes()
+	if err != nil {
+		log.Info().Str("module", "plugin").Msgf("Find Process %s", err.Error())
+		return nil, err
+	}
+
+	for _, p := range processes {
+		pName, err := p.Name()
+		if err != nil {
+			log.Info().Str("module", "plugin").Msgf("Get Name of plugin %s", err.Error())
+			continue
+		}
+
+		if pName == name {
+			return p, nil
+		}
+	}
+	return nil, errors.New("can't find the process")
 }
 
 // NewManager creates new plugin manager.

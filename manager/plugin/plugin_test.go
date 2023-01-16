@@ -45,6 +45,22 @@ func TestPluginManager(t *testing.T) {
 	err = mgr.Start(binName, "-valoperAddr=dummy -port 9999", logfile)
 	assert.Nil(t, err)
 
+	vatzMgr := mgr.(*vatzPluginManager)
+	ps, err := vatzMgr.findProcessByName(binName)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, ps)
+
+	pName, err := ps.Name()
+	assert.Equal(t, binName, pName)
+
+	isRunning, err := ps.IsRunning()
+	assert.True(t, isRunning)
+
+	// Test Stop
+	err = mgr.Stop(binName)
+	assert.Nil(t, err)
+
 	// Test DB.
 	rd, err := newReader("./" + pluginDBName)
 	assert.Nil(t, err)
