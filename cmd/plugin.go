@@ -100,12 +100,12 @@ var (
 		Short:   "Start installed plugin",
 		Example: "vatz plugin start pluginName",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			pluginName := viper.GetString("plugin")
-			exeArgs := viper.GetString("args")
+			pluginName := viper.GetString("start_plugin")
+			exeArgs := viper.GetString("start_args")
 
 			log.Info().Str("module", "plugin").Msgf("Start plugin %s %s", pluginName, exeArgs)
 
-			logfile := viper.GetString("log")
+			logfile := viper.GetString("start_log")
 			if logfile == "" {
 				logfile = fmt.Sprintf("%s/%s.log", pluginDir, pluginName)
 			}
@@ -120,6 +120,20 @@ var (
 
 			mgr := plugin.NewManager(pluginDir)
 			return mgr.Start(pluginName, exeArgs, f)
+		},
+	}
+
+	stopCommand = &cobra.Command{
+		Use:     "stop",
+		Short:   "Stop running plugin",
+		Example: "vatz plugin stop pluginName",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginName := viper.GetString("stop_plugin")
+
+			log.Info().Str("module", "plugin").Msgf("Stop plugin %s", pluginName)
+
+			mgr := plugin.NewManager(pluginDir)
+			return mgr.Stop(pluginName)
 		},
 	}
 
@@ -167,13 +181,17 @@ func createPluginCommand() *cobra.Command {
 	startCommand.PersistentFlags().StringP("args", "a", "", "Arguments")
 	startCommand.PersistentFlags().StringP("log", "l", "", "Logfile")
 
-	viper.BindPFlag("plugin", startCommand.PersistentFlags().Lookup("plugin"))
-	viper.BindPFlag("args", startCommand.PersistentFlags().Lookup("args"))
-	viper.BindPFlag("log", startCommand.PersistentFlags().Lookup("log"))
+	viper.BindPFlag("start_plugin", startCommand.PersistentFlags().Lookup("plugin"))
+	viper.BindPFlag("start_args", startCommand.PersistentFlags().Lookup("args"))
+	viper.BindPFlag("start_log", startCommand.PersistentFlags().Lookup("log"))
+
+	stopCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
+	viper.BindPFlag("stop_plugin", stopCommand.PersistentFlags().Lookup("plugin"))
 
 	cmd.AddCommand(statusCommand)
 	cmd.AddCommand(installCommand)
 	cmd.AddCommand(startCommand)
+	cmd.AddCommand(stopCommand)
 	cmd.AddCommand(listCommand)
 
 	return cmd
