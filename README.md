@@ -15,8 +15,6 @@
 
 **VATZ** is a tool for building, analyzing, and managing blockchain node infrastructure safely and efficiently. You can set up VATZ to manage existing or new blockchain nodes and integrate with popular services PagerDuty, Discord, Telegram and more as well as custom in-house solutions.
 
-
-
 ## How does **VATZ Project** work?
 
 VATZ project is primarily designed to check the node states in real-time and receive alert notifications of all blockchain protocols, including metrics that the protocol itself does not support. 
@@ -45,34 +43,61 @@ For further information, check [VATZ Project Design](docs/design.md)
 --- 
 # Usage of VATZ
 
-## How to get start with **VATZ**?
+## How to get started with **VATZ**?
 Please follow [Installation guide](docs/installation.md) to install and start VATZ.
 
 ## How to use **VATZ** CLIs?
 Please check [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
 
+## Official Plugins
+> We are developing official plugins together for easier operation including basic monitoring metrics.
+
+### 1. [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil)
+vatz-plugin-sysutil is **VATZ** plugin for system utilization monitoring such as 
+- CPU
+- DISK
+- Memory
+
+### 2. [vatz-plugin-comoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
+vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for followings:
+- Node Block Sync
+- Node Liveness
+- Peer Count
+- Active Status
+- Node Governance Alarm
+
 ---
 # Release Note
 
-Please check the [Release Note](https://github.com/dsrvlabs/vatz/releases) for details of the latest releases.
-
-# Contributing
-
-**VATZ** welcomes contributions! If you are looking to contribute, please check the following documents.
-- [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute.
-- [Project Workflow Instructions](docs/workflow.md) explains how to build and test.
-
+Please check the Release Note for details of the latest releases.
+- [VATZ](https://github.com/dsrvlabs/vatz/releases)
+- [vatz-plugin-comoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub/releases)
+- [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil/releases)
 
 # Our Mission
 
 We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
 As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future blockchain technology.
 
-# Contact
-Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information about **VATZ**. 
+---
+
+# Feel free to share your feedback
+We're constantly striving to make better open-source all together.
+Please, share your thoughts or any feedback regarding **VATZ** Project.
+You can start with registering an [issue](https://github.com/dsrvlabs/vatz/issues), if there's one you think. <br>
+Contribute to **VATZ** project too!!
+
+## Contributing
+
+**VATZ** welcomes contributions! If you are looking to contribute, please check the following documents.
+- [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute.
+- [Project Workflow Instructions](docs/workflow.md) explains how to build and test.
+
+
+# Contact us
+Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information about **VATZ**.
 
 **DSRV** is a blockchain infrastructure company that provides powerful and easy-to-use solutions to enable developers and enterprises to become architects of the future. Visit [DSRV](https://www.dsrvlabs.com/), if you are interested in various products we build for the Web 3.0 developers.
-
 
 [<img alt="Homepage" src="https://user-images.githubusercontent.com/63234878/210315637-2d30efdd-5b9e-463e-8731-571916a6e1e3.svg" width="50" height="50" />](https://www.dsrvlabs.com/)
 [<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://medium.com/dsrv)
