@@ -17,11 +17,11 @@
 
 ## How does **VATZ Project** work?
 
-VATZ project is primarily designed to check the node states in real-time and receive alert notifications of all blockchain protocols, including metrics that the protocol itself does not support. 
+**VATZ** project is primarily designed to check the node states in real-time and receive alert notifications of all blockchain protocols, including metrics that the protocol itself does not support. 
 
 To this end, it consists of 3 components:
 
-1. VATZ : VATZ executes plugin APIs based on configs, checks the health of plugins, and sends notifications to configured channels
+1. **VATZ** : **VATZ** executes plugin APIs based on configs, checks the health of plugins, and sends notifications to configured channels
 2. Plugins (SDK): Various features like checking node status, collecting node metrics and executing certain commands, can be integrated to VATZ through separate plugins. 
 3. Monitoring: Various logs and data of nodes are exported by a node exporter and monitored through the 3rd party applications like Grafana. 
 
@@ -33,12 +33,17 @@ For further information, check [VATZ Project Design](docs/design.md)
   ### Multi Protocol Support
    **VATZ** is NOT limited Protocol Type where it categorizes on chain protocol. Any Protocol can be managed through VATZ with plugins, even unsupported protocols can be integrated through simple plugin development.
   ### Infrastructure as Code
-  **VATZ** is described using a high-level configuration syntax. You can divide your plugins into modular components that can then be combined in different ways to behave through automation.
+   **VATZ** is described using a high-level configuration syntax. You can divide your plugins into modular components that can then be combined in different ways to behave through automation.
   ### Data Analysis
-   **VATZ** helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafaka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
+   **VATZ** helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
   ### Change automation
   Complex sets of node's operational tasks can be done through **VATZ** with minimal human interaction. (2023-Q4)
-  
+
+
+# Our Mission
+
+We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
+As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future blockchain technology.
 
 --- 
 # Usage of VATZ
@@ -73,11 +78,6 @@ Please check the Release Note for details of the latest releases.
 - [VATZ](https://github.com/dsrvlabs/vatz/releases)
 - [vatz-plugin-comoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub/releases)
 - [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil/releases)
-
-# Our Mission
-
-We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
-As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future blockchain technology.
 
 ---
 
