@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	managerpb "github.com/dsrvlabs/vatz-proto/manager/v1"
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
+	pluginPb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/monitoring/prometheus"
 	"github.com/dsrvlabs/vatz/rpc"
 	"github.com/dsrvlabs/vatz/utils"
@@ -81,7 +81,7 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	s := grpc.NewServer()
 	serv := api.GrpcService{}
-	managerpb.RegisterManagerServer(s, &serv)
+	managerPb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
 	vatzConfig := cfg.Vatz
@@ -106,9 +106,9 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	if cfg.Vatz.MonitoringInfo.Prometheus.Enabled {
 		if defaultPromPort == promPort {
-			prometheus.InitMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, strconv.Itoa(cfg.Vatz.MonitoringInfo.Prometheus.Port), cfg.Vatz.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, strconv.Itoa(cfg.Vatz.MonitoringInfo.Prometheus.Port), cfg.Vatz.ProtocolIdentifier)
 		} else {
-			prometheus.InitMetricsServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, promPort, cfg.Vatz.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, promPort, cfg.Vatz.ProtocolIdentifier)
 		}
 	}
 
@@ -131,11 +131,7 @@ func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	}
 }
 
-func multiPluginExecutor(plugin config.Plugin,
-	singleClient pluginpb.PluginClient,
-	okToSend bool,
-	quit <-chan os.Signal) {
-
+func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClient, okToSend bool, quit <-chan os.Signal) {
 	verifyTicker := time.NewTicker(time.Duration(plugin.VerifyInterval) * time.Second)
 	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
 
