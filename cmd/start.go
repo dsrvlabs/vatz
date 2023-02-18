@@ -103,12 +103,12 @@ func initiateServer(ch <-chan os.Signal) error {
 	go func() {
 		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
 	}()
-
-	if cfg.Vatz.MonitoringInfo.Prometheus.Enabled {
+	monitoringInfo := cfg.Vatz.MonitoringInfo
+	if monitoringInfo.Prometheus.Enabled {
 		if defaultPromPort == promPort {
-			prometheus.InitPrometheusServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, strconv.Itoa(cfg.Vatz.MonitoringInfo.Prometheus.Port), cfg.Vatz.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, strconv.Itoa(monitoringInfo.Prometheus.Port), vatzConfig.ProtocolIdentifier)
 		} else {
-			prometheus.InitPrometheusServer(cfg.Vatz.MonitoringInfo.Prometheus.Address, promPort, cfg.Vatz.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier)
 		}
 	}
 
