@@ -3,6 +3,7 @@ package prometheus
 import (
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -73,7 +74,8 @@ func InitPrometheusServer(addr, port, protocol string) error {
 	})
 
 	reg.MustRegister(
-		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
+
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 	)
 
 	http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
