@@ -13,7 +13,9 @@ func createVersionCommand() *cobra.Command {
 		Short: "VATZ Version",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			verStr := utils.GetVersion()
-			fmt.Println(verStr)
+			fmt.Println("                                                                        \n   @@@@@@@@@@@@@@@         @@@@@@@@@@@@@@@@@@@                  \n    #@@@@@@@@@@@@@@@           @@@@@@@@@@@@@.                   \n      @@@@@@@@@@@@@@@              &@@@@@@@                     \n       @@@@@@@@@@@@@@@&            ,@@@@@.                      \n         @@@@@@@@@@@@@@@           ,@@@@                        \n          @@@@@@@@@@@@@@@(         ,@@/                         \n           .@@@@@@@@@@@@@@@        ,@                           \n             @@@@@@@@@@@@@@@.      .                            \n              *@@@@@@@@@@@@@@@                                  \n                @@@@@@@@@@@@@@@.                                \n                 &@@@@@@@@@@@@@@                                \n                   @@@@@@@@@@@                                  \n                    @@@@@@@@%                                   \n                      @@@@@                                     \n                       @@*    VATZ dsrv labs Co., Ltd. ")
+			fmt.Println("")
+			fmt.Println("VATZ Version: " + verStr)
 			return nil
 		},
 	}
