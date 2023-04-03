@@ -134,3 +134,23 @@ func TestDBList(t *testing.T) {
 		assert.Equal(t, testPlugins[i].InstalledAt.Unix(), p.InstalledAt.Unix())
 	}
 }
+
+func TestDBInit(t *testing.T) {
+	dbFilename := "vatz.db"
+
+	defer os.Remove(dbFilename)
+
+	err := initDB(dbFilename)
+	defer os.Remove("vatz.db")
+	defer db.conn.Close()
+	defer func() {
+		once = sync.Once{}
+	}()
+
+	assert.Nil(t, err)
+
+	rd, err := newReader(dbFilename)
+	_, err = rd.List()
+
+	assert.Nil(t, err)
+}

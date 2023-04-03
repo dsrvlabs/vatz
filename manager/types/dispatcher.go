@@ -9,7 +9,7 @@ import (
 
 type DiscordColor int
 
-//Let's Setup this message into GRPC Type
+// Let's Setup this message into GRPC Type
 type ReqMsg struct {
 	FuncName     string                 `json:"func_name"`
 	State        pluginpb.STATE         `json:"state"`

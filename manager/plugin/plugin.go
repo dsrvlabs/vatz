@@ -30,6 +30,8 @@ type VatzPlugin struct {
 
 // VatzPluginManager provides management functions for plugin.
 type VatzPluginManager interface {
+	Init() error
+
 	Install(repo, name, version string) error
 	List() ([]VatzPlugin, error)
 
@@ -41,6 +43,10 @@ type VatzPluginManager interface {
 
 type vatzPluginManager struct {
 	home string
+}
+
+func (m *vatzPluginManager) Init() error {
+	return initDB(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 }
 
 func (m *vatzPluginManager) Install(repo, name, version string) error {

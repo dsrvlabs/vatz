@@ -2,6 +2,8 @@ package plugin
 
 import (
 	"database/sql"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -170,7 +172,6 @@ func (p *pluginDB) Get(name string) (*pluginEntry, error) {
 	err := p.conn.
 		QueryRowContext(p.ctx, q, name).
 		Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
-
 	if err != nil {
 		log.Info().Str("module", "db").Err(err)
 		return nil, err
@@ -190,6 +191,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
 		if err != nil {
+			log.Info().Str("module", "db").Msgf("Get conn Err %+v", err)
 			chanErr <- err
 		}
 
@@ -199,6 +201,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 
 	var err error
 	if db == nil {
+		log.Info().Str("module", "db").Msg("Wait creation")
 		err = <-chanErr
 	}
 
@@ -227,6 +230,7 @@ func newReader(dbfile string) (dbReader, error) {
 
 	var err error
 	if db == nil {
+		log.Info().Str("module", "db").Msg("Wait creation")
 		err = <-chanErr
 	}
 
@@ -245,4 +249,38 @@ func getDBConnection(ctx context.Context, dbfile string) (*sql.Conn, error) {
 	}
 
 	return conn, nil
+}
+
+func initDB(dbfile string) error {
+	log.Info().Str("module", "db").Msgf("initDB %s", dbfile)
+
+	if db != nil {
+		db.conn.Close()
+		db = nil
+
+		once = sync.Once{}
+	}
+
+	err := os.Remove(dbfile)
+	if err != nil && !os.IsNotExist(err) {
+		log.Info().Err(err)
+		return err
+	}
+
+	path := filepath.Dir(dbfile)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_ = os.Mkdir(path, 0755)
+	}
+
+	_, err = newWriter(dbfile)
+	if err != nil {
+		return err
+	}
+
+	err = db.createPluginTable()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

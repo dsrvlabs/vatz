@@ -39,7 +39,7 @@ func TestPluginManager(t *testing.T) {
 	assert.Nil(t, err)
 
 	defer func() {
-		os.Remove("./vatz..log")
+		os.Remove("./vatz.log")
 	}()
 
 	err = mgr.Start(binName, "-valoperAddr=dummy -port 9999", logfile)
