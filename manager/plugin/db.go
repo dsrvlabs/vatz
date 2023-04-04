@@ -216,7 +216,9 @@ func newReader(dbfile string) (dbReader, error) {
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
 		if err != nil {
+			log.Error().Str("module", "db").Err(err).Msg("")
 			chanErr <- err
+			return
 		}
 
 		db = &pluginDB{ctx: ctx, conn: conn}
@@ -234,13 +236,11 @@ func newReader(dbfile string) (dbReader, error) {
 func getDBConnection(ctx context.Context, dbfile string) (*sql.Conn, error) {
 	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
 		return nil, err
 	}
 
 	conn, err := db.Conn(ctx)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
 		return nil, err
 	}
 

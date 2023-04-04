@@ -77,13 +77,13 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	// Binary name should be changed.
 	err = os.Rename(origPath, newPath)
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err).Msg("")
 		return err
 	}
 
 	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err).Msg("")
 		return err
 	}
 
@@ -96,7 +96,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	})
 
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err).Msg("")
 		return err
 	}
 
@@ -108,13 +108,13 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err).Msg("")
 		return nil, err
 	}
 
 	dbPlugins, err := dbRd.List()
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err)
+		log.Error().Str("module", "plugin").Err(err).Msg("")
 		return nil, err
 	}
 
