@@ -46,12 +46,6 @@ type pluginDB struct {
 func (p *pluginDB) AddPlugin(e pluginEntry) error {
 	log.Info().Str("module", "db").Msg("AddPlugin")
 
-	err := p.createPluginTable()
-	if err != nil {
-		log.Info().Str("module", "db").Err(err)
-		return err
-	}
-
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
