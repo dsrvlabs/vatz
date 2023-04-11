@@ -5,6 +5,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+
+	"github.com/dsrvlabs/vatz/manager/plugin"
 )
 
 func createInitCommand() *cobra.Command {
@@ -79,7 +81,8 @@ plugins_infos:
 				return err
 			}
 
-			return nil
+			mgr := plugin.NewManager(pluginDir)
+			return mgr.Init()
 		},
 	}
 

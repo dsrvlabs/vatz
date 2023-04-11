@@ -12,7 +12,6 @@ test:
 	@go test ./... -v
 
 coverage:
-	echo "Test Coverage script will be here"
 	@go test -coverprofile cover.out ./...
 
 build:

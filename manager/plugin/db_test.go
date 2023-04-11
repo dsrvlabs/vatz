@@ -11,15 +11,17 @@ import (
 )
 
 func TestDBWrite(t *testing.T) {
-	wr, err := newWriter("vatz.db")
+	initDB(pluginDBName)
+	defer os.Remove(pluginDBName)
+
+	wr, err := newWriter(pluginDBName)
 	assert.Nil(t, err)
 
-	rd, err := newReader("vatz.db")
+	rd, err := newReader(pluginDBName)
 	assert.Nil(t, err)
 
-	defer os.Remove("vatz.db")
-	defer db.conn.Close()
 	defer func() {
+		db.conn.Close()
 		once = sync.Once{}
 	}()
 
@@ -56,42 +58,20 @@ func TestDBWrite(t *testing.T) {
 	assert.Equal(t, sql.ErrNoRows, err)
 }
 
-func TestDBNotExist(t *testing.T) {
-	wr, err := newWriter("vatz.db")
-	assert.Nil(t, err)
-
-	rd, err := newReader("vatz.db")
-	assert.Nil(t, err)
-
-	defer os.Remove("vatz.db")
-	defer db.conn.Close()
-	defer func() {
-		once = sync.Once{}
-	}()
-
-	// Insert
-	err = wr.AddPlugin(pluginEntry{Name: "test", Repository: "dummy"})
-
-	assert.Nil(t, err)
-
-	plugin, err := rd.Get("not-exist")
-
-	assert.Nil(t, plugin)
-	assert.Equal(t, sql.ErrNoRows, err)
-}
-
 // TODO: Handle already exist.
 
 func TestDBList(t *testing.T) {
-	wr, err := newWriter("vatz.db")
+	initDB(pluginDBName)
+	defer os.Remove(pluginDBName)
+
+	wr, err := newWriter(pluginDBName)
 	assert.Nil(t, err)
 
-	rd, err := newReader("vatz.db")
+	rd, err := newReader(pluginDBName)
 	assert.Nil(t, err)
 
-	defer os.Remove("vatz.db")
-	defer db.conn.Close()
 	defer func() {
+		db.conn.Close()
 		once = sync.Once{}
 	}()
 
