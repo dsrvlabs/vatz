@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -11,6 +13,42 @@ import (
 
 func MakeUniqueValue(pName, pAddr string, pPort int) string {
 	return pName + pAddr + strconv.Itoa(pPort)
+}
+
+func UniqueHashValue(inputString string) string {
+	// Create a SHA-256 hash object
+	h := sha256.New()
+	// Write the input string to the hash object
+	h.Write([]byte(inputString))
+	// Get the 256-bit hash value as a byte array
+	hashBytes := h.Sum(nil)
+	// Encode the hash value as a hexadecimal string
+	hashString := hex.EncodeToString(hashBytes)
+	// Truncate the string to 16 characters
+	hashString = hashString[:16]
+	return hashString
+}
+
+func ParseBool(str string) bool {
+	switch str {
+	case "true", "1", "on":
+		return true
+	case "false", "0", "off":
+		return false
+	default:
+		return false
+	}
+}
+
+// This is internal purpose
+func ConvertHashToInput(hashValue string) string {
+	// Decode the hash value from a hexadecimal string to a byte array
+	hashBytes, _ := hex.DecodeString(hashValue)
+
+	// Convert the byte array to a string
+	originalString := string(hashBytes)
+
+	return originalString
 }
 
 func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {

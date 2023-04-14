@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/dsrvlabs/vatz/utils"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,8 +21,9 @@ const (
 
 // VatzPlugin describes plugin information
 type VatzPlugin struct {
-	ID          string    `json:"id"` // TODO: Handle this after #323
+	PluginID    string    `json:"plugin_id"` // TODO: Handle this after #323
 	Name        string    `json:"name"`
+	IsEnabled   bool      `json:"is_enabled"`
 	Location    string    `json:"location"`
 	Repository  string    `json:"repository"`
 	Version     string    `json:"version"`
@@ -35,7 +37,7 @@ type VatzPluginManager interface {
 	Install(repo, name, version string) error
 	List() ([]VatzPlugin, error)
 
-	Update() error
+	Update(pluginID string, isEnabled bool) error
 
 	Start(name, args string, logfile *os.File) error
 	Stop(name string) error
@@ -93,8 +95,11 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 		return err
 	}
 
+	hasValue := utils.UniqueHashValue(fmt.Sprintf("%s%s", repo, version))
 	err = dbWr.AddPlugin(pluginEntry{
+		PluginID:       hasValue,
 		Name:           name,
+		IsEnabled:      1,
 		Repository:     repo,
 		BinaryLocation: newPath,
 		Version:        version,
@@ -127,8 +132,13 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 	plugins := make([]VatzPlugin, len(dbPlugins))
 
 	for i, p := range dbPlugins {
-		plugins[i].ID = "" // TODO
+		isEnabled := false
+		if p.IsEnabled == 1 {
+			isEnabled = true
+		}
+		plugins[i].PluginID = p.PluginID
 		plugins[i].Name = p.Name
+		plugins[i].IsEnabled = isEnabled
 		plugins[i].Repository = p.Repository
 		plugins[i].Location = p.BinaryLocation
 		plugins[i].Version = p.Version
@@ -138,7 +148,18 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 	return plugins, nil
 }
 
-func (m *vatzPluginManager) Update() error {
+func (m *vatzPluginManager) Update(pluginID string, isEnabled bool) error {
+	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err).Msg("Get new DB writer")
+		return err
+	}
+
+	err = dbWr.UpdatePlugin(pluginID, isEnabled)
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err).Msg("Update DB plugin")
+		return err
+	}
 	return nil
 }
 
@@ -166,10 +187,10 @@ func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 	return cmd.Start()
 }
 
-func (m *vatzPluginManager) Stop(name string) error {
-	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", name)
+func (m *vatzPluginManager) Stop(pluginID string) error {
+	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", pluginID)
 
-	ps, err := m.findProcessByName(name)
+	ps, err := m.findProcessByName(pluginID)
 	if err != nil {
 		return err
 	}
@@ -208,7 +229,13 @@ func (m *vatzPluginManager) findProcessByName(name string) (*process.Process, er
 
 // NewManager creates new plugin manager.
 func NewManager(vatzHome string) VatzPluginManager {
-	return &vatzPluginManager{
+	pManager := &vatzPluginManager{
 		home: vatzHome,
 	}
+	dbWr, err := newWriter(fmt.Sprintf("%s/%s", vatzHome, pluginDBName))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err).Msg("")
+	}
+	dbWr.MigratePluginTable()
+	return pManager
 }

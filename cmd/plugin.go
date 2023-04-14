@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dsrvlabs/vatz/utils"
 	"io"
 	"net/http"
 	"os"
@@ -137,6 +138,27 @@ var (
 		},
 	}
 
+	enableCommand = &cobra.Command{
+		Use:     "enable",
+		Short:   "Enabled or Disable plugin",
+		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
+		Example: "vatz plugin enable <plugin_id> <true/false>",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Info().Str("module", "plugin").Msgf("enable installed plugin %s at %s", args[0], pluginDir)
+
+			// TODO: Handle already installed.
+			// TODO: Handle invalid repo name.
+			mgr := plugin.NewManager(pluginDir)
+			enableDisable := utils.ParseBool(args[1])
+			err := mgr.Update(args[0], enableDisable)
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+			return nil
+		},
+	}
+
 	listCommand = &cobra.Command{
 		Use:     "list",
 		Short:   "List installed plugin",
@@ -153,12 +175,12 @@ var (
 
 			w := table.NewWriter()
 			w.SetOutputMirror(os.Stdout)
-			w.AppendHeader(table.Row{"Name", "Install Data", "Repository", "Version"})
+			w.AppendHeader(table.Row{"Plugin ID", "Name", "Is Enabled", "Install Date", "Repository", "Version"})
 
 			for _, plugin := range plugins {
 				dateStr := plugin.InstalledAt.Format("2006-01-02 15:04:05")
 				w.AppendRow([]interface{}{
-					plugin.Name, dateStr, plugin.Repository, plugin.Version,
+					plugin.PluginID, plugin.Name, plugin.IsEnabled, dateStr, plugin.Repository, plugin.Version,
 				})
 			}
 
@@ -192,6 +214,7 @@ func createPluginCommand() *cobra.Command {
 	cmd.AddCommand(installCommand)
 	cmd.AddCommand(startCommand)
 	cmd.AddCommand(stopCommand)
+	cmd.AddCommand(enableCommand)
 	cmd.AddCommand(listCommand)
 
 	return cmd
