@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/dsrvlabs/vatz/utils"
 	"os"
 	"os/exec"
 	"strings"
@@ -21,7 +20,6 @@ const (
 
 // VatzPlugin describes plugin information
 type VatzPlugin struct {
-	PluginID    string    `json:"plugin_id"` // TODO: Handle this after #323
 	Name        string    `json:"name"`
 	IsEnabled   bool      `json:"is_enabled"`
 	Location    string    `json:"location"`
@@ -33,8 +31,9 @@ type VatzPlugin struct {
 // VatzPluginManager provides management functions for plugin.
 type VatzPluginManager interface {
 	Init() error
-
+	Get(name string) (VatzPlugin, error)
 	Install(repo, name, version string) error
+	Uninstall(name string) error
 	List() ([]VatzPlugin, error)
 
 	Update(pluginID string, isEnabled bool) error
@@ -72,7 +71,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 
 	err := exeCmd.Run()
 	if err != nil {
-		log.Error().Str("module", "plugin").Msg(string(stderr.Bytes()))
+		log.Error().Str("module", "plugin").Msgf("Install > exeCmd.Run Error: %s", string(stderr.Bytes()))
 		return err
 	}
 
@@ -85,19 +84,17 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	// Binary name should be changed.
 	err = os.Rename(origPath, newPath)
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+		log.Error().Str("module", "plugin").Msgf("Install > os.Rename Error: %s", err)
 		return err
 	}
 
 	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+		log.Error().Str("module", "plugin").Msgf("Install > newWriter Error: %s", err)
 		return err
 	}
 
-	hasValue := utils.UniqueHashValue(fmt.Sprintf("%s%s", repo, version))
 	err = dbWr.AddPlugin(pluginEntry{
-		PluginID:       hasValue,
 		Name:           name,
 		IsEnabled:      1,
 		Repository:     repo,
@@ -107,7 +104,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 	})
 
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+		log.Error().Str("module", "plugin").Msgf("Install > dbWr.AddPlugin Error: %s", err)
 		return err
 	}
 
@@ -119,13 +116,13 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+		log.Error().Str("module", "plugin").Msgf("Install > newReader Error: %s", err)
 		return nil, err
 	}
 
 	dbPlugins, err := dbRd.List()
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+		log.Error().Str("module", "plugin").Msgf("Install > dbRd.List Error: %s", err)
 		return nil, err
 	}
 
@@ -136,7 +133,6 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 		if p.IsEnabled == 1 {
 			isEnabled = true
 		}
-		plugins[i].PluginID = p.PluginID
 		plugins[i].Name = p.Name
 		plugins[i].IsEnabled = isEnabled
 		plugins[i].Repository = p.Repository
@@ -148,16 +144,99 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 	return plugins, nil
 }
 
+func (m *vatzPluginManager) Uninstall(name string) error {
+	log.Info().Str("module", "plugin").Msgf("List")
+	ps, err := m.findProcessByName(name)
+	if err != nil {
+		if !strings.Contains(err.Error(), "can't find the process") {
+			return err
+		}
+	} else {
+		running, err := ps.IsRunning()
+		if err != nil {
+			log.Error().Str("module", "plugin").Msgf("Uninstall > ps.IsRunning Error: %s", err)
+			return err
+		}
+		if running {
+			log.Error().Str("module", "plugin").Err(err).Msgf("Plugin %s is currently running, Please, kill plugin first.", name)
+			return nil
+		}
+	}
+
+	pluginInfo, err := m.Get(name)
+	if err != nil {
+		return err
+	}
+
+	var stdout, stderr bytes.Buffer
+
+	os.Setenv("GOBIN", m.home)
+
+	exeCmd := exec.Command("rm", "-rf", pluginInfo.Location)
+	exeCmd.Stdout = &stdout
+	exeCmd.Stderr = &stderr
+
+	err = exeCmd.Run()
+	if err != nil {
+		log.Error().Str("module", "plugin").Msgf("Uninstall > exeCmd.Run Error: %s", err)
+		return err
+	}
+
+	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
+	if err != nil {
+		log.Error().Str("module", "plugin").Msgf("Uninstall > newWriter Error: %s", err)
+		return err
+	}
+
+	err = dbWr.DeletePlugin(name)
+	if err != nil {
+		log.Error().Str("module", "plugin").Msgf("Uninstall > dbWr.DeletePlugin Error: %s", err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *vatzPluginManager) Get(name string) (VatzPlugin, error) {
+	log.Info().Str("module", "plugin").Msgf("Get %s", name)
+
+	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
+	if err != nil {
+		log.Error().Str("module", "plugin").Msgf("Get > newReader Error: %s", err)
+		return VatzPlugin{}, err
+	}
+
+	dbPlugin, err := dbRd.Get(name)
+	if err != nil {
+		log.Error().Str("module", "plugin").Msgf("Get > dbRd.Get Error: %s", err)
+		return VatzPlugin{}, err
+	}
+
+	isEnabled := false
+	if dbPlugin.IsEnabled > 0 {
+		isEnabled = true
+	}
+
+	return VatzPlugin{
+		Name:        dbPlugin.Name,
+		IsEnabled:   isEnabled,
+		Repository:  dbPlugin.Repository,
+		Location:    dbPlugin.BinaryLocation,
+		Version:     dbPlugin.Version,
+		InstalledAt: dbPlugin.InstalledAt,
+	}, nil
+}
+
 func (m *vatzPluginManager) Update(pluginID string, isEnabled bool) error {
 	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("Get new DB writer")
+		log.Error().Str("module", "plugin").Msgf("Update > newWriter Error: %s", err)
 		return err
 	}
 
 	err = dbWr.UpdatePlugin(pluginID, isEnabled)
 	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("Update DB plugin")
+		log.Error().Str("module", "plugin").Msgf("Update > dbWr.UpdatePlugin Error: %s", err)
 		return err
 	}
 	return nil
@@ -187,17 +266,17 @@ func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 	return cmd.Start()
 }
 
-func (m *vatzPluginManager) Stop(pluginID string) error {
-	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", pluginID)
+func (m *vatzPluginManager) Stop(name string) error {
+	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", name)
 
-	ps, err := m.findProcessByName(pluginID)
+	ps, err := m.findProcessByName(name)
 	if err != nil {
 		return err
 	}
 
 	err = ps.Kill()
 	if err != nil {
-		log.Info().Str("module", "plugin").Msgf("Stop plugin %s", err)
+		log.Error().Str("module", "plugin").Msgf("Stop > ps.Kill Error: %s", err)
 		return err
 	}
 
@@ -209,14 +288,14 @@ func (m *vatzPluginManager) findProcessByName(name string) (*process.Process, er
 
 	processes, err := process.Processes()
 	if err != nil {
-		log.Info().Str("module", "plugin").Msgf("Find Process %s", err.Error())
+		log.Error().Str("module", "plugin").Msgf("findProcessByName > process.Processes Error: %s", err)
 		return nil, err
 	}
 
 	for _, p := range processes {
 		pName, err := p.Name()
 		if err != nil {
-			log.Info().Str("module", "plugin").Msgf("Get Name of plugin %s", err.Error())
+			log.Error().Str("module", "plugin").Msgf("findProcessByName > p.Name Error: %s", err)
 			continue
 		}
 
@@ -229,13 +308,17 @@ func (m *vatzPluginManager) findProcessByName(name string) (*process.Process, er
 
 // NewManager creates new plugin manager.
 func NewManager(vatzHome string) VatzPluginManager {
+	fullPath := fmt.Sprintf("%s/%s", vatzHome, pluginDBName)
 	pManager := &vatzPluginManager{
 		home: vatzHome,
 	}
-	dbWr, err := newWriter(fmt.Sprintf("%s/%s", vatzHome, pluginDBName))
-	if err != nil {
-		log.Error().Str("module", "plugin").Err(err).Msg("")
+
+	if _, err := os.Stat(fullPath); err == nil {
+		dbWr, err := newWriter(fullPath)
+		if err != nil {
+			log.Error().Str("module", "plugin").Msgf("NewManager > newWriter Error: %s", err)
+		}
+		dbWr.MigratePluginTable()
 	}
-	dbWr.MigratePluginTable()
 	return pManager
 }
