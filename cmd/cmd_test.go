@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"os"
 	"testing"
 
@@ -28,7 +29,7 @@ func TestInitCmd(t *testing.T) {
 
 	for _, test := range tests {
 		root := cobra.Command{}
-		root.AddCommand(createInitCommand())
+		root.AddCommand(createInitCommand(tp.TEST))
 		root.SetArgs(test.Args)
 
 		err := root.Execute()

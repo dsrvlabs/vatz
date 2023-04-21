@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -9,7 +10,7 @@ import (
 	"github.com/dsrvlabs/vatz/manager/plugin"
 )
 
-func createInitCommand() *cobra.Command {
+func createInitCommand(initializer tp.Initializer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "Init",
@@ -82,7 +83,7 @@ plugins_infos:
 			}
 
 			mgr := plugin.NewManager(pluginDir)
-			return mgr.Init()
+			return mgr.Init(initializer)
 		},
 	}
 
