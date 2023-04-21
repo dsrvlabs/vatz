@@ -15,14 +15,16 @@ func TestInitCmd(t *testing.T) {
 		Args       []string
 		ExpectFile string
 	}{
-		{
-			Desc:       "Init with default",
-			Args:       []string{"init"},
-			ExpectFile: "default.yaml",
-		},
+		// TODO: Testing default config could corrupt real environment.
+		// So, remove it intensionally.
+		//{
+		//	Desc:       "Init with default",
+		//	Args:       []string{"init"},
+		//	ExpectFile: "default.yaml",
+		//},
 		{
 			Desc:       "Init with selected filename",
-			Args:       []string{"init", "--output", "hello.yaml"},
+			Args:       []string{"init", "--output", "hello.yaml", "--home", "./"},
 			ExpectFile: "hello.yaml",
 		},
 	}

@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
+	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/plugin"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 )
 
 func createInitCommand(initializer tp.Initializer) *cobra.Command {
@@ -41,6 +43,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
     address: "127.0.0.1"
     grpc_port: 19090
     http_port: 19091
+  home_path: "%s"
   monitoring_info:
     prometheus:
       enabled: true
@@ -70,7 +73,15 @@ plugins_infos:
 				return err
 			}
 
+			home_path, err := cmd.Flags().GetString("home")
+			if err != nil {
+				return err
+			}
+
+			template = fmt.Sprintf(template, home_path)
+
 			log.Info().Str("module", "main").Msgf("create file %s", filename)
+			log.Info().Str("module", "main").Msgf("home path %s", home_path)
 
 			f, err := os.Create(filename)
 			if err != nil {
@@ -82,12 +93,21 @@ plugins_infos:
 				return err
 			}
 
+			config.InitConfig(filename)
+
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
+			log.Info().Str("module", "main").Msgf("Plugin dir %s", pluginDir)
 			mgr := plugin.NewManager(pluginDir)
 			return mgr.Init(initializer)
 		},
 	}
 
 	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
+	_ = cmd.PersistentFlags().StringP("home", "p", defaultHomePath, "Home directory of VATZ")
 
 	return cmd
 }

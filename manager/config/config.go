@@ -5,6 +5,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -24,6 +26,9 @@ const (
 
 	// DefaultHTTPPort is default port number of http service.
 	DefaultHTTPPort = 19091
+
+	// DefaultHomePath  default home directory of VATZ.
+	DefaultHomePath = "~/.vatz"
 )
 
 var (
@@ -33,16 +38,37 @@ var (
 
 // Config is Vatz config structure.
 type Config struct {
-	Vatz struct {
-		ProtocolIdentifier    string           `yaml:"protocol_identifier"`
-		Port                  int              `yaml:"port"`
-		NotificationInfo      NotificationInfo `yaml:"notification_info"`
-		HealthCheckerSchedule []string         `yaml:"health_checker_schedule"`
-		RPCInfo               RPCInfo          `yaml:"rpc_info"`
-		MonitoringInfo        MonitoringInfo   `yaml:"monitoring_info"`
-	} `yaml:"vatz_protocol_info"`
+	Vatz VatzProtocolInfo `yaml:"vatz_protocol_info"`
 
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
+}
+
+type VatzProtocolInfo struct {
+	ProtocolIdentifier    string           `yaml:"protocol_identifier"`
+	Port                  int              `yaml:"port"`
+	NotificationInfo      NotificationInfo `yaml:"notification_info"`
+	HealthCheckerSchedule []string         `yaml:"health_checker_schedule"`
+	RPCInfo               RPCInfo          `yaml:"rpc_info"`
+	MonitoringInfo        MonitoringInfo   `yaml:"monitoring_info"`
+	HomePath              string           `yaml:"home_path"`
+}
+
+func (i VatzProtocolInfo) AbsoluteHomePath() (string, error) {
+	if strings.HasPrefix(i.HomePath, "~") {
+		homePath := os.Getenv("HOME")
+		absPath := fmt.Sprintf("%s/%s", homePath, strings.Trim(i.HomePath, "~"))
+
+		// Prevent double slash
+		absPath, err := filepath.Abs(absPath)
+		return absPath, err
+	}
+
+	absPath, err := filepath.Abs(i.HomePath)
+	if err != nil {
+		return "", err
+	}
+
+	return absPath, nil
 }
 
 // NotificationInfo is notification structure.
@@ -132,18 +158,22 @@ func (p *parser) parseYAML(contents []byte) (*Config, error) {
 		return nil, err
 	}
 
-	p.overrideDefault(&newConfig)
+	p.overwrite(&newConfig)
 
 	return &newConfig, nil
 }
 
-func (p *parser) overrideDefault(config *Config) {
+func (p *parser) overwrite(config *Config) {
 	if config.Vatz.RPCInfo.GRPCPort == 0 {
 		config.Vatz.RPCInfo.GRPCPort = DefaultGRPCPort
 	}
 
 	if config.Vatz.RPCInfo.HTTPPort == 0 {
 		config.Vatz.RPCInfo.HTTPPort = DefaultHTTPPort
+	}
+
+	if config.Vatz.HomePath == "" {
+		config.Vatz.HomePath = DefaultHomePath
 	}
 
 	for i, plugin := range config.PluginInfos.Plugins {
@@ -162,7 +192,7 @@ func (p *parser) overrideDefault(config *Config) {
 }
 
 func (p *parser) duplicatedPlugin(config *Config) {
-	var b = make(map[string][]int)
+	b := make(map[string][]int)
 	for _, p := range config.PluginInfos.Plugins {
 		b[p.Name] = append(b[p.Name], p.Port)
 	}
@@ -188,6 +218,7 @@ func InitConfig(configFile string) (*Config, error) {
 	wg.Add(1)
 
 	configOnce.Do(func() {
+		// TODO: How do I add default values?
 		log.Info().Str("module", "config").Msgf("Load Config %s", configFile)
 
 		defer wg.Done()

@@ -3,15 +3,17 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dsrvlabs/vatz/utils"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/dsrvlabs/vatz/utils"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/plugin"
 	"github.com/jedib0t/go-pretty/v6/table"
 )
@@ -28,12 +30,13 @@ TODO list for plugin command.
 */
 
 var (
-	// TODO: Should be configurable.
-	pluginDir = fmt.Sprintf("%s/.vatz", os.Getenv("HOME"))
-
 	statusCommand = &cobra.Command{
 		Use:   "status",
 		Short: "Get statuses of Plugin",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v1/plugin_status", vatzRPC), nil)
 			if err != nil {
@@ -81,13 +84,22 @@ var (
 		Short:   "Install new plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
 		Example: "vatz plugin install github.com/dsrvlabs/<somewhere> name",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
 			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s", args[0], pluginDir)
 
 			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.
 			mgr := plugin.NewManager(pluginDir)
-			err := mgr.Install(args[0], args[1], "latest")
+			err = mgr.Install(args[0], args[1], "latest")
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -102,12 +114,17 @@ var (
 		Args:    cobra.ExactArgs(1), // TODO: Can I check real git repo?
 		Example: "vatz plugin uninstall name",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
 			log.Info().Str("module", "plugin").Msgf("Uninstall a plugin %s from %s", args[0], pluginDir)
 
 			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.
 			mgr := plugin.NewManager(pluginDir)
-			err := mgr.Uninstall(args[0])
+			err = mgr.Uninstall(args[0])
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -120,9 +137,18 @@ var (
 		Use:     "start",
 		Short:   "Start installed plugin",
 		Example: "vatz plugin start pluginName",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginName := viper.GetString("start_plugin")
 			exeArgs := viper.GetString("start_args")
+
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
 
 			log.Info().Str("module", "plugin").Msgf("Start plugin %s %s", pluginName, exeArgs)
 
@@ -148,8 +174,16 @@ var (
 		Use:     "stop",
 		Short:   "Stop running plugin",
 		Example: "vatz plugin stop pluginName",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginName := viper.GetString("stop_plugin")
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
 
 			log.Info().Str("module", "plugin").Msgf("Stop plugin %s", pluginName)
 
@@ -164,13 +198,18 @@ var (
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
 		Example: "vatz plugin enable <plugin_id> <true/false>",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
 			log.Info().Str("module", "plugin").Msgf("enable installed plugin %s at %s", args[0], pluginDir)
 
 			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.
 			mgr := plugin.NewManager(pluginDir)
 			enableDisable := utils.ParseBool(args[1])
-			err := mgr.Update(args[0], enableDisable)
+			err = mgr.Update(args[0], enableDisable)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -183,7 +222,16 @@ var (
 		Use:     "list",
 		Short:   "List installed plugin",
 		Example: "vatz plugin list",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
 			log.Info().Str("module", "plugin").Msgf("List plugins")
 
 			mgr := plugin.NewManager(pluginDir)

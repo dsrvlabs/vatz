@@ -4,6 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"os"
+	"strconv"
+	"time"
+
 	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginPb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
@@ -21,10 +26,6 @@ import (
 	grpchealth "google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"os"
-	"strconv"
-	"time"
 )
 
 func createStartCommand() *cobra.Command {
@@ -106,7 +107,11 @@ func initiateServer(ch <-chan os.Signal) error {
 	monitoringInfo := cfg.Vatz.MonitoringInfo
 	if monitoringInfo.Prometheus.Enabled {
 		if defaultPromPort == promPort {
-			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, strconv.Itoa(monitoringInfo.Prometheus.Port), vatzConfig.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(
+				monitoringInfo.Prometheus.Address,
+				strconv.Itoa(monitoringInfo.Prometheus.Port),
+				vatzConfig.ProtocolIdentifier,
+			)
 		} else {
 			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier)
 		}
@@ -122,10 +127,10 @@ func initiateServer(ch <-chan os.Signal) error {
 }
 
 func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
-	//TODO:: value in map would be overridden by different plugins flag value if function name is the same
+	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
 	grpcClients := utils.GetClients(pluginInfo.Plugins)
-	//TODO: Need updated with better way for Dynamic handlers
+	// TODO: Need updated with better way for Dynamic handlers
 	for idx, singleClient := range grpcClients {
 		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
 	}
@@ -136,6 +141,12 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
 
 	ctx := context.Background()
+
+	pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+	if err != nil {
+		return
+	}
+
 	mgr := pl.NewManager(pluginDir)
 	for {
 		pluginState, pluginStateErr := mgr.Get(plugin.Name)
