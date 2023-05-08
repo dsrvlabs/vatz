@@ -234,7 +234,7 @@ func (m *vatzPluginManager) Update(pluginID string, isEnabled bool) error {
 		return err
 	}
 
-	err = dbWr.UpdatePlugin(pluginID, isEnabled)
+	err = dbWr.UpdatePluginEnabling(pluginID, isEnabled)
 	if err != nil {
 		log.Error().Str("module", "plugin").Msgf("Update > dbWr.UpdatePlugin Error: %s", err)
 		return err

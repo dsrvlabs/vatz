@@ -31,7 +31,7 @@ type dbWriter interface {
 	MigratePluginTable() error
 	AddPlugin(e pluginEntry) error
 	DeletePlugin(name string) error
-	UpdatePlugin(pluginID string, isEnabled bool) error
+	UpdatePluginEnabling(pluginID string, isEnabled bool) error
 }
 
 type dbReader interface {
@@ -193,7 +193,7 @@ func (p *pluginDB) DeletePlugin(name string) error {
 	return nil
 }
 
-func (p *pluginDB) UpdatePlugin(name string, isEnabled bool) error {
+func (p *pluginDB) UpdatePluginEnabling(name string, isEnabled bool) error {
 	// TODO: 1. Set best identifier for plugins either of Plugin_id or Name
 	log.Info().Str("module", "db").Msg("UpdatePlugin")
 
