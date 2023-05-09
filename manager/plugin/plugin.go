@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"os"
 	"os/exec"
 	"strings"
@@ -30,8 +31,8 @@ type VatzPlugin struct {
 
 // VatzPluginManager provides management functions for plugin.
 type VatzPluginManager interface {
-	Init() error
-	Get(name string) (VatzPlugin, error)
+	Init(runType tp.Initializer) error
+  Get(name string) (VatzPlugin, error)
 	Install(repo, name, version string) error
 	Uninstall(name string) error
 	List() ([]VatzPlugin, error)
@@ -46,8 +47,12 @@ type vatzPluginManager struct {
 	home string
 }
 
-func (m *vatzPluginManager) Init() error {
-	return initDB(fmt.Sprintf("%s/%s", m.home, pluginDBName))
+func (m *vatzPluginManager) Init(runType tp.Initializer) error {
+	dbName := pluginDBName
+	if runType == tp.TEST {
+		dbName = "vatz-test.db"
+	}
+	return initDB(fmt.Sprintf("%s/%s", m.home, dbName))
 }
 
 func (m *vatzPluginManager) Install(repo, name, version string) error {
