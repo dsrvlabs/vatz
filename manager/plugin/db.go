@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	// Load sqlite3 driver
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/net/context"
@@ -21,6 +20,7 @@ var (
 
 type pluginEntry struct {
 	Name           string
+	IsEnabled      int
 	Repository     string
 	BinaryLocation string
 	Version        string
@@ -28,14 +28,15 @@ type pluginEntry struct {
 }
 
 type dbWriter interface {
+	MigratePluginTable() error
 	AddPlugin(e pluginEntry) error
 	DeletePlugin(name string) error
-	UpdatePlugin() error
+	UpdatePluginEnabling(pluginID string, isEnabled bool) error
 }
 
 type dbReader interface {
 	List() ([]pluginEntry, error)
-	Get(name string) (*pluginEntry, error)
+	Get(identifier string) (*pluginEntry, error)
 }
 
 type pluginDB struct {
@@ -43,28 +44,94 @@ type pluginDB struct {
 	ctx  context.Context
 }
 
+func (p *pluginDB) isFieldExist(tableName string, columnName string) (bool, error) {
+	q := `PRAGMA table_info(plugin)`
+	rows, err := p.conn.QueryContext(p.ctx, q)
+	if err != nil {
+		log.Error().Str("module", "db").Msgf("isFieldExist Error: %s", err)
+		return false, err
+	}
+
+	defer rows.Close()
+
+	// Check the columns of the result set
+	found := false
+	for rows.Next() {
+		var cid int
+		var name string
+		var typename string
+		var notnull bool
+		var dfltvalue sql.NullString
+		var pk bool
+
+		err = rows.Scan(&cid, &name, &typename, &notnull, &dfltvalue, &pk)
+		if err != nil {
+			panic(err)
+		}
+
+		if name == "is_enabled" {
+			found = true
+			break
+		}
+	}
+	return found, nil
+}
+
+func (p *pluginDB) MigratePluginTable() error {
+	isExist, fieldError := p.isFieldExist("plugin", "is_enabled")
+
+	if fieldError != nil {
+		log.Error().Str("module", "db").Msgf("MigratePluginTable > isFieldExist Error: %s", fieldError)
+		return fieldError
+	}
+
+	if !isExist {
+		opts := &sql.TxOptions{Isolation: sql.LevelDefault}
+		tx, err := p.conn.BeginTx(p.ctx, opts)
+		if err != nil {
+			return err
+		}
+		q := `ALTER TABLE plugin ADD COLUMN is_enabled INTEGER DEFAULT 1`
+
+		_, err = tx.Exec(q)
+		if err != nil {
+			log.Error().Str("module", "db").Msgf("MigratePluginTable > tx.Exec Error: %s", err)
+			return err
+		}
+
+		if err = tx.Commit(); err != nil {
+			log.Error().Str("module", "db").Msgf("MigratePluginTable > tx.Commit Error: %s", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (p *pluginDB) AddPlugin(e pluginEntry) error {
+
 	log.Info().Str("module", "db").Msg("AddPlugin")
 
-	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
+	opts := &sql.TxOptions{
+		Isolation: sql.LevelDefault,
+	}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
 		log.Info().Str("module", "db").Err(err)
 		return err
 	}
 
-	q := `
-INSERT INTO plugin(name, repository, binary_location, version, installed_at) VALUES(?, ?, ?, ?, ?)
+	q := `INSERT INTO plugin(name, is_enabled, repository, binary_location, version, installed_at) VALUES(?, ?, ?, ?, ?, ?)
 `
 
-	_, err = tx.Exec(q, e.Name, e.Repository, e.BinaryLocation, e.Version, e.InstalledAt)
+	_, err = tx.Exec(q, e.Name, e.IsEnabled, e.Repository, e.BinaryLocation, e.Version, e.InstalledAt)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("AddPlugin > tx.Exec Error: %s", err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("AddPlugin > tx.Commit Error: %s", err)
 		return err
 	}
 
@@ -72,6 +139,7 @@ INSERT INTO plugin(name, repository, binary_location, version, installed_at) VAL
 }
 
 func (p *pluginDB) createPluginTable() error {
+
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
@@ -79,22 +147,22 @@ func (p *pluginDB) createPluginTable() error {
 	}
 
 	q := `
-CREATE TABLE IF NOT EXISTS plugin (
+CREATE TABLE IF NOT EXISTS plugin ( 
 	name varchar(256) PRIMARY KEY,
+    is_enabled int,
 	repository varchar(256),
 	binary_location varchar(256),
 	version varchar(256),
 	installed_at DATE)
 `
-
 	_, err = tx.Exec(q)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("createPluginTable > tx.Exec Error: %s", err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("createPluginTable > tx.Commit Error: %s", err)
 		return err
 	}
 
@@ -107,33 +175,67 @@ func (p *pluginDB) DeletePlugin(name string) error {
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("DeletePlugin > conn.BeginTx Error: %s", err)
 		return err
 	}
 
 	_, err = tx.Exec("DELETE FROM plugin WHERE name = ?", name)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("DeletePlugin > tx.Exec Error: %s", err)
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("DeletePlugin > tx.Commit Error: %s", err)
 		return err
 	}
 
 	return nil
 }
 
-func (p *pluginDB) UpdatePlugin() error {
-	// TODO:
+func (p *pluginDB) UpdatePluginEnabling(name string, isEnabled bool) error {
+	// TODO: 1. Set best identifier for plugins either of Plugin_id or Name
+	log.Info().Str("module", "db").Msg("UpdatePlugin")
+
+	response := "disabled"
+	if isEnabled {
+		response = "enabled"
+	}
+
+	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
+	tx, err := p.conn.BeginTx(p.ctx, opts)
+	if err != nil {
+		log.Info().Str("module", "db").Err(err)
+		return err
+	}
+
+	q := `UPDATE plugin SET is_enabled = ? WHERE name = ?`
+
+	isEnabledInt := 0
+	if isEnabled {
+		isEnabledInt = 1
+	}
+
+	_, err = tx.Exec(q, isEnabledInt, name)
+	if err != nil {
+		log.Error().Str("module", "db").Msgf("UpdatePlugin > tx.Exec Error: %s", err)
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		log.Error().Str("module", "db").Msgf("UpdatePlugin > tx.Commit Error: %s", err)
+		return err
+	}
+
+	log.Info().Str("module", "db").Msgf("Plugin %s has been updated: %s.", name, response)
+
 	return nil
 }
 
 func (p *pluginDB) List() ([]pluginEntry, error) {
-	log.Info().Str("module", "db").Msg("List Plugin")
+	log.Info().Str("module", "db").Msg("List")
 
-	q := `SELECT name, repository, binary_location, version, installed_at FROM plugin`
+	q := `SELECT name, is_enabled, repository, binary_location, version, installed_at FROM plugin`
 	rows, err := p.conn.QueryContext(p.ctx, q)
 	if err != nil {
 		log.Info().Str("module", "db").Err(err)
@@ -141,17 +243,15 @@ func (p *pluginDB) List() ([]pluginEntry, error) {
 	}
 
 	defer rows.Close()
-
 	retPlugins := make([]pluginEntry, 0)
 
 	for rows.Next() {
 		e := pluginEntry{}
-		err := rows.Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
+		err := rows.Scan(&e.Name, &e.IsEnabled, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
 		if err != nil {
-			log.Info().Str("module", "db").Err(err)
+			log.Error().Str("module", "db").Msgf("List > rows.Scan Error: %s", err)
 			return nil, err
 		}
-
 		retPlugins = append(retPlugins, e)
 	}
 
@@ -161,21 +261,22 @@ func (p *pluginDB) List() ([]pluginEntry, error) {
 func (p *pluginDB) Get(name string) (*pluginEntry, error) {
 	log.Info().Str("module", "db").Msgf("Get %s", name)
 
-	q := `SELECT name, repository, binary_location, version, installed_at FROM plugin WHERE name=?`
+	q := `SELECT name, is_enabled, repository, binary_location, version, installed_at FROM plugin WHERE name=?`
 	e := pluginEntry{}
 	err := p.conn.
 		QueryRowContext(p.ctx, q, name).
-		Scan(&e.Name, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
+		Scan(&e.Name, &e.IsEnabled, &e.Repository, &e.BinaryLocation, &e.Version, &e.InstalledAt)
 	if err != nil {
-		log.Info().Str("module", "db").Err(err)
+		log.Error().Str("module", "db").Msgf("Get > QueryRowContext.Scan Error: %s", err)
 		return nil, err
 	}
 
 	return &e, err
+
 }
 
 func newWriter(dbfile string) (dbWriter, error) {
-	log.Info().Str("module", "db").Msgf("newWriter %s", dbfile)
+	//log.Debug().Str("module", "db").Msgf("newWriter %s", dbfile)
 
 	chanErr := make(chan error, 1)
 
@@ -185,7 +286,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
 		if err != nil {
-			log.Info().Str("module", "db").Msgf("Get conn Err %+v", err)
+			log.Error().Str("module", "db").Msgf("newWriter > getDBConnection Error: %s", err)
 			chanErr <- err
 		}
 
@@ -203,17 +304,18 @@ func newWriter(dbfile string) (dbWriter, error) {
 }
 
 func newReader(dbfile string) (dbReader, error) {
-	log.Info().Str("module", "db").Msgf("newReader %s", dbfile)
+
+	//log.Debug().Str("module", "db").Msgf("newReader %s", dbfile)
 
 	chanErr := make(chan error, 1)
 
 	once.Do(func() {
-		log.Info().Str("module", "db").Msg("Create DB Instance")
+		log.Info().Str("module", "db").Msg("Read DB Instance")
 
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
 		if err != nil {
-			log.Error().Str("module", "db").Err(err).Msg("")
+			log.Error().Str("module", "db").Msgf("newReader > getDBConnection Error: %s", err)
 			chanErr <- err
 			return
 		}

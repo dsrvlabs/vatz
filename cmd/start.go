@@ -6,6 +6,11 @@ import (
 	"fmt"
 	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginPb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	"github.com/dsrvlabs/vatz/manager/api"
+	config "github.com/dsrvlabs/vatz/manager/config"
+	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
+	pl "github.com/dsrvlabs/vatz/manager/plugin"
+	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/monitoring/prometheus"
 	"github.com/dsrvlabs/vatz/rpc"
 	"github.com/dsrvlabs/vatz/utils"
@@ -20,11 +25,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/dsrvlabs/vatz/manager/api"
-	config "github.com/dsrvlabs/vatz/manager/config"
-	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 )
 
 func createStartCommand() *cobra.Command {
@@ -136,20 +136,29 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 	executeTicker := time.NewTicker(time.Duration(plugin.ExecuteInterval) * time.Second)
 
 	ctx := context.Background()
+	mgr := pl.NewManager(pluginDir)
 	for {
+		pluginState, pluginStateErr := mgr.Get(plugin.Name)
 		select {
 		case <-verifyTicker.C:
-			live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
-			if live == tp.AliveStatusUp {
-				okToSend = true
-			} else {
-				okToSend = false
+			if pluginState.IsEnabled {
+				live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
+				if live == tp.AliveStatusUp {
+					okToSend = true
+				} else {
+					okToSend = false
+				}
 			}
 		case <-executeTicker.C:
-			if okToSend == true {
-				err := executor.Execute(ctx, singleClient, plugin, dispatchers)
-				if err != nil {
-					log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
+			if pluginState.IsEnabled {
+				if okToSend == true {
+					if pluginStateErr != nil {
+						log.Error().Str("module", "main").Msgf("Executor Error: %s", pluginStateErr)
+					}
+					err := executor.Execute(ctx, singleClient, plugin, dispatchers)
+					if err != nil {
+						log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
+					}
 				}
 			}
 		case <-quit:

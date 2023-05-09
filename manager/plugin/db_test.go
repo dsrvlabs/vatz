@@ -48,11 +48,11 @@ func TestDBWrite(t *testing.T) {
 	assert.Equal(t, installedAt.UnixMilli(), plugin.InstalledAt.UnixMilli())
 
 	// Test delete.
-	err = wr.DeletePlugin("test")
+	err = wr.DeletePlugin("test delete")
 	assert.Nil(t, err)
 
 	// Confirm deleted.
-	plugin, err = rd.Get("test")
+	plugin, err = rd.Get("test confirm delete")
 
 	assert.Nil(t, plugin)
 	assert.Equal(t, sql.ErrNoRows, err)
