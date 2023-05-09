@@ -1,6 +1,12 @@
 # To get started with VATZ 
 
 > This instruction is mainly based on Linux:Ubuntu
+## 0. Prerequisites 
+Install Go 
+> You can skip this part if you already have installed go version > 1.18 on your system. 
+
+Please, check latest version or check on VATZ module and follow these [instructions](https://go.dev/doc/install) to install. 
+
 
 ## 1. VATZ 
 1. Clone VATZ repository
