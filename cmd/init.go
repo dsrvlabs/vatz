@@ -73,15 +73,15 @@ plugins_infos:
 				return err
 			}
 
-			home_path, err := cmd.Flags().GetString("home")
+			homePath, err := cmd.Flags().GetString("home")
 			if err != nil {
 				return err
 			}
 
-			template = fmt.Sprintf(template, home_path)
+			template = fmt.Sprintf(template, homePath)
 
 			log.Info().Str("module", "main").Msgf("create file %s", filename)
-			log.Info().Str("module", "main").Msgf("home path %s", home_path)
+			log.Info().Str("module", "main").Msgf("home path %s", homePath)
 
 			f, err := os.Create(filename)
 			if err != nil {
