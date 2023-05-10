@@ -1,6 +1,6 @@
 module github.com/dsrvlabs/vatz
 
-go 1.18
+go 1.19
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.6.0
