@@ -109,7 +109,6 @@ func (p *pluginDB) MigratePluginTable() error {
 }
 
 func (p *pluginDB) AddPlugin(e pluginEntry) error {
-
 	log.Info().Str("module", "db").Msg("AddPlugin")
 
 	opts := &sql.TxOptions{
@@ -139,7 +138,6 @@ func (p *pluginDB) AddPlugin(e pluginEntry) error {
 }
 
 func (p *pluginDB) createPluginTable() error {
-
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
 	if err != nil {
@@ -272,11 +270,10 @@ func (p *pluginDB) Get(name string) (*pluginEntry, error) {
 	}
 
 	return &e, err
-
 }
 
 func newWriter(dbfile string) (dbWriter, error) {
-	//log.Debug().Str("module", "db").Msgf("newWriter %s", dbfile)
+	// log.Debug().Str("module", "db").Msgf("newWriter %s", dbfile)
 
 	chanErr := make(chan error, 1)
 
@@ -288,6 +285,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 		if err != nil {
 			log.Error().Str("module", "db").Msgf("newWriter > getDBConnection Error: %s", err)
 			chanErr <- err
+			return
 		}
 
 		db = &pluginDB{ctx: ctx, conn: conn}
@@ -304,8 +302,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 }
 
 func newReader(dbfile string) (dbReader, error) {
-
-	//log.Debug().Str("module", "db").Msgf("newReader %s", dbfile)
+	// log.Debug().Str("module", "db").Msgf("newReader %s", dbfile)
 
 	chanErr := make(chan error, 1)
 
@@ -357,9 +354,11 @@ func initDB(dbfile string) error {
 		once = sync.Once{}
 	}
 
+	log.Info().Str("module", "db").Msg("Remove old DB file")
+
 	err := os.Remove(dbfile)
 	if err != nil && !os.IsNotExist(err) {
-		log.Info().Err(err)
+		log.Error().Str("module", "---db").Err(err)
 		return err
 	}
 
@@ -368,13 +367,25 @@ func initDB(dbfile string) error {
 		_ = os.Mkdir(path, 0755)
 	}
 
+	log.Info().Str("module", "db").Msg("Create new DB file")
+
+	f, err := os.Create(dbfile)
+	if err != nil {
+		log.Error().Str("module", "db").Err(err)
+		return err
+	}
+
+	defer f.Close()
+
 	_, err = newWriter(dbfile)
 	if err != nil {
+		log.Error().Str("module", "db").Err(err)
 		return err
 	}
 
 	err = db.createPluginTable()
 	if err != nil {
+		log.Error().Str("module", "db").Err(err)
 		return err
 	}
 

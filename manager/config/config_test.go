@@ -35,6 +35,7 @@ type testConfigExpects struct {
 	ExpectDefaultExecuteInterval int
 	ExpectDefaultPluginName      string
 	ExpectRPCInfo                RPCInfo
+	ExpectHomePath               string
 
 	Plugins []testPluginExpects
 }
@@ -61,6 +62,7 @@ func TestDefaultConfig(t *testing.T) {
 		ExpectDiscordSecret:   "XXXXX",
 		ExpectPagerDutySecret: "YYYYY",
 		ExpectHostName:        "xxx-xxxx-xxxx",
+		ExpectHomePath:        "~/.vatz",
 		DispatchChannels: []testChannelsExpect{
 			{
 				ExpectChannel: "discord",
@@ -115,6 +117,8 @@ func TestDefaultConfig(t *testing.T) {
 	assert.Equal(t, test.ExpectProtocolID, cfg.Vatz.ProtocolIdentifier)
 	assert.Equal(t, test.ExpectVatzPort, cfg.Vatz.Port)
 	assert.Equal(t, test.ExpectHostName, cfg.Vatz.NotificationInfo.HostName)
+	assert.Equal(t, test.ExpectHomePath, cfg.Vatz.HomePath)
+
 	for i, dispatchChannel := range test.DispatchChannels {
 		assert.Equal(t, dispatchChannel.ExpectChannel, cfg.Vatz.NotificationInfo.DispatchChannels[i].Channel)
 		assert.Equal(t, dispatchChannel.ExpectSecret, cfg.Vatz.NotificationInfo.DispatchChannels[i].Secret)

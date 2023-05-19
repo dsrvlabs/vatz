@@ -14,6 +14,7 @@ const (
 	defaultFlagLog    = ""
 	defaultRPC        = "http://localhost:19091"
 	defaultPromPort   = "18080"
+	defaultHomePath   = "~/.vatz"
 )
 
 var (

@@ -23,6 +23,7 @@ vatz_protocol_info:
     address: "127.0.0.1"
     grpc_port: 19090
     http_port: 19091
+  home_path: ~/.vatz
 
 plugins_infos:
   default_verify_interval:  15
