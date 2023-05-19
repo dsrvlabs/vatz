@@ -4,14 +4,13 @@ on:
   schedule:
     - cron: "0 13 * * 3" # Every Wednesday at 1 p.m.
 env:
-  URL: https://api.github.com/repos/dsrvlabs/vatz/milestones # NEED TO CHANGE
+  URL: https://api.github.com/repos/dsrvlabs/vatz/milestones
 jobs:
   create-bi-weekly:
     runs-on: ubuntu-latest
-    #TODO: If the schedule is delayed
     steps:
       - uses: actions/checkout@v3
-      - name: Check creation date
+      - name: Check creation date # Step to determine if this is the second week because you have to create a 'Discussion & Milestone' every two weeks
         run: |
           due_date=`curl -Ls \
             -H "Accept: application/vnd.github+json" \
@@ -26,7 +25,7 @@ jobs:
             echo "The dates are different."
             exit 1
           fi
-      - name: Set env variable
+      - name: Set env variable # Generate values for all steps
         run: |
           echo "DUE_DATE=$(date --date='+14 days' +%Y-%m-%d)" >> $GITHUB_ENV
           echo "DUE_DATE_LONG=$(date --date='+14 days' +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
