@@ -20,6 +20,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 			log.Info().Str("module", "main").Msg("init")
 
 			template := `vatz_protocol_info:
+  home_path: "%s"
   protocol_identifier: "Put Your Protocol here"
   port: 9090
   health_checker_schedule:
@@ -43,7 +44,6 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
     address: "127.0.0.1"
     grpc_port: 19090
     http_port: 19091
-  home_path: "%s"
   monitoring_info:
     prometheus:
       enabled: true
