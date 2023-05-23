@@ -113,6 +113,10 @@ var (
 		Short:   "Uninstall plugin from plugin registry",
 		Args:    cobra.ExactArgs(1), // TODO: Can I check real git repo?
 		Example: "vatz plugin uninstall name",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
@@ -197,6 +201,10 @@ var (
 		Short:   "Enabled or Disable plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
 		Example: "vatz plugin enable <plugin_id> <true/false>",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
