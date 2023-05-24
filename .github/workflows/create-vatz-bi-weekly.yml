@@ -2,7 +2,7 @@ name: Create a next vatz discussion & milestone
 on: 
   workflow_dispatch:
   schedule:
-    - cron: "0 13 * * 3" # Every Wednesday at 1 p.m.
+    - cron: "0 14 * * 3" # Every Wednesday at 11 p.m.
 env:
   URL: https://api.github.com/repos/dsrvlabs/vatz/milestones
 jobs:
