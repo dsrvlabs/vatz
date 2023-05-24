@@ -88,23 +88,22 @@ var (
 			return err
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			const defaultVersion = "latest"
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s", args[0], pluginDir)
+			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s.", args[0], pluginDir)
 
-			defaultVersion := "latest"
-			pluginVersion := viper.GetString("plugin_version")
-
-			if pluginVersion != "" {
-				defaultVersion = pluginVersion
+			pluginVersion := defaultVersion
+			if viper.GetString("plugin_version") != "" {
+				pluginVersion = viper.GetString("plugin_version")
 			}
 
-			log.Info().Str("module", "plugin").Msgf("installing version is %s", defaultVersion)
+			log.Info().Str("module", "plugin").Msgf("Installing plugin version is %s.", pluginVersion)
 			mgr := plugin.NewManager(pluginDir)
-			err = mgr.Install(args[0], args[1], defaultVersion)
+			err = mgr.Install(args[0], args[1], pluginVersion)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
