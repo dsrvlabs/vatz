@@ -27,7 +27,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
   notification_info:
     host_name: "Put your machine's host name"
     default_reminder_schedule:
-      - "*/30 * * * *"
+      - "*/15 * * * *"
     dispatch_channels:
       - channel: "discord"
         secret: "Put your Discord Webhook"
