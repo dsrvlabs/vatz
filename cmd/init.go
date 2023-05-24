@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -15,7 +14,7 @@ import (
 func createInitCommand(initializer tp.Initializer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Init",
+		Short: "init",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Str("module", "main").Msg("init")
 
@@ -28,7 +27,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
   notification_info:
     host_name: "Put your machine's host name"
     default_reminder_schedule:
-      - "*/15 * * * *"
+      - "*/30 * * * *"
     dispatch_channels:
       - channel: "discord"
         secret: "Put your Discord Webhook"
@@ -73,15 +72,7 @@ plugins_infos:
 				return err
 			}
 
-			homePath, err := cmd.Flags().GetString("home")
-			if err != nil {
-				return err
-			}
-
-			template = fmt.Sprintf(template, homePath)
-
 			log.Info().Str("module", "main").Msgf("create file %s", filename)
-			log.Info().Str("module", "main").Msgf("home path %s", homePath)
 
 			f, err := os.Create(filename)
 			if err != nil {
@@ -107,7 +98,6 @@ plugins_infos:
 	}
 
 	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
-	_ = cmd.PersistentFlags().StringP("home", "p", defaultHomePath, "Home directory of VATZ")
 
 	return cmd
 }
