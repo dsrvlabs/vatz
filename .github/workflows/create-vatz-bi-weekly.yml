@@ -19,7 +19,7 @@ jobs:
             "${{ env.URL }}" | jq 'sort_by(.id)' | jq .[length-1].due_on | sed 's/"//g'`
           target_date=$(date -d "$due_date" +%Y-%m-%d)
           today=$(date +%Y-%m-%d)
-          if [[ "$target_date" != "$today" ]]; then
+          if [[ "$target_date" == "$today" ]]; then
             echo "The dates are equal."
           else 
             echo "The dates are different."
