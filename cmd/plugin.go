@@ -3,11 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/dsrvlabs/vatz/utils"
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/dsrvlabs/vatz/utils"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -89,17 +88,22 @@ var (
 			return err
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			const defaultVersion = "latest"
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s", args[0], pluginDir)
+			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s.", args[0], pluginDir)
 
-			// TODO: Handle already installed.
-			// TODO: Handle invalid repo name.
+			pluginVersion := defaultVersion
+			if viper.GetString("plugin_version") != "" {
+				pluginVersion = viper.GetString("plugin_version")
+			}
+
+			log.Info().Str("module", "plugin").Msgf("Installing plugin version is %s.", pluginVersion)
 			mgr := plugin.NewManager(pluginDir)
-			err = mgr.Install(args[0], args[1], "latest")
+			err = mgr.Install(args[0], args[1], pluginVersion)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -274,7 +278,6 @@ func createPluginCommand() *cobra.Command {
 	}
 
 	statusCommand.PersistentFlags().StringVar(&vatzRPC, "rpc", defaultRPC, "RPC address of Vatz")
-
 	startCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
 	startCommand.PersistentFlags().StringP("args", "a", "", "Arguments")
 	startCommand.PersistentFlags().StringP("log", "l", "", "Logfile")
@@ -285,6 +288,9 @@ func createPluginCommand() *cobra.Command {
 
 	stopCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
 	viper.BindPFlag("stop_plugin", stopCommand.PersistentFlags().Lookup("plugin"))
+
+	installCommand.PersistentFlags().StringP("version", "v", "", "Installed plugin version")
+	viper.BindPFlag("plugin_version", installCommand.PersistentFlags().Lookup("version"))
 
 	cmd.AddCommand(statusCommand)
 	cmd.AddCommand(installCommand)
