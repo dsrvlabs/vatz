@@ -188,7 +188,6 @@ var (
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			pluginName := viper.GetString("stop_plugin")
-			print("stop_plugin: ", pluginName)
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
 				return err
