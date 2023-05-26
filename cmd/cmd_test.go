@@ -24,7 +24,7 @@ func TestInitCmd(t *testing.T) {
 		//},
 		{
 			Desc:       "Init with selected filename",
-			Args:       []string{"init", "--output", "hello.yaml", "--home", "./"},
+			Args:       []string{"init", "--output", "hello.yaml"},
 			ExpectFile: "hello.yaml",
 		},
 	}
