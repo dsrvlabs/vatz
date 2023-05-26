@@ -147,7 +147,7 @@ plugins_infos:
 
 ## Update Monitoring info
 
-### Update Plugin Infos
+## 1. Update Plugin Infos
 
 1. `plugin_name`: Refer to the plugin name you installed.
 2. `plugin_port`: Set your plugin used port number to connect the plugin.
@@ -170,7 +170,7 @@ plugins_infos:
   $ ./vatz plugin start -p cpu_monitor
   ```
 
-  Or you could also start plugin with some arguments too. Check out the plugin repository to find available arguments.
+  Alternatively, you can start the plugin with some arguments as below. Some plugins might require arguments to start. Check the plugin repository for available arguments or requirements.
 
   ```
   $ ./vatz plugin start -p cpu_monitor -a "-port=9094 -urgent=80"
@@ -188,6 +188,7 @@ plugins_infos:
 
 
 ### 2. Start VATZ
+  
   ```
   $ ./vatz start
   ```
