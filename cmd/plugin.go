@@ -83,7 +83,7 @@ var (
 		Use:     "install",
 		Short:   "Install new plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
-		Example: "vatz plugin install github.com/dsrvlabs/<somewhere> name",
+		Example: "vatz plugin install <githubAddress> <pluginName>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
@@ -112,7 +112,7 @@ var (
 		Use:     "uninstall",
 		Short:   "Uninstall plugin from plugin registry",
 		Args:    cobra.ExactArgs(1), // TODO: Can I check real git repo?
-		Example: "vatz plugin uninstall name",
+		Example: "vatz plugin uninstall <pluginName>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
@@ -140,7 +140,7 @@ var (
 	startCommand = &cobra.Command{
 		Use:     "start",
 		Short:   "Start installed plugin",
-		Example: "vatz plugin start pluginName",
+		Example: "vatz plugin start --plugin <pluginName> or vatz plugin start --plugin <pluginName> --args <arguments>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
@@ -177,7 +177,7 @@ var (
 	stopCommand = &cobra.Command{
 		Use:     "stop",
 		Short:   "Stop running plugin",
-		Example: "vatz plugin stop pluginName",
+		Example: "vatz plugin stop --plugin <pluginName>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
@@ -200,7 +200,7 @@ var (
 		Use:     "enable",
 		Short:   "Enabled or Disable plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
-		Example: "vatz plugin enable <plugin_id> <true/false>",
+		Example: "vatz plugin enable <pluginName> <true/false>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
