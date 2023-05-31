@@ -48,8 +48,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       enabled: true
       address: "127.0.0.1"
       port: 18080
-
-plugins_infos:
+`
+			samplePluginOptionTemplate := `plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
   default_plugin_name: "vatz-plugin"
@@ -67,6 +67,51 @@ plugins_infos:
       executable_methods:
         - method_name: "sampleMethod2"
 `
+			defaultPluginOptionTemplate := `plugins_infos:
+  default_verify_interval: 15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "vatz_cpu_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9091
+      executable_methods:
+        - method_name: "cpu_monitor"
+    - plugin_name: "vatz_mem_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9092
+      executable_methods:
+        - method_name: "mem-monitor"
+    - plugin_name: "vatz_disk_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9093
+      executable_methods:
+        - method_name: "disk-monitor"
+    - plugin_name: "vatz_block_sync"
+      plugin_address: "localhost"
+      plugin_port: 10091
+      executable_methods:
+        - method_name: "node_block_sync"
+    - plugin_name: "vatz_node_is_alived"
+      plugin_address: "localhost"
+      plugin_port: 10092
+      executable_methods:
+        - method_name: "node_is_alived"
+    - plugin_name: "vatz_peer_count"
+      plugin_address: "localhost"
+      plugin_port: 10093
+      executable_methods:
+        - method_name: "node_active_status"
+    - plugin_name: "vatz_active_status"
+      plugin_address: "localhost"
+      plugin_port: 10094
+      executable_methods:
+        - method_name: "node_governance_alarm"
+    - plugin_name: "vatz_gov_alarm"
+      plugin_address: "localhost"
+      plugin_port: 10095
+      executable_methods:
+        - method_name: "node_peer_count"`
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
@@ -79,6 +124,15 @@ plugins_infos:
 				return err
 			}
 
+			configOption, err := cmd.Flags().GetBool("all")
+			if err != nil {
+				return err
+			}
+			if configOption {
+				template = template + defaultPluginOptionTemplate
+			} else {
+				template = template + samplePluginOptionTemplate
+			}
 			_, err = f.WriteString(template)
 			if err != nil {
 				return err
@@ -98,6 +152,7 @@ plugins_infos:
 	}
 
 	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
+	_ = cmd.PersistentFlags().BoolP("all", "a", false, "Create config yaml with all default setting of official plugins.")
 
 	return cmd
 }
