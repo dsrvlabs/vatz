@@ -74,42 +74,47 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
   plugins:
     - plugin_name: "vatz_cpu_monitor"
       plugin_address: "localhost"
-      plugin_port: 9091
+      plugin_port: 9001
       executable_methods:
         - method_name: "cpu_monitor"
     - plugin_name: "vatz_mem_monitor"
       plugin_address: "localhost"
-      plugin_port: 9092
+      plugin_port: 9002
       executable_methods:
         - method_name: "mem-monitor"
     - plugin_name: "vatz_disk_monitor"
       plugin_address: "localhost"
-      plugin_port: 9093
+      plugin_port: 9003
       executable_methods:
         - method_name: "disk-monitor"
+    - plugin_name: "vatz_net_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9004
+      executable_methods:
+        - method_name: "net_monitor"
     - plugin_name: "vatz_block_sync"
       plugin_address: "localhost"
-      plugin_port: 10091
+      plugin_port: 10001
       executable_methods:
         - method_name: "node_block_sync"
     - plugin_name: "vatz_node_is_alived"
       plugin_address: "localhost"
-      plugin_port: 10092
+      plugin_port: 10002
       executable_methods:
         - method_name: "node_is_alived"
     - plugin_name: "vatz_peer_count"
       plugin_address: "localhost"
-      plugin_port: 10093
+      plugin_port: 10003
       executable_methods:
         - method_name: "node_active_status"
     - plugin_name: "vatz_active_status"
       plugin_address: "localhost"
-      plugin_port: 10094
+      plugin_port: 10004
       executable_methods:
         - method_name: "node_governance_alarm"
     - plugin_name: "vatz_gov_alarm"
       plugin_address: "localhost"
-      plugin_port: 10095
+      plugin_port: 10005
       executable_methods:
         - method_name: "node_peer_count"`
 			filename, err := cmd.Flags().GetString("output")
