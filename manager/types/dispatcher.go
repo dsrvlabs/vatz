@@ -7,9 +7,10 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+// DiscordColor is color for a discord alert.
 type DiscordColor int
 
-// Let's Setup this message into GRPC Type
+// ReqMsg is Setup message into GRPC Type.
 type ReqMsg struct {
 	FuncName     string                 `json:"func_name"`
 	State        pluginpb.STATE         `json:"state"`
@@ -19,18 +20,22 @@ type ReqMsg struct {
 	Options      map[string]interface{} `json:"options"`
 }
 
+// UpdateState is to uptade the state of pluginpb.
 func (r *ReqMsg) UpdateState(stat pluginpb.STATE) {
 	r.State = stat
 }
 
+// UpdateSeverity is to uptade the severity of pluginpb.
 func (r *ReqMsg) UpdateSeverity(sev pluginpb.SEVERITY) {
 	r.Severity = sev
 }
 
+// UpdateMSG is to update message
 func (r *ReqMsg) UpdateMSG(message string) {
 	r.Msg = message
 }
 
+// DiscordMsg is type for sending messages to a discord.
 type DiscordMsg struct {
 	Username  string  `json:"username,omitempty"`
 	AvatarURL string  `json:"avatar_url,omitempty"`
@@ -38,6 +43,7 @@ type DiscordMsg struct {
 	Embeds    []Embed `json:"embeds"`
 }
 
+// Embed is imformation for detail message.
 type Embed struct {
 	Author struct {
 		Name    string `json:"name,omitempty"`
@@ -62,20 +68,24 @@ type Embed struct {
 	} `json:"footer,omitempty"`
 }
 
+// StateFlag is type that indicates the status of the plugins.
 type StateFlag struct {
 	State    pluginpb.STATE    `json:"state"`
 	Severity pluginpb.SEVERITY `json:"severity"`
 }
 
+// CronTabSt is crontab structure.
 type CronTabSt struct {
 	Crontab  *cron.Cron `json:"crontab"`
 	EntityID int        `json:"entity_id"`
 }
 
+// Update is to update CronTabSt.
 func (in *CronTabSt) Update(entity int) {
 	in.EntityID = entity
 }
 
+// Field is a structure for embeds that can be omitted.
 type Field struct {
 	Name   string `json:"name,omitempty"`
 	Value  string `json:"value,omitempty"`
@@ -93,17 +103,20 @@ type NotifyInfo struct {
 	ExecuteMsg string            `json:"execute_msg"`
 }
 
-// Channel types for dispatchers
+// Channel types for dispatchers.
 type Channel string
 
+// the type of channel.
 const (
 	Discord   Channel = "DISCORD"
 	Telegram  Channel = "TELEGRAM"
 	PagerDuty Channel = "PAGERDUTY"
 )
 
+// Reminder is for reminnig alert
 type Reminder string
 
+// The type of Reminder.
 const (
 	ON   Reminder = "ON"
 	HANG Reminder = "HANG"
