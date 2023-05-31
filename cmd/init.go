@@ -81,12 +81,12 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_address: "localhost"
       plugin_port: 9002
       executable_methods:
-        - method_name: "mem-monitor"
+        - method_name: "mem_monitor"
     - plugin_name: "vatz_disk_monitor"
       plugin_address: "localhost"
       plugin_port: 9003
       executable_methods:
-        - method_name: "disk-monitor"
+        - method_name: "disk_monitor"
     - plugin_name: "vatz_net_monitor"
       plugin_address: "localhost"
       plugin_port: 9004
