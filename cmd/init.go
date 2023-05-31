@@ -106,17 +106,17 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_address: "localhost"
       plugin_port: 10003
       executable_methods:
-        - method_name: "node_active_status"
+        - method_name: "node_peer_count"
     - plugin_name: "vatz_active_status"
       plugin_address: "localhost"
       plugin_port: 10004
       executable_methods:
-        - method_name: "node_governance_alarm"
+        - method_name: "node_active_status"
     - plugin_name: "vatz_gov_alarm"
       plugin_address: "localhost"
       plugin_port: 10005
       executable_methods:
-        - method_name: "node_peer_count"`
+        - method_name: "node_governance_alarm"`
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
