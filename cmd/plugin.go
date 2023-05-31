@@ -83,7 +83,7 @@ var (
 		Use:     "install",
 		Short:   "Install new plugin",
 		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
-		Example: "vatz plugin install <githubAddress> <pluginName>",
+		Example: "vatz plugin install <plugin's githubAddress> <pluginName>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
