@@ -49,8 +49,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       enabled: true
       address: "127.0.0.1"
       port: 18080
-
-plugins_infos:
+`
+			samplePluginOptionTemplate := `plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
   default_plugin_name: "vatz-plugin"
@@ -68,6 +68,57 @@ plugins_infos:
       executable_methods:
         - method_name: "sampleMethod2"
 `
+			defaultPluginOptionTemplate := `plugins_infos:
+  default_verify_interval: 15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "vatz_cpu_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9001
+      executable_methods:
+        - method_name: "cpu_monitor"
+    - plugin_name: "vatz_mem_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9002
+      executable_methods:
+        - method_name: "mem_monitor"
+    - plugin_name: "vatz_disk_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9003
+      executable_methods:
+        - method_name: "disk_monitor"
+    - plugin_name: "vatz_net_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9004
+      executable_methods:
+        - method_name: "net_monitor"
+    - plugin_name: "vatz_block_sync"
+      plugin_address: "localhost"
+      plugin_port: 10001
+      executable_methods:
+        - method_name: "node_block_sync"
+    - plugin_name: "vatz_node_is_alived"
+      plugin_address: "localhost"
+      plugin_port: 10002
+      executable_methods:
+        - method_name: "node_is_alived"
+    - plugin_name: "vatz_peer_count"
+      plugin_address: "localhost"
+      plugin_port: 10003
+      executable_methods:
+        - method_name: "node_peer_count"
+    - plugin_name: "vatz_active_status"
+      plugin_address: "localhost"
+      plugin_port: 10004
+      executable_methods:
+        - method_name: "node_active_status"
+    - plugin_name: "vatz_gov_alarm"
+      plugin_address: "localhost"
+      plugin_port: 10005
+      executable_methods:
+        - method_name: "node_governance_alarm"`
+      
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
@@ -87,6 +138,15 @@ plugins_infos:
 				return err
 			}
 
+			configOption, err := cmd.Flags().GetBool("all")
+			if err != nil {
+				return err
+			}
+			if configOption {
+				template = template + defaultPluginOptionTemplate
+			} else {
+				template = template + samplePluginOptionTemplate
+			}
 			_, err = f.WriteString(template)
 			if err != nil {
 				return err
@@ -107,6 +167,7 @@ plugins_infos:
 
 	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
 	_ = cmd.PersistentFlags().StringP("home", "p", defaultHomePath, "Home directory of VATZ")
+  _ = cmd.PersistentFlags().BoolP("all", "a", false, "Create config yaml with all default setting of official plugins.")
 
 	return cmd
 }
