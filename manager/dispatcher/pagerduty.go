@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// SUCCESS is
+// SUCCESS is string for delivering success.
 const SUCCESS = "success"
 
 type pagerdutyMSGEvent struct {
