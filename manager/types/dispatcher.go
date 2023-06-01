@@ -30,7 +30,7 @@ func (r *ReqMsg) UpdateSeverity(sev pluginpb.SEVERITY) {
 	r.Severity = sev
 }
 
-// UpdateMSG is to update message
+// UpdateMSG is to update message.
 func (r *ReqMsg) UpdateMSG(message string) {
 	r.Msg = message
 }
@@ -113,7 +113,7 @@ const (
 	PagerDuty Channel = "PAGERDUTY"
 )
 
-// Reminder is for reminnig alert
+// Reminder is for reminnig alert.
 type Reminder string
 
 // The type of Reminder.
