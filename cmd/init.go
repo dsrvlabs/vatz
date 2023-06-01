@@ -118,7 +118,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_port: 10005
       executable_methods:
         - method_name: "node_governance_alarm"`
-      
+
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
 				return err
@@ -167,7 +167,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 
 	_ = cmd.PersistentFlags().StringP("output", "o", defaultFlagConfig, "New config file to create")
 	_ = cmd.PersistentFlags().StringP("home", "p", defaultHomePath, "Home directory of VATZ")
-  _ = cmd.PersistentFlags().BoolP("all", "a", false, "Create config yaml with all default setting of official plugins.")
+	_ = cmd.PersistentFlags().BoolP("all", "a", false, "Create config yaml with all default setting of official plugins.")
 
 	return cmd
 }
