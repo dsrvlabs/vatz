@@ -37,15 +37,16 @@ You will see binary named `vatz`
   We officially provide 3 plugins for System Utility and 5 plugins for CosmosHub node. 
   > **Official Plugin Repositories**
   > - [vatz-plugin-sysutill](https://github.com/dsrvlabs/vatz-plugin-sysutil) 
-  >   - cpu_monitor
-  >   - disk_monitor
-  >   - mem_monitor
-  > - [vztz-plugin-cosmoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
-  >   - node_active_status
-  >   - node_block_sync
-  >   - node_governance_alarm
-  >   - node-is_alived
-  >   - node_peer_count
+  >   - vatz_cpu_monitor
+  >   - vatz_mem_monitor
+  >   - vatz_disk_monitor
+  >   - vatz_net_monitor
+  > - [vztz-cosmos-hub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
+  >   - vatz_block_sync
+  >   - vatz_node_is_alived
+  >   - vatz_peer_count
+  >   - vatz_active_status
+  >   - vatz_gov_alarm
 
  But you can easily develop custom plugins for the feature that you want with [VATZ SDK](https://github.com/dsrvlabs/vatz/tree/main/sdk). You could fine community provided plugins in [community_plugins.md](https://github.com/dsrvlabs/vatz/blob/main/docs/community_plugins.md). Feel free to add your custom plugins to community_plugins.md to share with others.
 
