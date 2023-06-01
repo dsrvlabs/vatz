@@ -43,7 +43,7 @@ type DiscordMsg struct {
 	Embeds    []Embed `json:"embeds"`
 }
 
-// Embed is imformation for detail message.
+// Embed is information for a detailed message.
 type Embed struct {
 	Author struct {
 		Name    string `json:"name,omitempty"`
