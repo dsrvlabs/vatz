@@ -36,7 +36,7 @@ You will see binary named `vatz`
 
   We officially provide 3 plugins for System Utility and 5 plugins for CosmosHub node. 
   > **Official Plugin Repositories**
-  > - [vatz-plugin-sysutill](https://github.com/dsrvlabs/vatz-plugin-sysutil) 
+  > - [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil) 
   >   - vatz_cpu_monitor
   >   - vatz_mem_monitor
   >   - vatz_disk_monitor
