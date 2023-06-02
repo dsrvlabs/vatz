@@ -71,6 +71,12 @@ vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for follow
 - Active Status
 - Node Governance Alarm
 
+## Community Plugins
+> We are open to everyone who would like to share their plugins together for easier operations on the nodes. <br>
+> Please, register your own developed `VATZ` plugins on Community Plugins
+
+For further information, check [Community plugins](docs/community_plugins.md)
+
 ---
 # Release Note
 
@@ -93,6 +99,13 @@ Contribute to **VATZ** project too!!
 - [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute.
 - [Project Workflow Instructions](docs/workflow.md) explains how to build and test.
 
+## License
+
+The `VATZ` library (i.e. all code outside of the `cmd` directory) is licensed under the
+[GNU Lesser General Public License v3.0](https://www.gnu.org/licenses/lgpl-3.0.en.html).
+
+The `VATZ` binaries (i.e. all code inside of the `cmd` directory) are licensed under the
+[GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html).
 
 # Contact us
 Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information about **VATZ**.
