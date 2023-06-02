@@ -168,15 +168,14 @@ plugins_infos:
   ```
   $ ./vatz plugin start --plugin <name> --args <argumnets> --log <logfile>
   ```
-  Put the plugin name you want to start. 
-
-  For example,
+  Put the plugin name you want to start.
 
   ```
   $ ./vatz plugin start -p cpu_monitor
   ```
 
-  Alternatively, you can start the plugin with some arguments as below. Some plugins might require arguments to start. Check the plugin repository for available arguments or requirements.
+  Alternatively, you can start the plugin with some arguments with `-arg` or `-a` flag. For example, you could change port number as below.
+  Some plugins might require arguments to start. Check the plugin repository for available arguments or requirements.
 
   ```
   $ ./vatz plugin start -p cpu_monitor -a "-port=9094 -urgent=80"
