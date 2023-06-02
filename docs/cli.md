@@ -6,32 +6,103 @@ Visit [Installation](./installation.md).
 
 
 ## Help
+For more details, you can query helps by adding `--help` flag. 
+```
+~$ ./vatz --help
+Usage:
+  [command]
 
-  For more details, you can query helps by adding `--help` flag.
-  ```
-  ~$ ./vatz --help
-  Usage:
-    [command]
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  init        Init
+  plugin      Plugin commands
+  start       start VATZ
+  version     VATZ Version
 
-  Available Commands:
-    completion  Generate the autocompletion script for the specified shell
-    help        Help about any command
-    init        Init
-    plugin      Plugin commands
-    start       start VATZ
-    version     VATZ Version
+Flags:
+  -h, --help   help for this command
 
-  Flags:
-    -h, --help   help for this command
+Use " [command] --help" for more information about a command.
+```
 
-  Use " [command] --help" for more information about a command.
-  ```
+
+## Init
+To start VATZ you need to init first. Currently, there are 4 flags under `plugin init`. 
+```
+~$ ./vatz init --help
+init
+
+Usage:
+   init [flags]
+
+Flags:
+  -a, --all             Create config yaml with all default setting of official plugins.
+  -h, --help            help for init
+  -p, --home string     Home directory of VATZ (default "~/.vatz")
+  -o, --output string   New config file to create (default "default.yaml")
+```
+With `--all` flag, you create config file including all default setting of official plugins like below 
+
+```
+  default_verify_interval: 15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "vatz_cpu_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9001
+      executable_methods:
+        - method_name: "cpu_monitor"
+    - plugin_name: "vatz_mem_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9002
+      executable_methods:
+        - method_name: "mem_monitor"
+    - plugin_name: "vatz_disk_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9003
+      executable_methods:
+        - method_name: "disk_monitor"
+    - plugin_name: "vatz_net_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9004
+      executable_methods:
+        - method_name: "net_monitor"
+    - plugin_name: "vatz_block_sync"
+      plugin_address: "localhost"
+      plugin_port: 10001
+      executable_methods:
+        - method_name: "node_block_sync"
+    - plugin_name: "vatz_node_is_alived"
+      plugin_address: "localhost"
+      plugin_port: 10002
+      executable_methods:
+        - method_name: "node_is_alived"
+    - plugin_name: "vatz_peer_count"
+      plugin_address: "localhost"
+      plugin_port: 10003
+      executable_methods:
+        - method_name: "node_peer_count"
+    - plugin_name: "vatz_active_status"
+      plugin_address: "localhost"
+      plugin_port: 10004
+      executable_methods:
+        - method_name: "node_active_status"
+    - plugin_name: "vatz_gov_alarm"
+      plugin_address: "localhost"
+      plugin_port: 10005
+      executable_methods:
+        - method_name: "node_governance_alarm"`
+```
+
+Also, You can set the home directory of VATZ (default "~/.vatz") with `--home` flag.
+And you can create the new config file with your disired name with `--output` flag
+
 
 ## Plugin
 
-  **VATZ** binary also supports several plugin commands. In this document, usage of plugin command will be described.
-
-  Currently, there are 7 subcommands under the plugin. For more details, you can see the help text by adding `--help` flag.
+  **VATZ** binary also supports several plugin commands. In this document, usage of plugin command will be described. Currently, there are 7 subcommands under the plugin. 
 
   ```
   ~$ ./vatz plugin --help
@@ -69,7 +140,7 @@ Visit [Installation](./installation.md).
 
   The last argument, `cosmos-status` is a simple name that is used for binary name on your machine. So, you could set the plugin name as desired.
   ### 3. list
-  If you install some plugin, you can query installed plugins by list subcommand.
+  If you install some plugin, you can query installed plugins by `list` subcommand.
 
   ```
   ~$ ./vatz plugin list
