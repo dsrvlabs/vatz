@@ -25,10 +25,15 @@ You will see binary named `vatz`
 
   
 ### 3. Initialize VATZ
-  ```
-  $ ./vatz init
-  ```
-  You will see config file named default.yaml once you initialize VATZ.
+```
+$ ./vatz init
+```
+You will see config file named default.yaml once you initialize VATZ.
+
+```
+$ ./vatz init --all
+```
+You can also use `--all` flag to add all default setting of [official plugins](https://github.com/dsrvlabs/vatz/blob/main/docs/installation.md#2-vatz-plugin) to config file. For more details, please check [cli.md](https://github.com/dsrvlabs/vatz/blob/main/docs/cli.md) file or use `--help` flag. 
 
 ## 2. VATZ Plugin
 
