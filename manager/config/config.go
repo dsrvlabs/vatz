@@ -3,7 +3,6 @@ package config
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -43,6 +42,7 @@ type Config struct {
 	PluginInfos PluginInfo `yaml:"plugins_infos"`
 }
 
+// VatzProtocolInfo is VATZ information.
 type VatzProtocolInfo struct {
 	ProtocolIdentifier    string           `yaml:"protocol_identifier"`
 	Port                  int              `yaml:"port"`
@@ -53,6 +53,7 @@ type VatzProtocolInfo struct {
 	HomePath              string           `yaml:"home_path"`
 }
 
+// AbsoluteHomePath is the default home path
 func (i VatzProtocolInfo) AbsoluteHomePath() (string, error) {
 	if strings.HasPrefix(i.HomePath, "~") {
 		homePath := os.Getenv("HOME")
@@ -121,7 +122,6 @@ type Plugin struct {
 }
 
 type parser struct {
-	rawConfig map[string]interface{}
 }
 
 func (p *parser) loadConfigFile(path string) ([]byte, error) {
@@ -140,8 +140,14 @@ func (p *parser) loadConfigFile(path string) ([]byte, error) {
 		}
 
 		rawYAML, err = io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
 	} else {
-		rawYAML, err = ioutil.ReadFile(path)
+		rawYAML, err = os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if err != nil {

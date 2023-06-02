@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sync"
 
@@ -31,7 +31,12 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 	pUnique := deliverMessage.Options["pUnique"].(string)
 
 	if reqToNotify {
-		t.SendNotification(deliverMessage)
+		err := t.SendNotification(deliverMessage)
+		if err != nil {
+			log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
+			return err
+		}
+
 	}
 
 	if reminderState == tp.ON {
@@ -49,7 +54,10 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 		}
 		for _, schedule := range t.reminderSchedule {
 			id, _ := t.reminderCron.AddFunc(schedule, func() {
-				t.SendNotification(deliverMessage)
+				err := t.SendNotification(deliverMessage)
+				if err != nil {
+					log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
+				}
 			})
 			newEntries = append(newEntries, id)
 		}
@@ -83,7 +91,7 @@ func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 		}
 	}
 
-	url := fmt.Sprintf("%s/sendMessage", getUrl(t.secret))
+	url := fmt.Sprintf("%s/sendMessage", getURL(t.secret))
 	sendingText := fmt.Sprintf(`
 %s<strong>%s</strong>%s
 <strong>(%s)</strong>
@@ -102,19 +110,23 @@ Plugin Name: <em>%s</em>
 		return err
 	}
 	defer response.Body.Close()
-	body, err = ioutil.ReadAll(response.Body)
+	body, err = io.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	}
 	respJSON := make(map[string]interface{})
-	json.Unmarshal(body, &respJSON)
 	if !respJSON["ok"].(bool) {
 		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
+	}
+	err = json.Unmarshal(body, &respJSON)
+	if err != nil {
+		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Unmarshalling JSON Error: %s", err)
+		return err
 	}
 	return nil
 }
 
-func getUrl(token string) string {
+func getURL(token string) string {
 	return fmt.Sprintf("https://api.telegram.org/bot%s", token)
 }

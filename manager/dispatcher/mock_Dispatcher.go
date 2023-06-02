@@ -47,5 +47,5 @@ func NewMockDispatchers(t mockConstructorTestingTNewDispatcher) []MockDispatcher
 
 	t.Cleanup(func() { mock.AssertExpectations(t) })
 
-	return []MockDispatcher{MockDispatcher{}}
+	return []MockDispatcher{}
 }

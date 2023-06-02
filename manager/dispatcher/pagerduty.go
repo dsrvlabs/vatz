@@ -3,14 +3,16 @@ package dispatcher
 import (
 	"context"
 	"fmt"
+	"sync"
+	"time"
+
 	pd "github.com/PagerDuty/go-pagerduty"
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog/log"
-	"sync"
-	"time"
 )
 
+// SUCCESS is string for delivering success.
 const SUCCESS = "success"
 
 type pagerdutyMSGEvent struct {
@@ -28,7 +30,11 @@ type pagerduty struct {
 func (p *pagerduty) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, _, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	if reqToNotify {
-		p.SendNotification(deliverMessage)
+		err := p.SendNotification(deliverMessage)
+		if err != nil {
+			log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Send notification error: %s", err)
+			return err
+		}
 	}
 	return nil
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// DiscordColor is type for discord message color.
 type DiscordColor int
 
 const (
@@ -39,7 +40,11 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 	pUnique := deliverMessage.Options["pUnique"].(string)
 
 	if reqToNotify {
-		d.SendNotification(deliverMessage)
+		err := d.SendNotification(deliverMessage)
+		if err != nil {
+			log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
+			return err
+		}
 	}
 
 	if reminderState == tp.ON {
@@ -57,7 +62,10 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 		}
 		for _, schedule := range d.reminderSchedule {
 			id, _ := d.reminderCron.AddFunc(schedule, func() {
-				d.SendNotification(deliverMessage)
+				err := d.SendNotification(deliverMessage)
+				if err != nil {
+					log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
+				}
 			})
 			newEntries = append(newEntries, id)
 		}

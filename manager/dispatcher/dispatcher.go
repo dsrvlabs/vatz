@@ -2,7 +2,6 @@ package dispatcher
 
 import (
 	"errors"
-	"github.com/dsrvlabs/vatz/utils"
 	"strings"
 	"sync"
 	"time"
@@ -10,6 +9,7 @@ import (
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
 )
@@ -38,9 +38,10 @@ type Dispatcher interface {
 	SendNotification(request tp.ReqMsg) error
 }
 
+// GetDispatchers gets the registered alert channel.
 func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 	if len(cfg.DispatchChannels) == 0 {
-		dpError := errors.New("Error: No Dispatcher has set.")
+		dpError := errors.New("error: No Dispatcher has set")
 		log.Error().Str("module", "dispatcher").Msg("Please, Set at least a single channel for dispatcher, e.g.) Discord or Telegram")
 		panic(dpError)
 	}
@@ -80,7 +81,6 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 			}
 		}
 	})
-
 	return dispatcherSingletons
 }
 
