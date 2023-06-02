@@ -133,7 +133,7 @@ When VATZ is running, you can check status of plugins(OK or FAIL).
 ### 6. stop
 You can stop running plugin.
   ```
-  ~$ ./vatz plugin start --plugin <pluginName>
+  ~$ ./vatz plugin stop --plugin <pluginName>
   ```
   ```
   2023-05-26T15:22:30+09:00 INF Load Config default.yaml module=config
