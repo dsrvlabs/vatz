@@ -42,8 +42,7 @@ Flags:
   -p, --home string     Home directory of VATZ (default "~/.vatz")
   -o, --output string   New config file to create (default "default.yaml")
 ```
-With `--all` flag, you create config file including all default setting of official plugins like below 
-
+With `--all` flag, you create config file including all default setting of official plugins like below. If you use the default settings, make sure to name the plugin when you install it to match the <pluginName> of the setting.
 ```
   default_verify_interval: 15
   default_execute_interval: 30
