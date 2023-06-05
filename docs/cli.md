@@ -128,7 +128,7 @@ And you can create the new config file with your disired name with `--output` fl
   ### 1. enable
   You can temparaily enable or disable the plugin.
   ```
-  ~$ ./vatz plugin enable <plugin_id> <true/false>
+  ~$ ./vatz plugin enable <pluginName> <true/false>
   ```
   ### 2. install
   
