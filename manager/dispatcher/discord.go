@@ -64,19 +64,9 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 		d.entry.Store(pUnique, newEntries)
 		d.reminderCron.Start()
 	} else if reminderState == tp.OFF {
-		count := 0
-		d.entry.Range(func(_, _ interface{}) bool {
-			count++
-			return true
-		})
-		if count == 0 {
-			log.Debug().Str("module", "dispatcher").Msg("There's no entry for the cron.")
-			return nil
-		}
-
 		entries, _ := d.entry.Load(pUnique)
-		for _, entity := range entries.([]cron.EntryID) {
-			{
+		if _, ok := entries.([]cron.EntryID); ok {
+			for _, entity := range entries.([]cron.EntryID) {
 				d.reminderCron.Remove(entity)
 			}
 			d.reminderCron.Stop()
