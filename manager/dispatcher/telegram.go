@@ -65,10 +65,12 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 		t.reminderCron.Start()
 	} else if reminderState == tp.OFF {
 		entries, _ := t.entry.Load(pUnique)
-		for _, entity := range entries.([]cron.EntryID) {
-			t.reminderCron.Remove(entity)
+		if _, ok := entries.([]cron.EntryID); ok {
+			for _, entity := range entries.([]cron.EntryID) {
+				t.reminderCron.Remove(entity)
+			}
+			t.reminderCron.Stop()
 		}
-		t.reminderCron.Stop()
 	}
 	return nil
 }

@@ -73,8 +73,8 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 		d.reminderCron.Start()
 	} else if reminderState == tp.OFF {
 		entries, _ := d.entry.Load(pUnique)
-		for _, entity := range entries.([]cron.EntryID) {
-			{
+		if _, ok := entries.([]cron.EntryID); ok {
+			for _, entity := range entries.([]cron.EntryID) {
 				d.reminderCron.Remove(entity)
 			}
 			d.reminderCron.Stop()
