@@ -28,7 +28,7 @@ Use " [command] --help" for more information about a command.
 
 
 ## Init
-To start VATZ you need to init first. Currently, there are 4 flags under `plugin init`. 
+To start VATZ you need to init first. Currently, there are 4 flags under `init`. 
 ```
 ~$ ./vatz init --help
 init
