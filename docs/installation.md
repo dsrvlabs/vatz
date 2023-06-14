@@ -39,7 +39,7 @@ You can also use `--all` flag to add all default setting of [official plugins](h
 
 ### 1. Copy the plugin address
 
-  We officially provide 3 plugins for System Utility and 5 plugins for CosmosHub node. 
+  We officially provide 4 plugins for System Utility and 5 plugins for CosmosHub node. 
   > **Official Plugin Repositories**
   > - [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil) 
   >   - vatz_cpu_monitor
@@ -148,7 +148,7 @@ plugins_infos:
    - `dispatch_channels`: Add infos to receive alerts through discord, pagerduty, and telegram. 
    - `reminder_schedule`: Use cron expression to set the time to resend the alert if it is not confirmed.
 4. `rpc_info`: Check address and port to connect with plugins.
-5. `monitoring_info`: Check address and port to use monitoring. Currently, VATZ supports monitoring only through Prometheous-Grafana.
+5. `monitoring_info`: Check address and port to use monitoring. Currently, VATZ supports monitoring only through Prometheus-Grafana.
 
 
 ## Update Monitoring info
