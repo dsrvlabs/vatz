@@ -13,55 +13,61 @@
 
 # What is VATZ?
 
-**VATZ** is a tool for building, analyzing, and managing blockchain node infrastructure safely and efficiently. You can set up VATZ to manage existing or new blockchain nodes and integrate with popular services PagerDuty, Discord, Telegram and more as well as custom in-house solutions.
+**VATZ** is a tool for building, analyzing, and managing blockchain node infrastructure safely and efficiently. You can set up **VATZ** to manage existing or new blockchain nodes and integrate with popular services like PagerDuty, Discord, or Telegram as well as custom in-house solutions.
 
-## How does **VATZ Project** work?
+## How does VATZ Project work?
 
-**VATZ** project is primarily designed to check the node states in real-time and receive alert notifications of all blockchain protocols, including metrics that the protocol itself does not support. 
+This project is primarily designed to check node states in real time and receive alert notifications for all blockchain protocols, including metrics that the protocol itself might not support.
 
 To this end, it consists of 3 components:
 
-1. **VATZ** : **VATZ** executes plugin APIs based on configs, checks the health of plugins, and sends notifications to configured channels
-2. Plugins (SDK): Various features like checking node status, collecting node metrics and executing certain commands, can be integrated to VATZ through separate plugins. 
-3. Monitoring: Various logs and data of nodes are exported by a node exporter and monitored through the 3rd party applications like Grafana. 
+1. **VATZ-Proto**: API specification for VATZ (SVC) and VATZ Plugins that implements protobuf allowing users to develop in the language they wish.
+2. **VATZ (SVC)**: Service that executes plugin APIs based on configs, checks plugin health, and sends notifications to configured channels.
+3. **VATZ** **Plugins (with SDK)**: Plugins that integrate with VATZ to support features like node status checks, metric collection, and command execution.
 
 For further information, check [VATZ Project Design](docs/design.md)
 
 
 ## What is the key feature of **VATZ Project**?
 
-  ### Multi Protocol Support
-   **VATZ** is NOT limited Protocol Type where it categorizes on chain protocol. Any Protocol can be managed through VATZ with plugins, even unsupported protocols can be integrated through simple plugin development.
-  ### Infrastructure as Code
-   **VATZ** is described using a high-level configuration syntax. You can divide your plugins into modular components that can then be combined in different ways to behave through automation.
-  ### Data Analysis
-   **VATZ** helps to build datasets for your managing protocols and transfer your data into popular services Prometheus, Kafka, Google BigQuery and more. Because of this, VATZ aims to set your Node infrastructure as efficiently as possible, and operators get insight into dependencies in their infrastructure. (2023-Q3)
-  ### Change automation
-  Complex sets of node's operational tasks can be done through **VATZ** with minimal human interaction. (2023-Q4)
+### Multi-Protocol Support
+Any protocol can be managed through **VATZ** with plugins. Even unsupported protocols can be integrated through simple plugin development.
 
+### Infrastructure as Code
+**VATZ** is described using a high-level configuration syntax. You can divide your plugins into modular components that can then be combined in different ways to behave through automation. 
+
+### Monitoring
+Various logs and node data are collected and exported by a node exporter, then monitored through the 3rd party applications like Grafana. 
+
+### Data Analysis
+**VATZ** helps build datasets for your protocols, and transfer your data into popular services like Prometheus, Kafka, Google BigQuery, and more. In this way, **VATZ** aims to optimize your node infrastructure, and operators get insight into dependencies in their infrastructure. (Exp. 2023-Q3)
+
+### Change Automation
+Complex node operation tasks can be executed through **VATZ** with minimal human interaction. (Exp. 2023-Q4)
 
 # Our Mission
-
-We're on a mission to transform the way people experience blockchain technology and let them contribute and become a part of its technology.
-As Validators, we provide tools to people to manage their own nodes with low cost and less effort for anyone who would like to join future blockchain technology.
+We're on a mission to both transform the way people experience blockchain technology, and help them shape it. 
+As validators, we provide tools for low-cost and low-effort node management for anyone wanting to onboard next-generation blockchain technology.
 
 --- 
 # Usage of VATZ
 
-## How to get started with **VATZ**?
-Please follow [Installation guide](docs/installation.md) to install and start VATZ.
+## How to get started with VATZ
+Check out the[Installation Guide](docs/installation.md) to install and start using VATZ.
 
-## How to use **VATZ** CLIs?
-Please check [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
+## How to use **VATZ** CLIs
+Refer to the [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
 
 ## Official Plugins
-> We are developing official plugins together for easier operation including basic monitoring metrics.
+> Our team is developing official plugins for easier operation, including basic monitoring metrics. 
+
 
 ### 1. [vatz-plugin-sysutil](https://github.com/dsrvlabs/vatz-plugin-sysutil)
-vatz-plugin-sysutil is **VATZ** plugin for system utilization monitoring such as 
+vatz-plugin-sysutil is **VATZ** plugin for system utilization monitoring, i.e.:
 - CPU
 - DISK
 - Memory
+- Network Traffic
 
 ### 2. [vatz-plugin-comoshub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
 vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for followings:
@@ -72,10 +78,8 @@ vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for follow
 - Node Governance Alarm
 
 ## Community Plugins
-> We are open to everyone who would like to share their plugins together for easier operations on the nodes. <br>
-> Please, register your own developed `VATZ` plugins on Community Plugins
-
-For further information, check [Community plugins](docs/community_plugins.md)
+> We encourage everyone to share their plugins to make node operating easier.
+> Please register your developed VATZ plugins on[Community Plugins](docs/community_plugins.md)!
 
 ---
 # Release Note
@@ -87,16 +91,16 @@ Please check the Release Note for details of the latest releases.
 
 ---
 
-# Feel free to share your feedback
-We're constantly striving to make better open-source all together.
-Please, share your thoughts or any feedback regarding **VATZ** Project.
-You can start with registering an [issue](https://github.com/dsrvlabs/vatz/issues), if there's one you think. <br>
-Contribute to **VATZ** project too!!
+# We welcome your feedback
+We're constantly striving to enhance and build on open-source resources.
+Feel free to share your thoughts or feedback with us regarding VATZ.
+You can start by registering any [issues](https://github.com/dsrvlabs/vatz/issues) you might find! <br>
+Let’s continue building VATZ together! 
 
 ## Contributing
 
 **VATZ** welcomes contributions! If you are looking to contribute, please check the following documents.
-- [Contributing](docs/contributing.md) explains what kinds of contributions we welcome and how to contribute.
+- [Contributing](docs/contributing.md) explains what kinds of contributions we look for and how to contribute.
 - [Project Workflow Instructions](docs/workflow.md) explains how to build and test.
 
 ## License
@@ -111,9 +115,13 @@ included in our repository in the `LICENSE` file.
 
 
 # Contact us
-Please, contact [us](mailto:validator@dsrvlabs.com) if you need any further information about **VATZ**.
+Please don’t hesitate to contact [us](mailto:validator@dsrvlabs.com) if you need any further information about **VATZ**.
 
-**DSRV** is a blockchain infrastructure company that provides powerful and easy-to-use solutions to enable developers and enterprises to become architects of the future. Visit [DSRV](https://www.dsrvlabs.com/), if you are interested in various products we build for the Web 3.0 developers.
+## Who are we
+
+A leading blockchain technology company, **[DSRV](https://www.dsrvlabs.com/)** validates for 40+ global networks and provides infrastructure solutions for next-level building. This includes All That Node (enterprise-grade NaaS supporting 24+ protocols) and WELLDONE Studio (multi-chain product suite for developers and retail users alike).
+
+Our ethos is to adapt to what the market and community need; our mission to advance the next internet and enable every player to build what they envision.
 
 [<img alt="Homepage" src="https://user-images.githubusercontent.com/63234878/210315637-2d30efdd-5b9e-463e-8731-571916a6e1e3.svg" width="50" height="50" />](https://www.dsrvlabs.com/)
 [<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://medium.com/dsrv)
