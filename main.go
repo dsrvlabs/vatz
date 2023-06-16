@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dsrvlabs/vatz/cmd"
@@ -17,6 +18,12 @@ func main() {
 	rootCmd := cmd.CreateRootCommand()
 
 	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+		if strings.Contains(err.Error(), "open default.yaml") {
+			msg := "Please, Check config file default.yaml path or initialize VATZ with command `vatz init` to create config file `default.yaml`."
+			log.Error().Str("module", "config").Msg(msg)
+		} else {
+			log.Error().Msgf("VATZ CLI command Error: %s", err)
+		}
+		//panic(err)
 	}
 }
