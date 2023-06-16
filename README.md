@@ -56,7 +56,7 @@ As validators, we provide tools for low-cost and low-effort node management for 
 Check out the[Installation Guide](docs/installation.md) to install and start using VATZ.
 
 ## How to use **VATZ** CLIs
-Refer to the [VATZ CLIs guide](./docs/cli.md) to find available CLI arguments.
+Refer to the [VATZ CLIs guide](docs/cli.md) to find available CLI arguments.
 
 ## Official Plugins
 > Our team is developing official plugins for easier operation, including basic monitoring metrics. 
