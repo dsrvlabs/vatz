@@ -6,8 +6,8 @@
 
   <p> 
     <br>
-    <img alt="Version"  src="https://img.shields.io/badge/version-v1.0--beta--rc.1-blue.svg?cacheSeconds=2592000"  />    
-    <a href="https://www.apache.org/licenses/LICENSE-2.0"  target="_blank"><img alt="License: Apache 2.0"  src="https://img.shields.io/badge/License-Apache 2.0-yellow.svg" /></a> 
+    <img alt="Version"  src="https://img.shields.io/badge/version-v1.0.0-blue.svg?cacheSeconds=2592000"  />    
+    <a href="https://www.gnu.org/licenses/lgpl-3.0.en.html"  target="_blank"><img alt="License: GPL 3.0"  src="https://img.shields.io/badge/License-GPL 3.0-yellow.svg" /></a> 
   </p> 
 </div> 
 
