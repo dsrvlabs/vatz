@@ -277,6 +277,8 @@ func createPluginCommand() *cobra.Command {
 		Short: "Plugin commands",
 	}
 
+	cmd.PersistentFlags().StringVar(&configFile, "config", defaultFlagConfig, "VATZ config file.")
+
 	statusCommand.PersistentFlags().StringVar(&vatzRPC, "rpc", defaultRPC, "RPC address of Vatz")
 	startCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
 	startCommand.PersistentFlags().StringP("args", "a", "", "Arguments")
