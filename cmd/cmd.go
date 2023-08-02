@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	tp "github.com/dsrvlabs/vatz/manager/types"
-	"github.com/spf13/cobra"
-
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	ex "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
+	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -33,6 +32,8 @@ var (
 // CreateRootCommand creates root command of Cobra.
 func CreateRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{}
+	rootCmd.PersistentFlags().BoolP("debug", "d", true, "Set Log level to Debug.")
+
 	rootCmd.AddCommand(createInitCommand(tp.LIVE))
 	rootCmd.AddCommand(createStartCommand())
 	rootCmd.AddCommand(createPluginCommand())

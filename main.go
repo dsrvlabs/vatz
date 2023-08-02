@@ -1,17 +1,32 @@
 package main
 
 import (
-	"os"
-	"strings"
-	"time"
-
+	"flag"
 	"github.com/dsrvlabs/vatz/cmd"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"strings"
 )
 
+const defaultLogLevel = zerolog.InfoLevel
+
+var logLevel zerolog.Level
+
 func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	debugPtr := flag.Bool("debug", false, "Enable debug mode")
+
+	// Parse the command-line flags
+	flag.Parse()
+
+	// If the "debug" flag is set to true, set the log level to DebugLevel
+	if *debugPtr {
+		utils.SetGlobalLogLevel(zerolog.DebugLevel)
+	} else {
+		utils.SetGlobalLogLevel(defaultLogLevel)
+	}
+
+	log.Logger = log.Output(utils.GetConsoleWriter())
 }
 
 func main() {
@@ -26,4 +41,5 @@ func main() {
 		}
 		//panic(err)
 	}
+
 }

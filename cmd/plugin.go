@@ -245,7 +245,9 @@ var (
 			}
 
 			log.Info().Str("module", "plugin").Msgf("List plugins")
-
+			log.Debug().Str("test", "test").Msg("This is a test")
+			log.Error().Str("test", "test").Msg("This is a test")
+			log.Warn().Str("test", "test").Msg("This is a test")
 			mgr := plugin.NewManager(pluginDir)
 			plugins, err := mgr.List()
 			if err != nil {

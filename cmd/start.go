@@ -19,7 +19,6 @@ import (
 	"github.com/dsrvlabs/vatz/monitoring/prometheus"
 	"github.com/dsrvlabs/vatz/rpc"
 	"github.com/dsrvlabs/vatz/utils"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -33,17 +32,7 @@ func createStartCommand() *cobra.Command {
 		Use:   "start",
 		Short: "start VATZ",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if logfile == defaultFlagLog {
-				log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
-			} else {
-				f, err := os.OpenFile(logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
-				if err != nil {
-					return err
-				}
-
-				log.Logger = log.Output(zerolog.ConsoleWriter{Out: f, TimeFormat: time.RFC3339})
-			}
-			return nil
+			return utils.SetLog(logfile, defaultFlagLog)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Info().Str("module", "main").Msg("start")
