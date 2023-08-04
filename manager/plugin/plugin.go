@@ -125,7 +125,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 }
 
 func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
-	log.Info().Str("module", "plugin").Msgf("List")
+	log.Debug().Str("module", "plugin").Msgf("List")
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {

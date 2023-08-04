@@ -231,7 +231,7 @@ func (p *pluginDB) UpdatePluginEnabling(name string, isEnabled bool) error {
 }
 
 func (p *pluginDB) List() ([]pluginEntry, error) {
-	log.Info().Str("module", "db").Msg("List")
+	log.Debug().Str("module", "db").Msg("List")
 
 	q := `SELECT name, is_enabled, repository, binary_location, version, installed_at FROM plugin`
 	rows, err := p.conn.QueryContext(p.ctx, q)
@@ -278,7 +278,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 	chanErr := make(chan error, 1)
 
 	once.Do(func() {
-		log.Info().Str("module", "db").Msg("Create DB Instance")
+		log.Debug().Str("module", "db").Msg("Create DB Instance")
 
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
