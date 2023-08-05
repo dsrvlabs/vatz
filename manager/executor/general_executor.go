@@ -2,7 +2,8 @@ package executor
 
 import (
 	"context"
-	"log"
+	"github.com/rs/zerolog"
+	"os"
 	"sync"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
@@ -10,6 +11,7 @@ import (
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -19,7 +21,7 @@ type executor struct {
 
 func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) error {
 	executeMethods := plugin.ExecutableMethods
-
+	log.Debug().Str("module", "executor").Msg("Execute is called.")
 	for _, method := range executeMethods {
 		optionMap := map[string]interface{}{
 			"plugin_name": plugin.Name,
@@ -27,7 +29,8 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 
 		options, err := structpb.NewStruct(optionMap)
 		if err != nil {
-			log.Fatalf("failed to check target structpb: %v", err)
+			log.Error().Str("module", "executor").Msgf("failed to check target structpb: %v", err)
+			os.Exit(1)
 		}
 
 		//TODO: Please, add new logic to add param into Map.
@@ -37,12 +40,19 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 
 		executeInfo, err := structpb.NewStruct(methodMap)
 		if err != nil {
-			log.Fatalf("failed to check command structpb: %v", err)
+			log.Error().Str("module", "executor").Msgf("failed to check target structpb: %v", err)
+			os.Exit(1)
 		}
 
 		req := &pluginpb.ExecuteRequest{
 			ExecuteInfo: executeInfo,
 			Options:     options,
+		}
+
+		if zerolog.GlobalLevel() == zerolog.DebugLevel {
+			log.Debug().Str("module", "executor").Msgf("request (Plugin Name: %s, Method Name: %s)", plugin.Name, method.Name)
+		} else {
+			log.Info().Str("module", "executor").Msgf("Executor send request to %s", plugin.Name)
 		}
 
 		resp, err := s.execute(ctx, gClient, req)
@@ -70,6 +80,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 }
 
 func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, in *pluginpb.ExecuteRequest) (*pluginpb.ExecuteResponse, error) {
+	log.Debug().Str("module", "executor").Msgf("func execute")
 	resp, err := gClient.Execute(ctx, in)
 	if err != nil || resp == nil {
 		return &pluginpb.ExecuteResponse{
@@ -80,10 +91,18 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 			ResourceType: "ResourceType Unknown",
 		}, nil
 	}
+
+	if zerolog.GlobalLevel() == zerolog.DebugLevel {
+		log.Debug().Str("module", "executor").Msgf("response (res message:%s, res State: %s) ", resp.Message, resp.State)
+	} else {
+		log.Info().Str("module", "executor").Msgf("response: %s", resp.State)
+	}
+
 	return resp, err
 }
 
 func (s *executor) updateState(unique string, resp *pluginpb.ExecuteResponse) (bool, tp.StateFlag) {
+	log.Debug().Str("module", "executor").Msgf("func updateState")
 	isFirstRun := false
 	exeResp := tp.StateFlag{State: resp.GetState(), Severity: resp.GetSeverity()}
 	if _, ok := s.status.Load(unique); !ok {

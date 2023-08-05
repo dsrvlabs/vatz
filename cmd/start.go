@@ -28,17 +28,17 @@ import (
 )
 
 func createStartCommand() *cobra.Command {
+	log.Debug().Str("module", "cmd > start").Msg("start command")
 	cmd := &cobra.Command{
 		Use:   "start",
 		Short: "start VATZ",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			log.Debug().Str("module", "cmd start").Msgf("Set logfile %s", logfile)
 			return utils.SetLog(logfile, defaultFlagLog)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Info().Str("module", "main").Msg("start")
-			log.Info().Str("module", "main").Msgf("load config %s", configFile)
-			log.Info().Str("module", "main").Msgf("logfile %s", logfile)
 
+			log.Debug().Str("module", "main").Msgf("load config %s", configFile)
 			_, err := config.InitConfig(configFile)
 			if err != nil {
 				log.Error().Str("module", "config").Msgf("loadConfig Error: %s", err)
@@ -62,7 +62,7 @@ func createStartCommand() *cobra.Command {
 }
 
 func initiateServer(ch <-chan os.Signal) error {
-	log.Info().Str("module", "main").Msgf("Initialize Servers: %s", "VATZ Manager")
+	log.Info().Str("module", "main").Msg("Initialize Server")
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -78,15 +78,15 @@ func initiateServer(ch <-chan os.Signal) error {
 	addr := fmt.Sprintf(":%d", vatzConfig.Port)
 	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatchers)
 	if err != nil {
-		log.Error().Str("module", "main").Msgf("VATZHealthCheck Error: %s", err)
+		log.Error().Str("module", "cmd > start").Msgf("VATZHealthCheck Error: %s", err)
 	}
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Error().Str("module", "main").Msgf("VATZ Listener Error: %s", err)
+		log.Error().Str("module", "cmd > start").Msgf("VATZ Listener Error: %s", err)
 	}
 
-	log.Info().Str("module", "main").Msgf("VATZ Listening Port: %s", addr)
+	log.Info().Str("module", "main").Msgf("Start VATZ Server on Listening Port: %s", addr)
 	startExecutor(cfg.PluginInfos, ch)
 
 	rpcServ := rpc.NewRPCService()
@@ -153,11 +153,11 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 			if pluginState.IsEnabled {
 				if okToSend == true {
 					if pluginStateErr != nil {
-						log.Error().Str("module", "main").Msgf("Executor Error: %s", pluginStateErr)
+						log.Error().Str("module", "cmd > start").Msgf("Executor Error: %s", pluginStateErr)
 					}
 					err := executor.Execute(ctx, singleClient, plugin, dispatchers)
 					if err != nil {
-						log.Error().Str("module", "main").Msgf("Executor Error: %s", err)
+						log.Error().Str("module", "cmd > start").Msgf("Executor Error: %s", err)
 					}
 				}
 			}
