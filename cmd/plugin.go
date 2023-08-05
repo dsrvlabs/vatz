@@ -37,7 +37,8 @@ var (
 			return err
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/v1/plugin_status", vatzRPC), nil)
+			statusRequest := fmt.Sprintf("%s/v1/plugin_status", vatzRPC)
+			req, err := http.NewRequest(http.MethodGet, statusRequest, nil)
 			if err != nil {
 				return err
 			}
@@ -48,6 +49,8 @@ var (
 				log.Error().Str("module", "plugin").Err(err)
 				return err
 			}
+
+			log.Debug().Str("module", "plugin").Msgf("Plugin(s) status is requested to  %s.", statusRequest)
 
 			respData, err := io.ReadAll(resp.Body)
 			if err != nil {
@@ -69,7 +72,7 @@ var (
 				return err
 			}
 
-			fmt.Println("***** Plugin status *****")
+			fmt.Println("***** Plugin Status *****")
 			for i, plugin := range statusResp.PluginStatus {
 				fmt.Printf("%d: %s [%s]\n", i+1, plugin.PluginName, plugin.Status)
 			}
@@ -94,20 +97,22 @@ var (
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Install new plugin %s at %s.", args[0], pluginDir)
+			log.Debug().Str("module", "plugin").Msgf("Install new plugin %s at %s.", args[0], pluginDir)
 
 			pluginVersion := defaultVersion
 			if viper.GetString("plugin_version") != "" {
 				pluginVersion = viper.GetString("plugin_version")
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Installing plugin version is %s.", pluginVersion)
+			log.Debug().Str("module", "plugin").Msgf("Installing plugin version is %s.", pluginVersion)
 			mgr := plugin.NewManager(pluginDir)
 			err = mgr.Install(args[0], args[1], pluginVersion)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
 			}
+
+			log.Info().Str("module", "plugin").Msgf("A new plugin %s is successfully installed.", args[1])
 			return nil
 		},
 	}
@@ -127,7 +132,7 @@ var (
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Uninstall a plugin %s from %s", args[0], pluginDir)
+			log.Debug().Str("module", "plugin").Msgf("Uninstall a plugin %s from %s", args[0], pluginDir)
 
 			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.
@@ -137,6 +142,7 @@ var (
 				log.Error().Str("module", "plugin").Err(err)
 				return err
 			}
+			log.Info().Str("module", "plugin").Msgf("Plugin %s is successfully uninstalled from %s", args[0], pluginDir)
 			return nil
 		},
 	}
@@ -171,7 +177,7 @@ var (
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("Plugin log redirect to %s", logfile)
+			log.Debug().Str("module", "plugin").Msgf("Plugin log redirect to %s", logfile)
 
 			mgr := plugin.NewManager(pluginDir)
 			return mgr.Start(pluginName, exeArgs, f)
@@ -215,7 +221,7 @@ var (
 				return err
 			}
 
-			log.Info().Str("module", "plugin").Msgf("enable installed plugin %s at %s", args[0], pluginDir)
+			log.Debug().Str("module", "plugin").Msgf("enable installed plugin %s at %s", args[0], pluginDir)
 
 			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.

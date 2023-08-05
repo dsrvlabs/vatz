@@ -72,7 +72,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 		fixedRepo = strTokens[0]
 	}
 
-	log.Info().Str("module", "plugin").Msgf("Install new plugin %s", fixedRepo)
+	log.Debug().Str("module", "plugin").Msgf("Install new plugin %s", fixedRepo)
 
 	var stdout, stderr bytes.Buffer
 
@@ -121,6 +121,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 		return err
 	}
 
+	log.Debug().Str("module", "plugin").Msgf("A new plugin %s from %s is installed at %s.", name, repo, newPath)
 	return nil
 }
 
@@ -158,7 +159,7 @@ func (m *vatzPluginManager) List() ([]VatzPlugin, error) {
 }
 
 func (m *vatzPluginManager) Uninstall(name string) error {
-	log.Info().Str("module", "plugin").Msgf("List")
+	log.Debug().Str("module", "plugin").Msgf("Uninstall")
 	ps, err := m.findProcessByName(name)
 	if err != nil {
 		if !strings.Contains(err.Error(), "can't find the process") {
@@ -211,7 +212,7 @@ func (m *vatzPluginManager) Uninstall(name string) error {
 }
 
 func (m *vatzPluginManager) Get(name string) (VatzPlugin, error) {
-	log.Info().Str("module", "plugin").Msgf("Get %s", name)
+	log.Debug().Str("module", "plugin").Msgf("Get %s", name)
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
@@ -256,7 +257,7 @@ func (m *vatzPluginManager) Update(pluginID string, isEnabled bool) error {
 }
 
 func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
-	log.Info().Str("module", "plugin").Msgf("Start plugin %s", name)
+	log.Debug().Str("module", "plugin").Msgf("Start plugin %s", name)
 
 	dbRd, err := newReader(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
@@ -275,12 +276,12 @@ func (m *vatzPluginManager) Start(name, args string, logfile *os.File) error {
 	splits := strings.FieldsFunc(args, f)
 	cmd := exec.Command(e.BinaryLocation, splits...)
 	cmd.Stdout = logfile
-
+	log.Info().Str("module", "plugin").Msgf("Plugin %s is successfully started.", name)
 	return cmd.Start()
 }
 
 func (m *vatzPluginManager) Stop(name string) error {
-	log.Info().Str("module", "plugin").Msgf("Stop plugin %s", name)
+	log.Debug().Str("module", "plugin").Msgf("Stop plugin %s", name)
 
 	ps, err := m.findProcessByName(name)
 	if err != nil {
@@ -292,12 +293,12 @@ func (m *vatzPluginManager) Stop(name string) error {
 		log.Error().Str("module", "plugin").Msgf("Stop > ps.Kill Error: %s", err)
 		return err
 	}
-
+	log.Info().Str("module", "plugin").Msgf("Plugin %s is successfully stopped.", name)
 	return nil
 }
 
 func (m *vatzPluginManager) findProcessByName(name string) (*process.Process, error) {
-	log.Info().Str("module", "plugin").Msgf("Find Process %s", name)
+	log.Debug().Str("module", "plugin").Msgf("Find Process %s", name)
 
 	processes, err := process.Processes()
 	if err != nil {
