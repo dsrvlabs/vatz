@@ -225,7 +225,7 @@ func InitConfig(configFile string) (*Config, error) {
 
 	configOnce.Do(func() {
 		// TODO: How do I add default values?
-		log.Info().Str("module", "config").Msgf("Load Config %s", configFile)
+		log.Debug().Str("module", "config").Msgf("Load Config %s", configFile)
 
 		defer wg.Done()
 		var configData []byte

@@ -17,7 +17,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 		Use:   "init",
 		Short: "init",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Info().Str("module", "main").Msg("init")
+			log.Debug().Str("module", "main").Msg("init")
 
 			template := `vatz_protocol_info:
   home_path: "%s"
@@ -130,8 +130,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 			}
 
 			template = fmt.Sprintf(template, homePath)
-			log.Info().Str("module", "main").Msgf("home path %s", homePath)
-			log.Info().Str("module", "main").Msgf("create file %s", filename)
+			log.Debug().Str("module", "main").Msgf("home path %s", homePath)
+			log.Debug().Str("module", "main").Msgf("create file %s", filename)
 
 			f, err := os.Create(filename)
 			if err != nil {
@@ -159,7 +159,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 				return err
 			}
 
-			log.Info().Str("module", "main").Msgf("Plugin dir %s", pluginDir)
+			log.Debug().Str("module", "main").Msgf("Plugin dir %s", pluginDir)
 			mgr := plugin.NewManager(pluginDir)
 			return mgr.Init(initializer)
 		},

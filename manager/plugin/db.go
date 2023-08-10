@@ -109,7 +109,7 @@ func (p *pluginDB) MigratePluginTable() error {
 }
 
 func (p *pluginDB) AddPlugin(e pluginEntry) error {
-	log.Info().Str("module", "db").Msg("AddPlugin")
+	log.Debug().Str("module", "db").Msg("AddPlugin")
 
 	opts := &sql.TxOptions{
 		Isolation: sql.LevelDefault,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS plugin (
 }
 
 func (p *pluginDB) DeletePlugin(name string) error {
-	log.Info().Str("module", "db").Msg("DeletePlugin")
+	log.Debug().Str("module", "db").Msgf("Uninstall Plugin %s", name)
 
 	opts := &sql.TxOptions{Isolation: sql.LevelDefault}
 	tx, err := p.conn.BeginTx(p.ctx, opts)
@@ -193,7 +193,7 @@ func (p *pluginDB) DeletePlugin(name string) error {
 
 func (p *pluginDB) UpdatePluginEnabling(name string, isEnabled bool) error {
 	// TODO: 1. Set best identifier for plugins either of Plugin_id or Name
-	log.Info().Str("module", "db").Msg("UpdatePlugin")
+	log.Debug().Str("module", "db").Msg("UpdatePlugin")
 
 	response := "disabled"
 	if isEnabled {
@@ -225,13 +225,13 @@ func (p *pluginDB) UpdatePluginEnabling(name string, isEnabled bool) error {
 		return err
 	}
 
-	log.Info().Str("module", "db").Msgf("Plugin %s has been updated: %s.", name, response)
+	log.Info().Str("module", "db").Msgf("Plugin %s is %s.", name, response)
 
 	return nil
 }
 
 func (p *pluginDB) List() ([]pluginEntry, error) {
-	log.Info().Str("module", "db").Msg("List")
+	log.Debug().Str("module", "db").Msg("List")
 
 	q := `SELECT name, is_enabled, repository, binary_location, version, installed_at FROM plugin`
 	rows, err := p.conn.QueryContext(p.ctx, q)
@@ -257,7 +257,7 @@ func (p *pluginDB) List() ([]pluginEntry, error) {
 }
 
 func (p *pluginDB) Get(name string) (*pluginEntry, error) {
-	log.Info().Str("module", "db").Msgf("Get %s", name)
+	log.Debug().Str("module", "db").Msgf("Get %s", name)
 
 	q := `SELECT name, is_enabled, repository, binary_location, version, installed_at FROM plugin WHERE name=?`
 	e := pluginEntry{}
@@ -278,7 +278,7 @@ func newWriter(dbfile string) (dbWriter, error) {
 	chanErr := make(chan error, 1)
 
 	once.Do(func() {
-		log.Info().Str("module", "db").Msg("Create DB Instance")
+		log.Debug().Str("module", "db").Msg("Create DB Instance")
 
 		ctx := context.Background()
 		conn, err := getDBConnection(ctx, dbfile)
@@ -345,7 +345,7 @@ func getDBConnection(ctx context.Context, dbfile string) (*sql.Conn, error) {
 }
 
 func initDB(dbfile string) error {
-	log.Info().Str("module", "db").Msgf("initDB %s", dbfile)
+	log.Info().Str("module", "db").Msgf("Initialize DB %s", dbfile)
 
 	if db != nil {
 		db.conn.Close()
@@ -354,7 +354,7 @@ func initDB(dbfile string) error {
 		once = sync.Once{}
 	}
 
-	log.Info().Str("module", "db").Msg("Remove old DB file")
+	log.Debug().Str("module", "db").Msg("Remove old DB file")
 
 	err := os.Remove(dbfile)
 	if err != nil && !os.IsNotExist(err) {
@@ -367,7 +367,7 @@ func initDB(dbfile string) error {
 		_ = os.Mkdir(path, 0755)
 	}
 
-	log.Info().Str("module", "db").Msg("Create new DB file")
+	log.Debug().Str("module", "db").Msg("Create new DB file")
 
 	f, err := os.Create(dbfile)
 	if err != nil {

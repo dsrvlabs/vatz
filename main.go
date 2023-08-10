@@ -1,22 +1,22 @@
 package main
 
 import (
-	"os"
-	"strings"
-	"time"
-
 	"github.com/dsrvlabs/vatz/cmd"
-	"github.com/rs/zerolog"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
+	"strings"
 )
 
+var rootCmd *cobra.Command
+
 func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	//Set to Log level to Info which reduce log that doesn't be recorded and save log volumes.
+	utils.InitializeLogger()
+	rootCmd = cmd.GetRootCommand()
 }
 
 func main() {
-	rootCmd := cmd.CreateRootCommand()
-
 	if err := rootCmd.Execute(); err != nil {
 		if strings.Contains(err.Error(), "open default.yaml") {
 			msg := "Please, Check config file default.yaml path or initialize VATZ with command `vatz init` to create config file `default.yaml`."
@@ -24,6 +24,5 @@ func main() {
 		} else {
 			log.Error().Msgf("VATZ CLI command Error: %s", err)
 		}
-		//panic(err)
 	}
 }
