@@ -1,0 +1,28 @@
+name: Coverage Test
+
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - name: Build Code
+        run: |
+          make build
+      - name: Run coverage test
+        run: |
+          make coverage
+      - name: Deny PR on test failure
+        if: failure()
+        run: |
+          echo "Coverage test failed. This PR cannot be merged."
+          exit 1
