@@ -7,9 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (c *prometheusManager) getPluginUp(plugins []config.Plugin, hostName string) (
-	pluginUp map[int]*prometheusValue,
-) {
+func (c *prometheusManager) getPluginUp(plugins []config.Plugin, hostName string) (pluginUp map[int]*prometheusValue) {
 	gClients := utils.GetClients(plugins)
 	pluginUp = make(map[int]*prometheusValue)
 

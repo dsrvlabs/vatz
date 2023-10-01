@@ -119,7 +119,11 @@ func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
 	grpcClients := utils.GetClients(pluginInfo.Plugins)
-	// TODO: Need updated with better way for Dynamic handlers
+
+	if len(grpcClients) == 0 {
+		log.Error().Str("module", "cmd:Start").Msg("No Plugins are set, Check your Configs.")
+		os.Exit(1)
+	}
 	for idx, singleClient := range grpcClients {
 		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
 	}

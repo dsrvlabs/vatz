@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -8,11 +9,42 @@ import (
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
 	"strconv"
+	"sync"
+	"time"
 )
 
 func MakeUniqueValue(pName, pAddr string, pPort int) string {
 	return pName + pAddr + strconv.Itoa(pPort)
+}
+
+func ParseBool(str string) bool {
+	switch str {
+	case "true", "1", "on":
+		return true
+	case "false", "0", "off":
+		return false
+	default:
+		return false
+	}
+}
+
+/*
+	Those funcs are internal purpose only.
+
+func: ConvertHashToInput
+func: UniqueHashValue
+*/
+func ConvertHashToInput(hashValue string) string {
+	// Decode the hash value from a hexadecimal string to a byte array
+	hashBytes, _ := hex.DecodeString(hashValue)
+
+	// Convert the byte array to a string
+	originalString := string(hashBytes)
+
+	return originalString
 }
 
 func UniqueHashValue(inputString string) string {
@@ -29,50 +61,58 @@ func UniqueHashValue(inputString string) string {
 	return hashString
 }
 
-func ParseBool(str string) bool {
-	switch str {
-	case "true", "1", "on":
-		return true
-	case "false", "0", "off":
-		return false
-	default:
-		return false
-	}
-}
-
-// This is internal purpose
-func ConvertHashToInput(hashValue string) string {
-	// Decode the hash value from a hexadecimal string to a byte array
-	hashBytes, _ := hex.DecodeString(hashValue)
-
-	// Convert the byte array to a string
-	originalString := string(hashBytes)
-
-	return originalString
-}
-
 func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
-	var grpcClients []pluginpb.PluginClient
+	var (
+		grpcClients      []pluginpb.PluginClient
+		wg               sync.WaitGroup
+		connectionCancel = 10
+	)
 
-	if len(plugins) > 0 {
-		for _, plugin := range plugins {
-			conn, err := grpc.Dial(fmt.Sprintf("%s:%d", plugin.Address, plugin.Port), grpc.WithInsecure())
+	for _, plugin := range plugins {
+		wg.Add(1)
+		pluginAddress := fmt.Sprintf("%s:%d", plugin.Address, plugin.Port)
+		go func(addr string) {
+			defer wg.Done()
+			conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
 				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", plugin.Name, err)
 			}
+			// Create a context for the connection check.
 			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
-		}
-	} else {
-		// TODO: Is this really neccessary???
-		defaultConnectedTarget := "localhost:9091"
-		conn, err := grpc.Dial(defaultConnectedTarget, grpc.WithInsecure())
-		if err != nil {
-			log.Fatal().Str("module", "main").Msgf("gRPC Dial Error: %s", err)
-		}
+			executeTicker := time.Duration(connectionCancel) * time.Second
+			ctx, cancel := context.WithTimeout(context.Background(), executeTicker)
+			defer cancel()
 
-		//TODO: Please, Create a better client functions with static
-		grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+			// Block until the connection is ready or until the context times out.
+			if err := waitForConnection(ctx, conn); err != nil {
+				fmt.Printf("Connection to %s failed: %v\n", addr, err)
+				return
+			}
+
+			if conn.GetState() == connectivity.Ready {
+				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", plugin.Name, addr)
+			}
+		}(pluginAddress)
 	}
+	wg.Wait()
 
 	return grpcClients
+}
+
+// waitForConnection blocks until the gRPC connection is ready or the context times out.
+func waitForConnection(ctx context.Context, conn *grpc.ClientConn) error {
+	for {
+		state := conn.GetState()
+		if state == connectivity.Ready {
+			return nil // Connection is ready
+		}
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("Connection timeout")
+		default:
+			// Wait a short period before checking the connection state again.
+			time.Sleep(100 * time.Millisecond)
+		}
+	}
 }
