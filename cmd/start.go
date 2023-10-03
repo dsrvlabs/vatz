@@ -11,7 +11,6 @@ import (
 
 	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginPb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	config "github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
@@ -117,7 +116,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	return nil
 }
 
-func startExecutor(grpcClients []pluginpb.PluginClient, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+func startExecutor(grpcClients []pluginPb.PluginClient, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
 	if len(grpcClients) == 0 {
