@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -18,6 +19,7 @@ type prometheusManager struct {
 
 type prometheusManagerCollector struct {
 	prometheusManager *prometheusManager
+	grpcClients       []pluginpb.PluginClient
 }
 
 type prometheusValue struct {
@@ -26,11 +28,11 @@ type prometheusValue struct {
 	HostName   string
 }
 
-func newPrometheusManager(protocol string, reg prometheus.Registerer) *prometheusManager {
+func newPrometheusManager(protocol string, reg prometheus.Registerer, grpcClients []pluginpb.PluginClient) *prometheusManager {
 	c := &prometheusManager{
 		Protocol: protocol,
 	}
-	cc := prometheusManagerCollector{prometheusManager: c}
+	cc := prometheusManagerCollector{prometheusManager: c, grpcClients: grpcClients}
 	prometheus.WrapRegistererWith(prometheus.Labels{"protocol": protocol}, reg).MustRegister(cc)
 	return c
 }
@@ -48,7 +50,7 @@ func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 		)
 	)
 
-	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins, config.GetConfig().Vatz.NotificationInfo.HostName)
+	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins, config.GetConfig().Vatz.NotificationInfo.HostName, cc.grpcClients)
 
 	for port, value := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
@@ -62,7 +64,7 @@ func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func InitPrometheusServer(addr, port, protocol string) error {
+func InitPrometheusServer(addr, port, protocol string, grpcClients []pluginpb.PluginClient) error {
 	log.Info().Str("module", "main").Msgf("start metric server: %s:%s", addr, port)
 
 	reg := prometheus.NewPedanticRegistry()
@@ -70,7 +72,7 @@ func InitPrometheusServer(addr, port, protocol string) error {
 	var prometheusOnce sync.Once
 
 	prometheusOnce.Do(func() {
-		newPrometheusManager(protocol, reg)
+		newPrometheusManager(protocol, reg, grpcClients)
 	})
 
 	reg.MustRegister(

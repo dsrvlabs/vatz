@@ -109,7 +109,7 @@ func waitForConnection(ctx context.Context, conn *grpc.ClientConn) error {
 
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("Connection timeout")
+			return fmt.Errorf("Connection is timed out. Please Check your plugin status. ")
 		default:
 			// Wait a short period before checking the connection state again.
 			time.Sleep(100 * time.Millisecond)

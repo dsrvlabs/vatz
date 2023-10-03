@@ -11,6 +11,7 @@ import (
 
 	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
 	pluginPb "github.com/dsrvlabs/vatz-proto/plugin/v1"
+	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/api"
 	config "github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
@@ -87,7 +88,8 @@ func initiateServer(ch <-chan os.Signal) error {
 	}
 
 	log.Info().Str("module", "main").Msgf("Start VATZ Server on Listening Port: %s", addr)
-	startExecutor(cfg.PluginInfos, ch)
+	grpcClients := utils.GetClients(cfg.PluginInfos.Plugins)
+	startExecutor(grpcClients, cfg.PluginInfos, ch)
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
@@ -100,9 +102,9 @@ func initiateServer(ch <-chan os.Signal) error {
 				monitoringInfo.Prometheus.Address,
 				strconv.Itoa(monitoringInfo.Prometheus.Port),
 				vatzConfig.ProtocolIdentifier,
-			)
+				grpcClients)
 		} else {
-			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier)
+			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier, grpcClients)
 		}
 	}
 
@@ -115,11 +117,9 @@ func initiateServer(ch <-chan os.Signal) error {
 	return nil
 }
 
-func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+func startExecutor(grpcClients []pluginpb.PluginClient, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
-	grpcClients := utils.GetClients(pluginInfo.Plugins)
-
 	if len(grpcClients) == 0 {
 		log.Error().Str("module", "cmd:Start").Msg("No Plugins are set, Check your Configs.")
 		os.Exit(1)
