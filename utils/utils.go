@@ -65,20 +65,20 @@ func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
 	var (
 		grpcClients      []pluginpb.PluginClient
 		wg               sync.WaitGroup
+		mutex            sync.Mutex
 		connectionCancel = 10
 	)
 
 	for _, plugin := range plugins {
 		wg.Add(1)
 		pluginAddress := fmt.Sprintf("%s:%d", plugin.Address, plugin.Port)
-		go func(addr string) {
+
+		go func(addr string, name string) {
 			defer wg.Done()
 			conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
-				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", plugin.Name, err)
+				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", name, err)
 			}
-			// Create a context for the connection check.
-			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 			executeTicker := time.Duration(connectionCancel) * time.Second
 			ctx, cancel := context.WithTimeout(context.Background(), executeTicker)
 			defer cancel()
@@ -89,10 +89,14 @@ func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
 				return
 			}
 
+			// Create a context for the connection check.
+			mutex.Lock()
+			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 			if conn.GetState() == connectivity.Ready {
-				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", plugin.Name, addr)
+				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", name, addr)
 			}
-		}(pluginAddress)
+			mutex.Unlock()
+		}(pluginAddress, plugin.Name)
 	}
 	wg.Wait()
 
