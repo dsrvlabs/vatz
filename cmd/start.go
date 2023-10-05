@@ -102,7 +102,7 @@ func initiateServer(ch <-chan os.Signal) error {
 		} else {
 			prometheusPort = promPort
 		}
-		prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier, grpcClients)
+		prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier)
 	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")

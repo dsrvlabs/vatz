@@ -65,7 +65,6 @@ func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
 	var (
 		grpcClients      []pluginpb.PluginClient
 		wg               sync.WaitGroup
-		mutex            sync.Mutex
 		connectionCancel = 10
 	)
 
@@ -88,14 +87,11 @@ func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
 				fmt.Printf("Connection to %s failed: %v\n", addr, err)
 				return
 			}
-
 			// Create a context for the connection check.
-			mutex.Lock()
 			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
 			if conn.GetState() == connectivity.Ready {
 				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", name, addr)
 			}
-			mutex.Unlock()
 		}(pluginAddress, plugin.Name)
 	}
 	wg.Wait()
