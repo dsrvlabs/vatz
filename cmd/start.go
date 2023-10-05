@@ -65,18 +65,18 @@ func initiateServer(ch <-chan os.Signal) error {
 	log.Info().Str("module", "main").Msg("Initialize Server")
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	cfg := config.GetConfig()
 	dispatchers = dp.GetDispatchers(cfg.Vatz.NotificationInfo)
 
+	// Health Check
 	s := grpc.NewServer()
 	serv := api.GrpcService{}
 	managerPb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	vatzConfig := cfg.Vatz
-	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatchers)
+	// Health Check
+	addr := fmt.Sprintf(":%d", cfg.Vatz.Port)
+	err := healthChecker.VATZHealthCheck(cfg.Vatz.HealthCheckerSchedule, dispatchers)
 	if err != nil {
 		log.Error().Str("module", "cmd > start").Msgf("VATZHealthCheck Error: %s", err)
 	}
@@ -96,15 +96,13 @@ func initiateServer(ch <-chan os.Signal) error {
 	}()
 	monitoringInfo := cfg.Vatz.MonitoringInfo
 	if monitoringInfo.Prometheus.Enabled {
+		var prometheusPort string
 		if defaultPromPort == promPort {
-			prometheus.InitPrometheusServer(
-				monitoringInfo.Prometheus.Address,
-				strconv.Itoa(monitoringInfo.Prometheus.Port),
-				vatzConfig.ProtocolIdentifier,
-				grpcClients)
+			prometheusPort = strconv.Itoa(monitoringInfo.Prometheus.Port)
 		} else {
-			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier, grpcClients)
+			prometheusPort = promPort
 		}
+		prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier, grpcClients)
 	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
@@ -112,7 +110,6 @@ func initiateServer(ch <-chan os.Signal) error {
 	if err := s.Serve(listener); err != nil {
 		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
 	}
-
 	return nil
 }
 
