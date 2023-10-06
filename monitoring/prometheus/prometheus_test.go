@@ -36,6 +36,7 @@ func Test_newPrometheusManager(t *testing.T) {
 		args args
 		want *prometheusManager
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := newPrometheusManager(tt.args.protocol, tt.args.reg); !reflect.DeepEqual(got, tt.want) {

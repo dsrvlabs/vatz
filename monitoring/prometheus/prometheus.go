@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"github.com/dsrvlabs/vatz/manager/config"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -47,8 +48,8 @@ func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 			[]string{"plugin", "port", "host_name"}, nil,
 		)
 	)
-
-	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().PluginInfos.Plugins, config.GetConfig().Vatz.NotificationInfo.HostName)
+	gClientInfos := utils.GetClients(config.GetConfig().PluginInfos.Plugins)
+	upByPlugin := cc.prometheusManager.getPluginUp(config.GetConfig().Vatz.NotificationInfo.HostName, gClientInfos)
 
 	for port, value := range upByPlugin {
 		ch <- prometheus.MustNewConstMetric(
@@ -68,7 +69,6 @@ func InitPrometheusServer(addr, port, protocol string) error {
 	reg := prometheus.NewPedanticRegistry()
 
 	var prometheusOnce sync.Once
-
 	prometheusOnce.Do(func() {
 		newPrometheusManager(protocol, reg)
 	})

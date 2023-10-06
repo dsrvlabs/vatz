@@ -65,18 +65,18 @@ func initiateServer(ch <-chan os.Signal) error {
 	log.Info().Str("module", "main").Msg("Initialize Server")
 	_, cancel := context.WithCancel(context.Background())
 	defer cancel()
-
 	cfg := config.GetConfig()
 	dispatchers = dp.GetDispatchers(cfg.Vatz.NotificationInfo)
 
+	// Health Check
 	s := grpc.NewServer()
 	serv := api.GrpcService{}
 	managerPb.RegisterManagerServer(s, &serv)
 	reflection.Register(s)
 
-	vatzConfig := cfg.Vatz
-	addr := fmt.Sprintf(":%d", vatzConfig.Port)
-	err := healthChecker.VATZHealthCheck(vatzConfig.HealthCheckerSchedule, dispatchers)
+	// Health Check
+	addr := fmt.Sprintf(":%d", cfg.Vatz.Port)
+	err := healthChecker.VATZHealthCheck(cfg.Vatz.HealthCheckerSchedule, dispatchers)
 	if err != nil {
 		log.Error().Str("module", "cmd > start").Msgf("VATZHealthCheck Error: %s", err)
 	}
@@ -87,7 +87,8 @@ func initiateServer(ch <-chan os.Signal) error {
 	}
 
 	log.Info().Str("module", "main").Msgf("Start VATZ Server on Listening Port: %s", addr)
-	startExecutor(cfg.PluginInfos, ch)
+	grpcClients := utils.GetClients(cfg.PluginInfos.Plugins)
+	startExecutor(grpcClients, cfg.PluginInfos, ch)
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
@@ -95,15 +96,13 @@ func initiateServer(ch <-chan os.Signal) error {
 	}()
 	monitoringInfo := cfg.Vatz.MonitoringInfo
 	if monitoringInfo.Prometheus.Enabled {
+		var prometheusPort string
 		if defaultPromPort == promPort {
-			prometheus.InitPrometheusServer(
-				monitoringInfo.Prometheus.Address,
-				strconv.Itoa(monitoringInfo.Prometheus.Port),
-				vatzConfig.ProtocolIdentifier,
-			)
+			prometheusPort = strconv.Itoa(monitoringInfo.Prometheus.Port)
 		} else {
-			prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, promPort, vatzConfig.ProtocolIdentifier)
+			prometheusPort = promPort
 		}
+		prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier)
 	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
@@ -111,17 +110,18 @@ func initiateServer(ch <-chan os.Signal) error {
 	if err := s.Serve(listener); err != nil {
 		log.Panic().Str("module", "main").Msgf("Serve Error: %s", err)
 	}
-
 	return nil
 }
 
-func startExecutor(pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+func startExecutor(grpcClients []utils.GClientWithPlugin, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
-	grpcClients := utils.GetClients(pluginInfo.Plugins)
-	// TODO: Need updated with better way for Dynamic handlers
-	for idx, singleClient := range grpcClients {
-		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
+	if len(grpcClients) == 0 {
+		log.Error().Str("module", "cmd:Start").Msg("No Plugins are set, Check your Configs.")
+		os.Exit(1)
+	}
+	for _, client := range grpcClients {
+		go multiPluginExecutor(client.PluginInfo, client.GRPCClient, isOkayToSend, quit)
 	}
 }
 
