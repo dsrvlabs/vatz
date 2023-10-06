@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -94,12 +95,12 @@ func GetClients(plugins []config.Plugin) []GClientWithPlugin {
 
 			// Block until the connection is ready or until the context times out.
 			if err := waitForConnection(ctx, conn); err != nil {
-				fmt.Printf("Connection to %s failed: %v\n", addr, err)
+				log.Error().Str("module", "util").Msgf("Connection to %s (plugin:%s) failed: %v\n", addr, configPlugin.Name, err)
 				return
 			}
 
 			if conn.GetState() == connectivity.Ready {
-				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", configPlugin.Name, addr)
+				log.Info().Str("module", "util").Msgf("Client successfully connected to %s (plugin:%s).", addr, configPlugin.Name)
 			}
 		}(pluginAddress, plugin)
 	}
@@ -118,7 +119,8 @@ func waitForConnection(ctx context.Context, conn *grpc.ClientConn) error {
 
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("Connection is timed out. Please Check your plugins' status. ")
+			log.Error().Str("module", "util").Msg("Connection is timed out. Please Check your plugins' status. ")
+			return errors.New("")
 		default:
 			// Wait a short period before checking the connection state again.
 			time.Sleep(100 * time.Millisecond)
