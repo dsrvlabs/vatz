@@ -113,15 +113,15 @@ func initiateServer(ch <-chan os.Signal) error {
 	return nil
 }
 
-func startExecutor(grpcClients []pluginPb.PluginClient, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+func startExecutor(grpcClients []utils.GClientWithPlugin, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
 	if len(grpcClients) == 0 {
 		log.Error().Str("module", "cmd:Start").Msg("No Plugins are set, Check your Configs.")
 		os.Exit(1)
 	}
-	for idx, singleClient := range grpcClients {
-		go multiPluginExecutor(pluginInfo.Plugins[idx], singleClient, isOkayToSend, quit)
+	for _, client := range grpcClients {
+		go multiPluginExecutor(client.PluginInfo, client.GRPCClient, isOkayToSend, quit)
 	}
 }
 

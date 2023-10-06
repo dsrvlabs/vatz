@@ -16,6 +16,11 @@ import (
 	"time"
 )
 
+type GClientWithPlugin struct {
+	GRPCClient pluginpb.PluginClient
+	PluginInfo config.Plugin
+}
+
 func MakeUniqueValue(pName, pAddr string, pPort int) string {
 	return pName + pAddr + strconv.Itoa(pPort)
 }
@@ -61,23 +66,28 @@ func UniqueHashValue(inputString string) string {
 	return hashString
 }
 
-func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
+func GetClients(plugins []config.Plugin) []GClientWithPlugin {
 	var (
-		grpcClients      []pluginpb.PluginClient
-		wg               sync.WaitGroup
-		connectionCancel = 10
+		grpcClientWithPlugins []GClientWithPlugin
+		wg                    sync.WaitGroup
+		connectionCancel      = 10
 	)
 
 	for _, plugin := range plugins {
 		wg.Add(1)
 		pluginAddress := fmt.Sprintf("%s:%d", plugin.Address, plugin.Port)
 
-		go func(addr string, name string) {
+		go func(addr string, configPlugin config.Plugin) {
 			defer wg.Done()
 			conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if err != nil {
-				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", name, err)
+				log.Fatal().Str("module", "main").Msgf("gRPC Dial Error(%s): %s", configPlugin.Name, err)
 			}
+			// Create a context for the connection check.
+
+			grpcClientWithPlugins = append(grpcClientWithPlugins, GClientWithPlugin{GRPCClient: pluginpb.NewPluginClient(conn),
+				PluginInfo: configPlugin})
+
 			executeTicker := time.Duration(connectionCancel) * time.Second
 			ctx, cancel := context.WithTimeout(context.Background(), executeTicker)
 			defer cancel()
@@ -87,16 +97,15 @@ func GetClients(plugins []config.Plugin) []pluginpb.PluginClient {
 				fmt.Printf("Connection to %s failed: %v\n", addr, err)
 				return
 			}
-			// Create a context for the connection check.
-			grpcClients = append(grpcClients, pluginpb.NewPluginClient(conn))
+
 			if conn.GetState() == connectivity.Ready {
-				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", name, addr)
+				log.Info().Str("module", "util").Msgf("Client connected to plugin: %s successfully with address %s", configPlugin.Name, addr)
 			}
-		}(pluginAddress, plugin.Name)
+		}(pluginAddress, plugin)
 	}
 	wg.Wait()
 
-	return grpcClients
+	return grpcClientWithPlugins
 }
 
 // waitForConnection blocks until the gRPC connection is ready or the context times out.
@@ -109,7 +118,7 @@ func waitForConnection(ctx context.Context, conn *grpc.ClientConn) error {
 
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("Connection is timed out. Please Check your plugin status. ")
+			return fmt.Errorf("Connection is timed out. Please Check your plugins' status. ")
 		default:
 			// Wait a short period before checking the connection state again.
 			time.Sleep(100 * time.Millisecond)
