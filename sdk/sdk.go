@@ -33,11 +33,10 @@ type Plugin interface {
 
 // CallResponse represents return value of callback function.
 type CallResponse struct {
-	FuncName   string                `json:"func_name"`
-	Message    string                `json:"msg"`
-	Severity   pluginpb.SEVERITY     `json:"severity"`
-	State      pluginpb.STATE        `json:"state"`
-	AlertTypes []pluginpb.ALERT_TYPE `json:"alert_types"`
+	FuncName string            `json:"func_name"`
+	Message  string            `json:"msg"`
+	Severity pluginpb.SEVERITY `json:"severity"`
+	State    pluginpb.STATE    `json:"state"`
 }
 
 type plugin struct {

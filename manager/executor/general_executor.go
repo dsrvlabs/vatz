@@ -63,8 +63,8 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		pUnique := utils.MakeUniqueValue(plugin.Name, plugin.Address, plugin.Port)
 		firstExe, preStatus := s.updateState(pUnique, resp)
 
-		for _, dp := range dispatchers {
-			dp.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
+		for _, dpSingle := range dispatchers {
+			dpSingle.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
 				Plugin:     plugin.Name,
 				Method:     method.Name,
 				Address:    plugin.Address,
@@ -86,7 +86,6 @@ func (s *executor) execute(ctx context.Context, gClient pluginpb.PluginClient, i
 		return &pluginpb.ExecuteResponse{
 			State:        pluginpb.STATE_FAILURE,
 			Message:      "API Execution Failed",
-			AlertType:    []pluginpb.ALERT_TYPE{pluginpb.ALERT_TYPE_DISCORD, pluginpb.ALERT_TYPE_PAGER_DUTY},
 			Severity:     pluginpb.SEVERITY_ERROR,
 			ResourceType: "ResourceType Unknown",
 		}, nil
