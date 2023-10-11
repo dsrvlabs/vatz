@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.6.0
-	github.com/dsrvlabs/vatz-proto v0.0.0-20220908182122-4c28400b195f
+	github.com/dsrvlabs/vatz-proto v1.0.1-0.20231011015934-1786c7c486a0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.4.3
