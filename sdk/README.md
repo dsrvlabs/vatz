@@ -74,8 +74,7 @@ func pluginFeature(info, option map[string]*structpb.Value) (sdk.CallResponse, e
                 FuncName:   "YOUR_FUNCTION_NAME",
                 Message:    "YOUR_MESSAGE_CONTENTS",
                 Severity:   pluginpb.SEVERITY_UNKNOWN,
-                State:      pluginpb.STATE_NONE,
-                AlertTypes: []pluginpb.ALERT_TYPE{pluginpb.ALERT_TYPE_DISCORD},
+                State:      pluginpb.STATE_NONE
         }
 
         return ret, nil
