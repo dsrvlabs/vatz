@@ -67,8 +67,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dsrvlabs/vatz-proto v0.0.0-20220908182122-4c28400b195f h1:VUX+u+XbsRZOnmX4SzXaW6LFcBOF9IZlBVHdgu43EGc=
-github.com/dsrvlabs/vatz-proto v0.0.0-20220908182122-4c28400b195f/go.mod h1:0ksXsnd9pZ860eMhnoNT6wq0hALJc6EM0JnFx6zQJHk=
+github.com/dsrvlabs/vatz-proto v1.0.1-0.20231013005328-0ce1b6797611 h1:B+qPUGk2IGFVoF8ZNXe96uv3H9YRmB+vciOYE5sCTtg=
+github.com/dsrvlabs/vatz-proto v1.0.1-0.20231013005328-0ce1b6797611/go.mod h1:PDvHLT6k1V1ibRVa0IxYk9OcfMTicryGyfRYcxXyuVs=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
