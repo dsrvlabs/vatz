@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -112,6 +113,13 @@ Plugin Name: <em>%s</em>
 		return err
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Error in Response with Error code: %d", response.StatusCode)
+		errorMessage := fmt.Sprintf("REST API Error with HTTP response status code: %d", response.StatusCode)
+		return errors.New(errorMessage)
+	}
+
 	body, err = io.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)

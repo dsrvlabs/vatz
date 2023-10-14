@@ -2,6 +2,8 @@ package healthcheck
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
+	"os"
 	"sync"
 	"time"
 
@@ -65,8 +67,17 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 	}
 
 	if sendMSG {
+		errorCount := 0
 		for _, dispatcher := range dispatchers {
-			dispatcher.SendNotification(deliverMSG)
+			sendNotificationError := dispatcher.SendNotification(deliverMSG)
+			if sendNotificationError != nil {
+				errorCount = errorCount + 1
+			}
+		}
+
+		if len(dispatchers) == errorCount {
+			log.Error().Str("module", "healthcheck").Msg("All Dispatchers failed to send a notifications, Please, Check your dispatcher configs.")
+			os.Exit(1)
 		}
 	}
 
