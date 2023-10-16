@@ -93,14 +93,18 @@ func TestPluginHealthCheckFailed(t *testing.T) {
 		status, err := h.PluginHealthCheck(ctx, &mockPluginCli, config.Plugin{Name: "test"}, mockDispatchers)
 
 		// Asserts
-		assert.Nil(t, err)
+		assert.Error(t, err)
 		assert.Equal(t, tp.AliveStatusDown, status)
 
 		statuses := h.PluginStatus(ctx)
 
-		assert.Equal(t, 1, len(statuses))
-		assert.Equal(t, "test", statuses[0].Plugin.Name)
-		assert.Equal(t, tp.AliveStatusDown, statuses[0].IsAlive)
+		assert.Equal(t, 0, len(statuses))
+
+		/*
+			Both cases are not available since there's error when no appropriate configs for notification
+			assert.Equal(t, "test", statuses[0].Plugin.Name)
+			assert.Equal(t, tp.AliveStatusDown, statuses[0].IsAlive)
+		*/
 
 		mockPluginCli.AssertExpectations(t)
 	}

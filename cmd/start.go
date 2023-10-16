@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	managerPb "github.com/dsrvlabs/vatz-proto/manager/v1"
@@ -142,7 +143,13 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 		select {
 		case <-verifyTicker.C:
 			if pluginState.IsEnabled {
-				live, _ := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
+				live, err := healthChecker.PluginHealthCheck(ctx, singleClient, plugin, dispatchers)
+				if err != nil {
+					if strings.Contains(err.Error(), "Failed to send all configured notifications") {
+						executeTicker.Stop()
+						os.Exit(1)
+					}
+				}
 				if live == tp.AliveStatusUp {
 					okToSend = true
 				} else {

@@ -2,18 +2,17 @@ package healthcheck
 
 import (
 	"context"
-	"github.com/rs/zerolog/log"
-	"os"
-	"sync"
-	"time"
-
+	"errors"
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	"github.com/rs/zerolog/log"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"sync"
+	"time"
 )
 
 var (
@@ -76,8 +75,9 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		}
 
 		if len(dispatchers) == errorCount {
+			errorMSG := "Failed to send all configured notifications."
 			log.Error().Str("module", "healthcheck").Msg("All Dispatchers failed to send a notifications, Please, Check your dispatcher configs.")
-			os.Exit(1)
+			return isAlive, errors.New(errorMSG)
 		}
 	}
 
