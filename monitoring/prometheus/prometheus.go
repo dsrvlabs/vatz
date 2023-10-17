@@ -1,15 +1,16 @@
 package prometheus
 
 import (
+	"net/http"
+	"strconv"
+	"sync"
+
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"strconv"
-	"sync"
 )
 
 type prometheusManager struct {
@@ -63,6 +64,7 @@ func (cc prometheusManagerCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
+// InitPrometheusServer initializes prometheus server
 func InitPrometheusServer(addr, port, protocol string) error {
 	log.Info().Str("module", "main").Msgf("start metric server: %s:%s", addr, port)
 

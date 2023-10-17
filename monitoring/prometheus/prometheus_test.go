@@ -1,9 +1,10 @@
 package prometheus
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"reflect"
 	"testing"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func TestInitPrometheusServer(t *testing.T) {
@@ -51,7 +52,7 @@ func Test_prometheusManagerCollector_Collect(t *testing.T) {
 		prometheusManager *prometheusManager
 	}
 	type args struct {
-		ch chan<- prometheus.Metric
+		prometheus.Metric
 	}
 	var tests []struct {
 		name   string
@@ -72,7 +73,7 @@ func Test_prometheusManagerCollector_Describe(t *testing.T) {
 		prometheusManager *prometheusManager
 	}
 	type args struct {
-		ch chan<- *prometheus.Desc
+		*prometheus.Desc
 	}
 	var tests []struct {
 		name   string
