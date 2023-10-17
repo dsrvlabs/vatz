@@ -53,7 +53,7 @@ As validators, we provide tools for low-cost and low-effort node management for 
 # Usage of VATZ
 
 ## How to get started with VATZ
-Check out the[Installation Guide](docs/installation.md) to install and start using VATZ.
+Check out the [Installation Guide](docs/installation.md) to install and start using VATZ.
 
 ## How to use **VATZ** CLIs
 Refer to the [VATZ CLIs guide](docs/cli.md) to find available CLI arguments.
@@ -79,7 +79,8 @@ vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for follow
 
 ## Community Plugins
 > We encourage everyone to share their plugins to make node operating easier.
-> Please register your developed VATZ plugins on [Community Plugins](docs/community_plugins.md)!
+Please register your developed VATZ plugins on [Community Plugins](docs/community_plugins.md)!
+
 
 ---
 # Release Note
