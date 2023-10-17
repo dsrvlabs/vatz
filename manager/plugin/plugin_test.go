@@ -54,9 +54,11 @@ func TestPluginManager(t *testing.T) {
 	assert.NotNil(t, ps)
 
 	pName, err := ps.Name()
+	assert.Nil(t, err)
 	assert.Equal(t, binName, pName)
 
 	isRunning, err := ps.IsRunning()
+	assert.Nil(t, err)
 	assert.True(t, isRunning)
 
 	// Test Stop
