@@ -3,10 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dsrvlabs/vatz/utils"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/dsrvlabs/vatz/utils"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -288,15 +289,30 @@ func createPluginCommand() *cobra.Command {
 	startCommand.PersistentFlags().StringP("args", "a", "", "Arguments")
 	startCommand.PersistentFlags().StringP("log", "l", "", "Logfile")
 
-	viper.BindPFlag("start_plugin", startCommand.PersistentFlags().Lookup("plugin"))
-	viper.BindPFlag("start_args", startCommand.PersistentFlags().Lookup("args"))
-	viper.BindPFlag("start_log", startCommand.PersistentFlags().Lookup("log"))
+	err := viper.BindPFlag("start_plugin", startCommand.PersistentFlags().Lookup("plugin"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
+	err = viper.BindPFlag("start_args", startCommand.PersistentFlags().Lookup("args"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
+	err = viper.BindPFlag("start_log", startCommand.PersistentFlags().Lookup("log"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
 
 	stopCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
-	viper.BindPFlag("stop_plugin", stopCommand.PersistentFlags().Lookup("plugin"))
+	err = viper.BindPFlag("stop_plugin", stopCommand.PersistentFlags().Lookup("plugin"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
 
 	installCommand.PersistentFlags().StringP("version", "v", "", "Installed plugin version")
-	viper.BindPFlag("plugin_version", installCommand.PersistentFlags().Lookup("version"))
+	err = viper.BindPFlag("plugin_version", installCommand.PersistentFlags().Lookup("version"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
 
 	cmd.AddCommand(statusCommand)
 	cmd.AddCommand(installCommand)

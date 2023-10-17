@@ -92,7 +92,11 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
-		rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
+		err := rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
+		if err != nil {
+			log.Error().Str("module", "rpc").Msgf("RPC Service Starting Error: %s", err)
+		}
+
 	}()
 	monitoringInfo := cfg.Vatz.MonitoringInfo
 	if monitoringInfo.Prometheus.Enabled {
@@ -102,7 +106,10 @@ func initiateServer(ch <-chan os.Signal) error {
 		} else {
 			prometheusPort = promPort
 		}
-		prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier)
+		err := prometheus.InitPrometheusServer(monitoringInfo.Prometheus.Address, prometheusPort, cfg.Vatz.ProtocolIdentifier)
+		if err != nil {
+			log.Error().Str("module", "prometheus").Msgf("Fail to init prometheus server: %s", err)
+		}
 	}
 
 	log.Info().Str("module", "main").Msg("VATZ Manager Started")
@@ -151,7 +158,7 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 			}
 		case <-executeTicker.C:
 			if pluginState.IsEnabled {
-				if okToSend == true {
+				if okToSend {
 					if pluginStateErr != nil {
 						log.Error().Str("module", "cmd > start").Msgf("Executor Error: %s", pluginStateErr)
 					}
