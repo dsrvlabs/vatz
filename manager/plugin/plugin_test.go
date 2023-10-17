@@ -11,7 +11,8 @@ import (
 )
 
 func TestPluginManager(t *testing.T) {
-	initDB(pluginDBName)
+	err := initDB(pluginDBName)
+	assert.Nil(t, err)
 
 	defer func() {
 		os.Remove("./active_status")
@@ -27,7 +28,7 @@ func TestPluginManager(t *testing.T) {
 	binName := "cosmos-active"
 
 	mgr := NewManager(os.Getenv("PWD"))
-	err := mgr.Install(repo, binName, "latest")
+	err = mgr.Install(repo, binName, "latest")
 	assert.Nil(t, err)
 
 	_, err = os.Open("./active_status")
@@ -77,7 +78,8 @@ func TestPluginManager(t *testing.T) {
 }
 
 func TestPluginList(t *testing.T) {
-	initDB(pluginDBName)
+	err := initDB(pluginDBName)
+	assert.Nil(t, err)
 
 	defer func() {
 		os.Remove(pluginDBName)
