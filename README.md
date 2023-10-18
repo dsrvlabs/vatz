@@ -80,7 +80,7 @@ vatz-plugin-comoshub is **VATZ** plugin for cosmoshub node monitoring for follow
 ## Community Plugins
 > We encourage everyone to share their plugins to make node operating easier.
 
-Please register your developed VATZ plugins on [Community Plugins](docs/community_plugins.md)!
+- Please, share your own VATZ plugins on [Community Plugins](docs/community_plugins.md)!
 
 
 ---
