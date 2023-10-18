@@ -3,7 +3,6 @@ package dispatcher
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -128,13 +127,10 @@ func (d *discord) SendNotification(msg tp.ReqMsg) error {
 		_, err = c.Do(req)
 		if err != nil {
 			log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
-			errorMessage := fmt.Sprintf("Channel(Discord) Error: %s", err)
-			return errors.New(errorMessage)
 		}
 		// TODO: Should handle response status.
 	} else {
 		log.Error().Str("module", "dispatcher").Msg("Channel(Discord): Connection failed due to Invalid discord webhook address")
-		return errors.New("Channel(Discord) Error: Invalid discord webhook address. ")
 	}
 	return nil
 }
