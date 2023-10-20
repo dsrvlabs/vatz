@@ -173,8 +173,7 @@ func (m *vatzPluginManager) Uninstall(name string) error {
 		}
 		if running {
 			log.Error().Str("module", "plugin").Err(err).Msgf("Plugin %s is currently running, Please, stop plugin first.", name)
-			errorMessage := fmt.Sprintf("Please, stop plugin: %s first.", name)
-			return errors.New(errorMessage)
+			return fmt.Errorf("Please, stop plugin: %s first.", name)
 		}
 	}
 
