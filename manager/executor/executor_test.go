@@ -64,10 +64,12 @@ func TestExecutorSuccess(t *testing.T) {
 		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{
 			"execute_method": testMethodName,
 		})
+		assert.Nil(t, err)
 
 		mockOpts, err := structpb.NewStruct(map[string]interface{}{
 			"plugin_name": testPluginName,
 		})
+		assert.Nil(t, err)
 
 		exeReq := pluginpb.ExecuteRequest{
 			ExecuteInfo: mockExeInfo,
@@ -98,7 +100,7 @@ func TestExecutorSuccess(t *testing.T) {
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin, mockNotifs)
 
-		fmt.Println("Status", e.status)
+		fmt.Println("Status", &e.status)
 
 		// Asserts
 		mockClient.AssertExpectations(t)
@@ -185,10 +187,12 @@ func TestExecutorFailure(t *testing.T) {
 		mockExeInfo, err := structpb.NewStruct(map[string]interface{}{
 			"execute_method": testMethodName,
 		})
+		assert.Nil(t, err)
 
 		mockOpts, err := structpb.NewStruct(map[string]interface{}{
 			"plugin_name": testPluginName,
 		})
+		assert.Nil(t, err)
 
 		exeReq := pluginpb.ExecuteRequest{
 			ExecuteInfo: mockExeInfo,
@@ -210,7 +214,7 @@ func TestExecutorFailure(t *testing.T) {
 
 		err = e.Execute(ctx, &mockClient, cfgPlugin, mockNotifs)
 
-		fmt.Println("Status", e.status)
+		fmt.Println("Status", &e.status)
 
 		// Asserts
 		mockClient.AssertExpectations(t)

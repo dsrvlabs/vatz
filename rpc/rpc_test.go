@@ -21,7 +21,10 @@ import (
 func TestRPCs(t *testing.T) {
 	rpc := NewRPCService()
 
-	go rpc.Start("127.0.0.1", 19090, 19091)
+	go func() {
+		err := rpc.Start("127.0.0.1", 19090, 19091)
+		assert.Nil(t, err)
+	}()
 
 	time.Sleep(time.Second * 1) // Wait ready
 

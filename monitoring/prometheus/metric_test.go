@@ -1,10 +1,10 @@
 package prometheus
 
 import (
-	"github.com/dsrvlabs/vatz/manager/config"
-	"github.com/dsrvlabs/vatz/utils"
 	"reflect"
 	"testing"
+
+	"github.com/dsrvlabs/vatz/utils"
 )
 
 func Test_prometheusManager_getPluginUp(t *testing.T) {
@@ -12,7 +12,6 @@ func Test_prometheusManager_getPluginUp(t *testing.T) {
 		Protocol string
 	}
 	type args struct {
-		plugins  []config.Plugin
 		hostName string
 	}
 	var tests []struct {

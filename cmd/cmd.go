@@ -19,20 +19,18 @@ const (
 )
 
 var (
-	healthChecker          = health.GetHealthChecker()
-	executor               = ex.NewExecutor()
-	dispatchers            []dp.Dispatcher
-	defaultVerifyInterval  = 15
-	defaultExecuteInterval = 30
-	IsDebugLevel           bool
-	IsTraceLevel           bool
-	configFile             string
-	logfile                string
-	vatzRPC                string
-	promPort               string
+	healthChecker = health.GetHealthChecker()
+	executor      = ex.NewExecutor()
+	dispatchers   []dp.Dispatcher
+	isDebugLevel  bool
+	isTraceLevel  bool
+	configFile    string
+	logfile       string
+	vatzRPC       string
+	promPort      string
 )
 
-/*	GetRootCommand: Return Cobra Root command include all subcommands .*/
+// GetRootCommand is Return Cobra Root command include all subcommands .
 func GetRootCommand() *cobra.Command {
 	rootCmd := CreateRootCommand()
 	rootCmd.AddCommand(createInitCommand(tp.LIVE))
@@ -42,16 +40,16 @@ func GetRootCommand() *cobra.Command {
 	return rootCmd
 }
 
-/*	CreateRootCommand: Create Root command which initialize root command and global flags. */
+// CreateRootCommand is Create Root command which initialize root command and global flags.
 func CreateRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if IsDebugLevel {
+		if isDebugLevel {
 			utils.SetGlobalLogLevel(zerolog.DebugLevel)
-		} else if IsTraceLevel {
+		} else if isTraceLevel {
 			utils.SetGlobalLogLevel(zerolog.TraceLevel)
 		}
 	}}
-	rootCmd.PersistentFlags().BoolVarP(&IsDebugLevel, "debug", "", false, "Enable debug mode on Log.")
-	rootCmd.PersistentFlags().BoolVarP(&IsTraceLevel, "trace", "", false, "Enable Trace mode on Log.")
+	rootCmd.PersistentFlags().BoolVarP(&isDebugLevel, "debug", "", false, "Enable debug mode on Log.")
+	rootCmd.PersistentFlags().BoolVarP(&isTraceLevel, "trace", "", false, "Enable Trace mode on Log.")
 	return rootCmd
 }

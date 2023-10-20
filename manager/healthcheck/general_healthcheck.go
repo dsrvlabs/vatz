@@ -11,6 +11,7 @@ import (
 	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
+	"github.com/rs/zerolog/log"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -66,7 +67,10 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 
 	if sendMSG {
 		for _, dispatcher := range dispatchers {
-			dispatcher.SendNotification(deliverMSG)
+			err = dispatcher.SendNotification(deliverMSG)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("failed to send notification: %v", err)
+			}
 		}
 	}
 
@@ -79,14 +83,21 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 	return isAlive, nil
 }
 
+// VATZHealthCheck send a notification at a specific time that the vatz is alive.
 func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatchers []dp.Dispatcher) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	for i := 0; i < len(healthCheckerSchedule); i++ {
-		c.AddFunc(healthCheckerSchedule[i], func() {
+		_, err := c.AddFunc(healthCheckerSchedule[i], func() {
 			for _, dispatcher := range dispatchers {
-				dispatcher.SendNotification(h.healthMSG)
+				err := dispatcher.SendNotification(h.healthMSG)
+				if err != nil {
+					log.Error().Str("module", "dispatcher").Msgf("failed to send notification: %v", err)
+				}
 			}
 		})
+		if err != nil {
+			log.Error().Str("module", "healthcheck").Msgf("failed to add function to cron: %v", err)
+		}
 	}
 	c.Start()
 	return nil
