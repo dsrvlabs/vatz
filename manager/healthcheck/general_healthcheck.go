@@ -2,17 +2,18 @@ package healthcheck
 
 import (
 	"context"
-	"sync"
+	"errors"
+  "sync"
 	"time"
-
+  
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+  "google.golang.org/protobuf/types/known/emptypb"
+  "github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 var (
@@ -66,11 +67,18 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 	}
 
 	if sendMSG {
+		errorCount := 0
 		for _, dispatcher := range dispatchers {
-			err = dispatcher.SendNotification(deliverMSG)
-			if err != nil {
-				log.Error().Str("module", "dispatcher").Msgf("failed to send notification: %v", err)
+			sendNotificationError := dispatcher.SendNotification(deliverMSG)
+      if sendNotificationError != nil {
+				log.Error().Str("module", "healthcheck").Msgf("failed to send notification: %v", err)
+        errorCount = errorCount + 1
 			}
+		}
+
+		if len(dispatchers) == errorCount {
+			log.Error().Str("module", "healthcheck").Msg("All Dispatchers failed to send a notifications, Please, Check your dispatcher configs.")
+			return isAlive, fmt.Errorf("Failed to send all configured notifications. ")
 		}
 	}
 
