@@ -13,7 +13,9 @@ func TestPluginInstall(t *testing.T) {
 	defer os.Remove("cosmos-status")
 	defer os.Remove("./vatz-test.db")
 
-	config.InitConfig("../default.yaml")
+	_, err := config.InitConfig("../default.yaml")
+	assert.Nil(t, err)
+
 	cfg := config.GetConfig()
 	cfg.Vatz.HomePath = os.Getenv("PWD")
 	// pluginDir = os.Getenv("PWD")
@@ -26,7 +28,7 @@ func TestPluginInstall(t *testing.T) {
 		"github.com/dsrvlabs/vatz-plugin-cosmoshub/plugins/node_active_status",
 		"cosmos-status"})
 
-	err := root.Execute()
+	err = root.Execute()
 	assert.Nil(t, err)
 }
 

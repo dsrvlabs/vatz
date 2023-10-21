@@ -84,7 +84,7 @@ func (m *vatzPluginManager) Install(repo, name, version string) error {
 
 	err := exeCmd.Run()
 	if err != nil {
-		log.Error().Str("module", "plugin").Msgf("Install > exeCmd.Run Error: %s", string(stderr.Bytes()))
+		log.Error().Str("module", "plugin").Msgf("Install > exeCmd.Run Error: %s", stderr.String())
 		return err
 	}
 
@@ -172,8 +172,8 @@ func (m *vatzPluginManager) Uninstall(name string) error {
 			return err
 		}
 		if running {
-			log.Error().Str("module", "plugin").Err(err).Msgf("Plugin %s is currently running, Please, kill plugin first.", name)
-			return nil
+			log.Error().Str("module", "plugin").Err(err).Msgf("Plugin %s is currently running, Please, stop plugin first.", name)
+			return fmt.Errorf("Please, stop plugin: %s first.", name)
 		}
 	}
 
@@ -332,7 +332,11 @@ func NewManager(vatzHome string) VatzPluginManager {
 		if err != nil {
 			log.Error().Str("module", "plugin").Msgf("NewManager > newWriter Error: %s", err)
 		}
-		dbWr.MigratePluginTable()
+		err = dbWr.MigratePluginTable()
+		if err != nil {
+			log.Error().Str("module", "plugin").Msgf("NewManager > MigratePluginTable Error: %s", err)
+		}
+
 	}
 	return pManager
 }

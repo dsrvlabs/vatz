@@ -3,16 +3,17 @@ package healthcheck
 import (
 	"context"
 	"errors"
+  "sync"
+	"time"
+  
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	tp "github.com/dsrvlabs/vatz/manager/types"
+  "google.golang.org/protobuf/types/known/emptypb"
+  "github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"sync"
-	"time"
 )
 
 var (
@@ -69,15 +70,15 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		errorCount := 0
 		for _, dispatcher := range dispatchers {
 			sendNotificationError := dispatcher.SendNotification(deliverMSG)
-			if sendNotificationError != nil {
-				errorCount = errorCount + 1
+      if sendNotificationError != nil {
+				log.Error().Str("module", "healthcheck").Msgf("failed to send notification: %v", err)
+        errorCount = errorCount + 1
 			}
 		}
 
 		if len(dispatchers) == errorCount {
-			errorMSG := "Failed to send all configured notifications."
 			log.Error().Str("module", "healthcheck").Msg("All Dispatchers failed to send a notifications, Please, Check your dispatcher configs.")
-			return isAlive, errors.New(errorMSG)
+			return isAlive, fmt.Errorf("Failed to send all configured notifications. ")
 		}
 	}
 
@@ -90,14 +91,21 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 	return isAlive, nil
 }
 
+// VATZHealthCheck send a notification at a specific time that the vatz is alive.
 func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatchers []dp.Dispatcher) error {
 	c := cron.New(cron.WithLocation(time.UTC))
 	for i := 0; i < len(healthCheckerSchedule); i++ {
-		c.AddFunc(healthCheckerSchedule[i], func() {
+		_, err := c.AddFunc(healthCheckerSchedule[i], func() {
 			for _, dispatcher := range dispatchers {
-				dispatcher.SendNotification(h.healthMSG)
+				err := dispatcher.SendNotification(h.healthMSG)
+				if err != nil {
+					log.Error().Str("module", "dispatcher").Msgf("failed to send notification: %v", err)
+				}
 			}
 		})
+		if err != nil {
+			log.Error().Str("module", "healthcheck").Msgf("failed to add function to cron: %v", err)
+		}
 	}
 	c.Start()
 	return nil

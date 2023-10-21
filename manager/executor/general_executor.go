@@ -2,9 +2,10 @@ package executor
 
 import (
 	"context"
-	"github.com/rs/zerolog"
 	"os"
 	"sync"
+
+	"github.com/rs/zerolog"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
@@ -64,7 +65,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		firstExe, preStatus := s.updateState(pUnique, resp)
 
 		for _, dpSingle := range dispatchers {
-			dpSingle.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
+			err = dpSingle.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
 				Plugin:     plugin.Name,
 				Method:     method.Name,
 				Address:    plugin.Address,
@@ -73,6 +74,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 				State:      resp.GetState(),
 				ExecuteMsg: resp.GetMessage(),
 			})
+			log.Error().Str("module", "dispatcher").Msgf("failed to set dispatcher: %v", err)
 		}
 	}
 

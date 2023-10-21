@@ -3,7 +3,7 @@ BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT_HASH := $(shell git rev-parse --short HEAD)
 LDFLAGS := -ldflags="-X 'github.com/dsrvlabs/vatz/utils.Version=$(BRANCH)' -X 'github.com/dsrvlabs/vatz/utils.Commit=$(COMMIT_HASH)'"
 
-.PHONY: test build coverage clean
+.PHONY: test build coverage clean lint
 
 all: test coverage build
 
@@ -19,3 +19,6 @@ build:
 
 clean:
 	go clean
+
+lint:
+	golangci-lint run --timeout 5m	

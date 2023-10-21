@@ -152,7 +152,10 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
 				return err
 			}
 
-			config.InitConfig(filename)
+			_, err = config.InitConfig(filename)
+			if err != nil {
+				return err
+			}
 
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {

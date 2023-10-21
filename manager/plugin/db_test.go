@@ -11,7 +11,9 @@ import (
 )
 
 func TestDBWrite(t *testing.T) {
-	initDB(pluginDBName)
+	err := initDB(pluginDBName)
+	assert.Nil(t, err)
+
 	defer os.Remove(pluginDBName)
 
 	wr, err := newWriter(pluginDBName)
@@ -61,7 +63,9 @@ func TestDBWrite(t *testing.T) {
 // TODO: Handle already exist.
 
 func TestDBList(t *testing.T) {
-	initDB(pluginDBName)
+	err := initDB(pluginDBName)
+	assert.Nil(t, err)
+
 	defer os.Remove(pluginDBName)
 
 	wr, err := newWriter(pluginDBName)
