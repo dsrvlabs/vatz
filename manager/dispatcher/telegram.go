@@ -124,14 +124,16 @@ Plugin Name: <em>%s</em>
 		return err
 	}
 	respJSON := make(map[string]interface{})
-	if !respJSON["ok"].(bool) {
-		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
-	}
 	err = json.Unmarshal(body, &respJSON)
 	if err != nil {
 		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Unmarshalling JSON Error: %s", err)
 		return err
 	}
+	if !respJSON["ok"].(bool) {
+		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
+		return fmt.Errorf("Invalid telegram token. ")
+	}
+
 	return nil
 }
 
