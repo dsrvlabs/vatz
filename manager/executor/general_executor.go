@@ -74,7 +74,9 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 				State:      resp.GetState(),
 				ExecuteMsg: resp.GetMessage(),
 			})
-			log.Error().Str("module", "dispatcher").Msgf("failed to set dispatcher: %v", err)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("failed to set dispatcher: %v", err)
+			}
 		}
 	}
 
