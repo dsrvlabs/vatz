@@ -17,6 +17,9 @@ coverage:
 build:
 	go build $(LDFLAGS) -v
 
+v2-pilot:
+	go build -o v2 ./engine/*
+
 clean:
 	go clean
 

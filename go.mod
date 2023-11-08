@@ -4,24 +4,26 @@ go 1.19
 
 require (
 	github.com/PagerDuty/go-pagerduty v1.6.0
-	github.com/dsrvlabs/vatz-proto v1.0.1-0.20231013005328-0ce1b6797611
+	github.com/dsrvlabs/vatz-proto v1.0.1-0.20231108081008-e33aba2895a3
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/jarcoal/httpmock v1.2.0
 	github.com/jedib0t/go-pretty/v6 v6.4.3
+	github.com/jhump/protoreflect v1.15.3
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/prometheus/client_golang v1.14.0
 	github.com/rs/zerolog v1.28.0
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.14.0
-	github.com/stretchr/testify v1.8.1
-	google.golang.org/grpc v1.56.3
-	google.golang.org/protobuf v1.30.0
+	github.com/stretchr/testify v1.8.4
+	google.golang.org/grpc v1.57.0
+	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/bufbuild/protocompile v0.6.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -48,6 +50,8 @@ require (
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230525234035-dd9d682886f9 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 )
 
@@ -60,6 +64,6 @@ require (
 	golang.org/x/net v0.9.0
 	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
+	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
