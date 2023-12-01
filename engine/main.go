@@ -18,15 +18,13 @@ import (
 
 	//"google.golang.org/protobuf/encoding/protojson"
 	//"google.golang.org/protobuf/reflect/protodesc"
-	// "google.golang.org/protobuf/types/descriptorpb"
+	//"google.golang.org/protobuf/types/descriptorpb"
 
-	// "github.com/rootwarp/snippets/golang/grpc/reflection/proto/agent"
+	//"github.com/rootwarp/snippets/golang/grpc/reflection/proto/agent"
 	agent "github.com/dsrvlabs/vatz-proto/manager/v2"
 )
 
-var (
-	ErrServiceNotFound = errors.New("cannot find service")
-)
+var ErrServiceNotFound = errors.New("cannot find service")
 
 type reflectionHandler struct {
 	ServiceSpecs map[string]serviceMeta
