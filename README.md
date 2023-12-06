@@ -54,6 +54,7 @@ As validators, we provide tools for low-cost and low-effort node management for 
 
 ## How to get started with VATZ
 Check out the [Installation Guide](docs/installation.md) to install and start using VATZ.
+- You can get started with simple scripts, Please check [install scripts instructions](script/simple_start_guide/readme.md)
 
 ## How to use **VATZ** CLIs
 Refer to the [VATZ CLIs guide](docs/cli.md) to find available CLI arguments.
