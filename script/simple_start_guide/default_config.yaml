@@ -1,0 +1,68 @@
+vatz_protocol_info:
+  home_path: "~/.vatz"
+  protocol_identifier: "Validator Node:<protocol>"
+  port: 9090
+  health_checker_schedule:
+    - "0 1 * * *"
+  notification_info:
+    host_name: "hostname"
+    default_reminder_schedule:
+      - "*/30 * * * *"
+    dispatch_channels:
+      - channel: "discord"
+        secret: "webhook"
+  rpc_info:
+    enabled: true
+    address: "127.0.0.1"
+    grpc_port: 19090
+    http_port: 19091
+  monitoring_info:
+    prometheus:
+      enabled: true
+      address: "127.0.0.1"
+      port: 18080
+plugins_infos:
+  default_verify_interval: 15
+  default_execute_interval: 30
+  default_plugin_name: "vatz-plugin"
+  plugins:
+    - plugin_name: "cpu_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9001
+      executable_methods:
+        - method_name: "cpu_monitor"
+    - plugin_name: "mem_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9002
+      executable_methods:
+        - method_name: "mem_monitor"
+    - plugin_name: "disk_monitor"
+      plugin_address: "localhost"
+      plugin_port: 9003
+      executable_methods:
+        - method_name: "disk_monitor"
+    - plugin_name: "node_block_sync"
+      plugin_address: "localhost"
+      plugin_port: 10001
+      executable_methods:
+        - method_name: "node_block_sync"
+    - plugin_name: "node_is_alived"
+      plugin_address: "localhost"
+      plugin_port: 10002
+      executable_methods:
+        - method_name: "node_is_alived"
+    - plugin_name: "node_peer_count"
+      plugin_address: "localhost"
+      plugin_port: 10003
+      executable_methods:
+        - method_name: "node_peer_count"
+    - plugin_name: "node_active_status"
+      plugin_address: "localhost"
+      plugin_port: 10004
+      executable_methods:
+        - method_name: "node_active_status"
+    - plugin_name: "node_governance_alarm"
+      plugin_address: "localhost"
+      plugin_port: 10005
+      executable_methods:
+        - method_name: "node_governance_alarm"
