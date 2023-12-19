@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net"
 
-	//"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/grpcreflect"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -16,36 +14,26 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
 
+	//"github.com/jhump/protoreflect/desc"
 	//"google.golang.org/protobuf/encoding/protojson"
 	//"google.golang.org/protobuf/reflect/protodesc"
 	//"google.golang.org/protobuf/types/descriptorpb"
-
 	//"github.com/rootwarp/snippets/golang/grpc/reflection/proto/agent"
 	agent "github.com/dsrvlabs/vatz-proto/manager/v2"
+	"github.com/dsrvlabs/vatz/engine/bucket"
+	"github.com/dsrvlabs/vatz/engine/handler"
 )
 
 var ErrServiceNotFound = errors.New("cannot find service")
 
-type reflectionHandler struct {
-	ServiceSpecs map[string]serviceMeta
-}
-
-type serviceMeta struct {
-	Address   string
-	Functions map[string]funcMeta
-}
-
-type funcMeta struct {
-	InDesc  *desc.MessageDescriptor
-	OutDesc *desc.MessageDescriptor
-}
+type reflectionHandler struct{}
 
 func (r *reflectionHandler) Query(ctx context.Context, name, address string, port int) error {
 	fmt.Println("Query")
 
-	host := fmt.Sprintf("%s:%d", address, port)
+	pluginAddress := fmt.Sprintf("%s:%d", address, port)
 	cred := insecure.NewCredentials()
-	conn, err := grpc.Dial(host, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.Dial(pluginAddress, grpc.WithTransportCredentials(cred))
 	if err != nil {
 		return err
 	}
@@ -57,7 +45,7 @@ func (r *reflectionHandler) Query(ctx context.Context, name, address string, por
 
 	listReq := grpc_reflection_v1.ServerReflectionRequest_ListServices{}
 	reflectReq := grpc_reflection_v1.ServerReflectionRequest{
-		Host:           host,
+		Host:           pluginAddress,
 		MessageRequest: &listReq,
 	}
 
@@ -95,25 +83,24 @@ func (r *reflectionHandler) Query(ctx context.Context, name, address string, por
 		return err
 	}
 
-	methods := serviceDesc.GetMethods()
-
-	r.ServiceSpecs[name] = serviceMeta{
-		Address:   fmt.Sprintf("%s:%d", address, port),
-		Functions: map[string]funcMeta{},
+	pDesc := bucket.PluginDescriptor{
+		Address: pluginAddress,
+		Name:    name,
+		Methods: map[string]bucket.MethodArgDescriptor{},
 	}
 
+	methods := serviceDesc.GetMethods()
 	for _, method := range methods {
 		fmt.Println("*****", method.GetName())
 
-		in := method.GetInputType()
-		out := method.GetOutputType()
-
-		meta := funcMeta{
-			InDesc:  in,
-			OutDesc: out,
+		pDesc.Methods[method.GetName()] = bucket.MethodArgDescriptor{
+			InDesc:  method.GetInputType(),
+			OutDesc: method.GetOutputType(),
 		}
-		r.ServiceSpecs[name].Functions[method.GetName()] = meta
 	}
+
+	b := bucket.NewBucket()
+	err = b.Set(pDesc)
 
 	return nil
 }
@@ -121,30 +108,37 @@ func (r *reflectionHandler) Query(ctx context.Context, name, address string, por
 func (s *reflectionHandler) Invoke(ctx context.Context, serviceName, funcName string) (any, error) {
 	fmt.Println("Invoke")
 
-	service, ok := r.ServiceSpecs[serviceName]
-	if !ok {
-		return nil, ErrServiceNotFound
+	b := bucket.NewBucket()
+	pDesc, err := b.Get(serviceName)
+	if err != nil {
+		return nil, err
 	}
 
-	fMeta := service.Functions[funcName]
-	fmt.Println(fMeta)
+	mDesc, err := pDesc.GetMethod(funcName)
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO: We should fill here dynamically
-	inSpec := fMeta.InDesc
-
-	newInMsg := dynamicpb.NewMessage(inSpec.UnwrapMessage())
-
+	// TODO: what we need to convert the message format?
+	// FieldName
+	// FieldType
+	// FieldValue
+	//
+	// Can I extract above from MessageDescriptor?
+	inSpec := mDesc.InDesc
 	nameField := inSpec.FindFieldByName("name").UnwrapField()
 	ageField := inSpec.FindFieldByName("age").UnwrapField()
+
+	newInMsg := dynamicpb.NewMessage(inSpec.UnwrapMessage())
 	newInMsg.Set(nameField, protoreflect.ValueOfString("rootwarp"))
 	newInMsg.Set(ageField, protoreflect.ValueOfInt32(40))
 
-	outSpec := fMeta.OutDesc
+	outSpec := mDesc.OutDesc
 	newOutMsg := dynamicpb.NewMessage(outSpec.UnwrapMessage())
 
 	// Invoke
 	cred := insecure.NewCredentials()
-	conn, err := grpc.Dial(service.Address, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.Dial(pDesc.Address, grpc.WithTransportCredentials(cred))
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -182,14 +176,29 @@ func (s *registrationServer) RegisterPlugin(ctx context.Context, in *agent.Regis
 	}, nil
 }
 
+// FIXME: Need to separate this individual service.
 var r *reflectionHandler
 
 func main() {
 	fmt.Println("Start server")
 
 	go func() {
-		r = &reflectionHandler{
-			ServiceSpecs: map[string]serviceMeta{},
+		r = &reflectionHandler{}
+	}()
+
+	go func() {
+		h := handler.NewHandler()
+
+		s := grpc.NewServer()
+		agent.RegisterRequestHandlerServer(s, h)
+
+		l, err := net.Listen("tcp", ":8081")
+		if err != nil {
+			panic(err)
+		}
+
+		if err := s.Serve(l); err != nil {
+			panic(err)
 		}
 	}()
 

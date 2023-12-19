@@ -67,3 +67,5 @@ require (
 	google.golang.org/genproto v0.0.0-20230526161137-0005af68ea54 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/dsrvlabs/vatz-proto => /home/rootwarp/git/dsrv/vatz-proto
