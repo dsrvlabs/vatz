@@ -2,10 +2,10 @@ package bucket
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/jhump/protoreflect/desc"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -53,7 +53,7 @@ type pluginBucket struct {
 }
 
 func (b *pluginBucket) Set(newPlugin PluginDescriptor) error {
-	fmt.Println("Set")
+	log.Info().Str("module", "bucket").Msgf("set %s", newPlugin.Name)
 
 	if newPlugin.Address == "" || newPlugin.Name == "" {
 		return errInvalidField
@@ -71,7 +71,7 @@ func (b *pluginBucket) Set(newPlugin PluginDescriptor) error {
 }
 
 func (b *pluginBucket) Get(name string) (*PluginDescriptor, error) {
-	fmt.Println("Get")
+	log.Info().Str("module", "bucket").Msgf("get %s", name)
 
 	p, ok := b.plugins[name]
 	if !ok {

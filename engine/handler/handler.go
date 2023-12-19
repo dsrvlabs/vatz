@@ -1,101 +1,112 @@
 package handler
 
-import "context"
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
 
-// InvokeRequest provides detail arguments to call plugin function.
-// TODO: Detail properties are not fixed yet.
-type InvokeRequest struct {
-	PluginAddress string
+	"github.com/dsrvlabs/vatz-proto/manager/v2"
+	"github.com/dsrvlabs/vatz/engine/bucket"
+	"github.com/jhump/protoreflect/desc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
+	anypb "google.golang.org/protobuf/types/known/anypb"
+	"github.com/rs/zerolog/log"
+)
 
-	// Warning: Below properties are TBD
-	PluginName string
-	Function   string
-	Args       any
+type handlerService struct {
+	v2.UnimplementedRequestHandlerServer
 }
 
-// InvokeResponse contains results of InvokeRequest.
-type InvokeResponse struct {
-	// Warning: TBD
-	Error error
+func (s *handlerService) SendRequest(ctx context.Context, in *v2.UserRequest) (*v2.UserResponse, error) {
+	log.Info().Str("module", "handler").Msgf("send request %s:%s", in.GetPlugin(), in.GetMethod())
+
+	// Find relevant proto message.
+	b := bucket.NewBucket()
+	pDesc, err := b.Get(in.GetPlugin())
+	if err != nil {
+		return nil, err
+	}
+
+	mDesc, err := pDesc.GetMethod(in.GetMethod())
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("%+v\n", pDesc)
+
+	// Convert into Protobuf message.
+	inMsg, err := s.convert(mDesc.InDesc, in.Fields)
+	outMsg := dynamicpb.NewMessage(mDesc.OutDesc.UnwrapMessage())
+
+	// Invoke
+	cred := insecure.NewCredentials()
+	conn, err := grpc.Dial(pDesc.Address, grpc.WithTransportCredentials(cred))
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	defer conn.Close()
+
+	funcURL := fmt.Sprintf("%s/%s", pDesc.Name, in.GetMethod())
+	err = conn.Invoke(ctx, funcURL, inMsg, outMsg)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	// TODO: How to serialize?
+	// TODO: And How to parse this from client side?
+	// fmt.Printf("resp %+v\n", outMsg)
+
+	d, err := protojson.Marshal(outMsg)
+
+	//fmt.Printf("Marshal %s, %+v\n", string(d), err)
+
+	anyMsg, err := anypb.New(outMsg)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := v2.UserResponse{
+		Plugin: in.Plugin,
+		Method: in.Method,
+		Result: anyMsg,
+		StrResult: string(d),
+	}
+	return &resp, nil
 }
 
-// RequestHandler provides interface to send plugin call request form relay.
-type RequestHandler interface {
-	Start() error
-	Stop() error
+func (s *handlerService) convert(d *desc.MessageDescriptor, fields []*v2.FieldSpec) (*dynamicpb.Message, error) {
+	// TODO: Define return type
 
-	Request(request InvokeRequest) InvokeResponse
-}
+	newMsg := dynamicpb.NewMessage(d.UnwrapMessage())
 
-type basicHandler struct {
-	workers     []handlerWorker
-	chanEnqueue chan InvokeRequest
-	chanResult  chan InvokeResponse
-}
+	for _, spec := range fields {
+		fDesc := d.FindFieldByName(spec.Name).UnwrapField()
 
-func (h *basicHandler) Start() error {
-	h.workers = make([]handlerWorker, 10)
-	for i := 0; i < len(h.workers); i++ {
-		ctx, cancel := context.WithCancel(context.Background())
+		if spec.Type == "string" {
+			newMsg.Set(fDesc, protoreflect.ValueOfString(spec.Value))
+		} else if spec.Type == "int32" {
+			intValue, err := strconv.ParseInt(spec.Value, 10, 64)
+			if err != nil {
+				return nil, err
+			}
 
-		h.workers[i] = handlerWorker{
-			ctx:    ctx,
-			cancel: cancel,
+			newMsg.Set(fDesc, protoreflect.ValueOfInt32(int32(intValue)))
+		} else {
+			return nil, errors.New("invalid type")
 		}
-
-		go h.workers[i].run(h.chanEnqueue, h.chanResult)
 	}
 
-	return nil
+	return newMsg, nil
 }
 
-func (h *basicHandler) Stop() error {
-	for _, worker := range h.workers {
-		worker.stop()
-	}
-
-	return nil
-}
-
-func (h *basicHandler) Request(request InvokeRequest) InvokeResponse {
-	// TODO:
-	// enqueue to worker.
-	// get response
-	// check timeout
-	// return
-	return InvokeResponse{}
-}
-
-type handlerWorker struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-}
-
-func (w *handlerWorker) request(request InvokeRequest) InvokeResponse {
-	// TODO: Handler request
-	return InvokeResponse{}
-}
-
-func (w *handlerWorker) run(in <-chan InvokeRequest, out chan<- InvokeResponse) error {
-	for {
-		select {
-		case req := <-in:
-			resp := w.request(req)
-			out <- resp
-		case <-w.ctx.Done():
-			return nil
-		}
-	}
-}
-
-func (w *handlerWorker) stop() error {
-	w.cancel()
-	return nil
-}
-
-// NewHandler creates a new RequestHandler instance.
-func NewHandler() RequestHandler {
-	handler := &basicHandler{}
-
-	return handler
+func NewHandler() v2.RequestHandlerServer {
+	return &handlerService{}
 }
