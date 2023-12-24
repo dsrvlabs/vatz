@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"sync"
 
@@ -14,26 +13,29 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// telegram: This is a sample code
+// slack: This is a sample code
 // that helps to multi methods for notification.
-type telegram struct {
+type slack struct {
 	host             string
 	channel          tp.Channel
 	secret           string
-	chatID           string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
 }
 
-func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+type SlackRequestBody struct {
+	Text string `json:"text"`
+}
+
+func (t *slack) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
 
 	if reqToNotify {
 		err := t.SendNotification(deliverMessage)
 		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
+			log.Error().Str("module", "dispatcher").Msgf("Channel(Slack): Send notification error: %s", err)
 			return err
 		}
 
@@ -56,7 +58,7 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 			id, _ := t.reminderCron.AddFunc(schedule, func() {
 				err := t.SendNotification(deliverMessage)
 				if err != nil {
-					log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
+					log.Error().Str("module", "dispatcher").Msgf("Channel(Slack): Send notification error: %s", err)
 				}
 			})
 			newEntries = append(newEntries, id)
@@ -75,11 +77,10 @@ func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyI
 	return nil
 }
 
-func (t *telegram) SendNotification(msg tp.ReqMsg) error {
+func (t *slack) SendNotification(msg tp.ReqMsg) error {
 	var (
-		err      error
-		response *http.Response
-		emoji    = emojiER
+		err   error
+		emoji = emojiER
 	)
 
 	if msg.State == pb.STATE_SUCCESS {
@@ -92,51 +93,31 @@ func (t *telegram) SendNotification(msg tp.ReqMsg) error {
 			emoji = emojiCheck
 		}
 	}
-
-	url := fmt.Sprintf("%s/sendMessage", getURL(t.secret))
 	sendingText := fmt.Sprintf(`
-%s<strong>%s</strong>%s
-Host: <strong>%s</strong>
-Plugin Name: <em>%s</em>
+%s *%s* %s
+> 
+Host: *%s*
+Plugin Name: _%s_
 %s`, emoji, msg.Severity.String(), emoji, t.host, msg.ResourceType, msg.Msg)
-
-	body, _ := json.Marshal(map[string]string{
-		"chat_id":    t.chatID,
-		"text":       sendingText,
-		"parse_mode": "html",
-	})
-
-	response, err = http.Post(url, "application/json", bytes.NewBuffer(body))
+	slackBody, _ := json.Marshal(SlackRequestBody{Text: sendingText})
+	req, err := http.NewRequest(http.MethodPost, t.secret, bytes.NewBuffer(slackBody))
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("dispatcher telegram Error: %s", err)
 		return err
 	}
-	defer response.Body.Close()
 
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Error in Response with Error code: %d", response.StatusCode)
-		return fmt.Errorf("REST API Error with HTTP response status code: %d", response.StatusCode)
-	}
+	req.Header.Add("Content-Type", "application/json")
 
-	body, err = io.ReadAll(response.Body)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): body parsing Error: %s", err)
 		return err
 	}
-	respJSON := make(map[string]interface{})
-	err = json.Unmarshal(body, &respJSON)
-	if err != nil {
-		log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Unmarshalling JSON Error: %s", err)
-		return err
-	}
-	if !respJSON["ok"].(bool) {
-		log.Error().Str("module", "dispatcher").Msg("Channel(Telegram): Connection failed due to Invalid telegram token.")
-		return fmt.Errorf("Invalid telegram token. ")
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	if buf.String() != "ok" {
+		return fmt.Errorf("non-ok response returned from Slack")
 	}
 
 	return nil
-}
-
-func getURL(token string) string {
-	return fmt.Sprintf("https://api.telegram.org/bot%s", token)
 }

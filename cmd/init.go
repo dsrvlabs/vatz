@@ -34,6 +34,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
         secret: "Put your Discord Webhook"
       - channel: "pagerduty"
         secret: "Put your PagerDuty's Integration Key (Events API v2)"
+      - channel: "slack"
+        secret: "Put Your Slack Webhook url"
       - channel: "telegram"
         secret: "Put Your Bot's Token"
         chat_id: "Put Your Chat's chat_id"

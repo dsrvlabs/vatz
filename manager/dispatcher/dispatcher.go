@@ -71,6 +71,15 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 					reminderSchedule: chanInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
+			case strings.EqualFold(channel, string(tp.Slack)):
+				dispatcherSingletons = append(dispatcherSingletons, &slack{
+					host:             cfg.HostName,
+					channel:          tp.Slack,
+					secret:           chanInfo.Secret,
+					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
+					reminderSchedule: chanInfo.ReminderSchedule,
+					entry:            sync.Map{},
+				})
 			case strings.EqualFold(channel, string(tp.PagerDuty)):
 				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
 					host:       cfg.HostName,

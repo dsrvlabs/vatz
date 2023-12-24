@@ -111,6 +111,7 @@ const (
 	Discord   Channel = "DISCORD"
 	Telegram  Channel = "TELEGRAM"
 	PagerDuty Channel = "PAGERDUTY"
+	Slack     Channel = "SLACK"
 )
 
 // Reminder is for reminnig alert.
