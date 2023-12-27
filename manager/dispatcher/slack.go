@@ -114,7 +114,10 @@ Plugin Name: _%s_
 	}
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
+	_, err = buf.ReadFrom(resp.Body)
+	if err != nil {
+		return err
+	}
 	if buf.String() != "ok" {
 		return fmt.Errorf("non-ok response returned from Slack")
 	}
