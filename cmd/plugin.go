@@ -237,7 +237,7 @@ var (
 			log.Debug().Str("module", "plugin").Msgf("enable installed plugin %s at %s", pluginName, pluginDir)
 
 			mgr := plugin.NewManager(pluginDir)
-			err = mgr.Update(pluginName, true)
+			err = mgr.SetEnabled(pluginName, true)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -264,7 +264,7 @@ var (
 			log.Debug().Str("module", "plugin").Msgf("disable installed plugin %s at %s", pluginName, pluginDir)
 
 			mgr := plugin.NewManager(pluginDir)
-			err = mgr.Update(pluginName, false)
+			err = mgr.SetEnabled(pluginName, false)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
