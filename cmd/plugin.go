@@ -263,7 +263,7 @@ var (
 				return err
 			}
 
-			log.Debug().Str("module", "plugin").Msgf("enable installed plugin %s at %s", pluginName, pluginDir)
+			log.Debug().Str("module", "plugin").Msgf("disable installed plugin %s at %s", pluginName, pluginDir)
 
 			mgr := plugin.NewManager(pluginDir)
 			err = mgr.Update(pluginName, false)
@@ -364,14 +364,20 @@ func createPluginCommand() *cobra.Command {
 		log.Error().Str("module", "plugin").Err(err)
 	}
 
-	cmd.AddCommand(statusCommand)
-	cmd.AddCommand(installCommand)
-	cmd.AddCommand(uninstallCommand)
-	cmd.AddCommand(startCommand)
-	cmd.AddCommand(stopCommand)
-	cmd.AddCommand(enableCommand)
-	cmd.AddCommand(disableCommand)
-	cmd.AddCommand(listCommand)
+	commands := []*cobra.Command{
+		statusCommand,
+		installCommand,
+		uninstallCommand,
+		startCommand,
+		stopCommand,
+		enableCommand,
+		disableCommand,
+		listCommand,
+	}
+
+	for _, pluginCmd := range commands {
+		cmd.AddCommand(pluginCmd)
+	}
 
 	return cmd
 }

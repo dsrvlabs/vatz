@@ -38,7 +38,6 @@ func createStartCommand() *cobra.Command {
 			return utils.SetLog(logfile, defaultFlagLog)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			log.Debug().Str("module", "main").Msgf("load config %s", configFile)
 			_, err := config.InitConfig(configFile)
 			if err != nil {
@@ -49,9 +48,21 @@ func createStartCommand() *cobra.Command {
 				}
 				return nil
 			}
-
-			ch := make(chan os.Signal, 1)
-			return initiateServer(ch)
+			/*
+				Stored process id into a separated file to avoid terminating the wrong vatz process
+				if there are two multiple running vatz processes on the single machine.
+			*/
+			path, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+			processID := os.Getpid()
+			log.Debug().Str("module", "cmd > start").Msgf("pid is %d", processID)
+			if err := os.WriteFile(fmt.Sprintf("%s/vatz.pid", path), []byte(strconv.Itoa(processID)), 0644); err != nil {
+				log.Error().Err(err).Msg("Failed to write PID file")
+				return err
+			}
+			return initiateServer(sigs)
 		},
 	}
 
@@ -89,16 +100,15 @@ func initiateServer(ch <-chan os.Signal) error {
 
 	log.Info().Str("module", "main").Msgf("Start VATZ Server on Listening Port: %s", addr)
 	grpcClients := utils.GetClients(cfg.PluginInfos.Plugins)
-	startExecutor(grpcClients, cfg.PluginInfos, ch)
+	startExecutor(grpcClients, ch)
 
 	rpcServ := rpc.NewRPCService()
 	go func() {
-		err := rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort)
-		if err != nil {
+		if err := rpcServ.Start(cfg.Vatz.RPCInfo.Address, cfg.Vatz.RPCInfo.GRPCPort, cfg.Vatz.RPCInfo.HTTPPort); err != nil {
 			log.Error().Str("module", "rpc").Msgf("RPC Service Starting Error: %s", err)
 		}
-
 	}()
+
 	monitoringInfo := cfg.Vatz.MonitoringInfo
 	if monitoringInfo.Prometheus.Enabled {
 		var prometheusPort string
@@ -121,7 +131,7 @@ func initiateServer(ch <-chan os.Signal) error {
 	return nil
 }
 
-func startExecutor(grpcClients []utils.GClientWithPlugin, pluginInfo config.PluginInfo, quit <-chan os.Signal) {
+func startExecutor(grpcClients []utils.GClientWithPlugin, quit <-chan os.Signal) {
 	// TODO:: value in map would be overridden by different plugins flag value if function name is the same
 	isOkayToSend := false
 	if len(grpcClients) == 0 {
@@ -147,6 +157,7 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 	mgr := pl.NewManager(pluginDir)
 	for {
 		pluginState, pluginStateErr := mgr.Get(plugin.Name)
+
 		select {
 		case <-verifyTicker.C:
 			if pluginState.IsEnabled {
@@ -176,7 +187,11 @@ func multiPluginExecutor(plugin config.Plugin, singleClient pluginPb.PluginClien
 				}
 			}
 		case <-quit:
+			osSig := <-quit
 			executeTicker.Stop()
+			log.Info().Str("module", "cmd > start").Msgf("Received signal: %s", osSig)
+			log.Info().Msg("Terminating VATZ...")
+			os.Exit(1)
 			return
 		}
 	}

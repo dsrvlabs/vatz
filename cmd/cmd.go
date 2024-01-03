@@ -21,6 +21,7 @@ const (
 var (
 	healthChecker = health.GetHealthChecker()
 	executor      = ex.NewExecutor()
+	sigs          = utils.InitializeChannel()
 	dispatchers   []dp.Dispatcher
 	isDebugLevel  bool
 	isTraceLevel  bool
@@ -35,6 +36,7 @@ func GetRootCommand() *cobra.Command {
 	rootCmd := CreateRootCommand()
 	rootCmd.AddCommand(createInitCommand(tp.LIVE))
 	rootCmd.AddCommand(createStartCommand())
+	rootCmd.AddCommand(createStopCommand())
 	rootCmd.AddCommand(createPluginCommand())
 	rootCmd.AddCommand(createVersionCommand())
 	return rootCmd
