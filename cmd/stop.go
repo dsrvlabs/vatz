@@ -80,14 +80,13 @@ func createStopCommand() *cobra.Command {
 					log.Error().Err(err).Msg("Failed to send termination signal")
 					fmt.Printf("Failed to send SIGINT: %v\n", err)
 				}
-				select {
-				case <-ticker.C:
-					if err := process.Signal(syscall.Signal(0)); err != nil {
-						log.Debug().Str("module", "cmd > stop").Msg("Process has exited.")
-						return nil
-					} else {
-						log.Debug().Str("module", "cmd > stop").Msg("Process is still running. Attempting to send SIGINT again.")
-					}
+
+				<-ticker.C
+				if err := process.Signal(syscall.Signal(0)); err != nil {
+					log.Debug().Str("module", "cmd > stop").Msg("Process has exited.")
+					return nil
+				} else {
+					log.Debug().Str("module", "cmd > stop").Msg("Process is still running. Attempting to send SIGINT again.")
 				}
 			}
 			return nil

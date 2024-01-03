@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/stretchr/testify/assert"
@@ -38,8 +39,10 @@ func TestMakeUniqueValue(t *testing.T) {
 func TestInitializeChannel(t *testing.T) {
 	sigs := InitializeChannel()
 	go func() {
-		time.Sleep(time.Millisecond * 100)             // Wait a bit before sending the signal
-		syscall.Kill(syscall.Getpid(), syscall.SIGINT) // Send SIGINT to the process
+		time.Sleep(time.Millisecond * 100) // Wait a bit before sending the signal
+		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
+			fmt.Printf("Failed to kill process: %v\n", err)
+		}
 	}()
 
 	select {
