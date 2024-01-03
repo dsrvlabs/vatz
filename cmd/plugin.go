@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -146,18 +147,15 @@ var (
 					break
 				}
 			}
-			if pluginExist {
-				err = mgr.Uninstall(args[0])
-				if err != nil {
-					log.Error().Str("module", "plugin").Err(err)
-					return err
-				}
-				log.Info().Str("module", "plugin").Msgf("Plugin %s is successfully uninstalled from %s", args[0], pluginDir)
-			} else {
+			if !pluginExist {
 				log.Error().Str("module", "plugin").Msgf("There's no plugin with the name %s from the installed plugin list. ", args[0])
-				log.Error().Str("module", "plugin").Msg("Please confirm plugin name again")
+				return errors.New("Please confirm plugin name again.")
 			}
-
+			if err = mgr.Uninstall(args[0]); err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+			log.Info().Str("module", "plugin").Msgf("Plugin %s is successfully uninstalled from %s", args[0], pluginDir)
 			return nil
 		},
 	}

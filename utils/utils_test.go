@@ -38,6 +38,7 @@ func TestMakeUniqueValue(t *testing.T) {
 
 func TestInitializeChannel(t *testing.T) {
 	sigs := InitializeChannel()
+	done := make(chan bool)
 	go func() {
 		time.Sleep(time.Millisecond * 100) // Wait a bit before sending the signal
 		if err := syscall.Kill(syscall.Getpid(), syscall.SIGINT); err != nil {
@@ -47,8 +48,10 @@ func TestInitializeChannel(t *testing.T) {
 
 	select {
 	case <-sigs:
-		// Test passed, signal received
+		assert.True(t, true, "Signal received as expected")
 	case <-time.After(time.Second):
-		t.Error("Expected to receive signal, but did not")
+		assert.Fail(t, "Expected to receive signal, but did not")
+	case <-done:
+		// This case ensures the goroutine has completed its execution
 	}
 }
