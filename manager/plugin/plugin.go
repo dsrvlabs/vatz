@@ -39,7 +39,7 @@ type VatzPluginManager interface {
 	Uninstall(name string) error
 	List() ([]VatzPlugin, error)
 
-	Update(pluginID string, isEnabled bool) error
+	SetEnabled(pluginID string, isEnabled bool) error
 
 	Start(name, args string, logfile *os.File) error
 	Stop(name string) error
@@ -241,7 +241,7 @@ func (m *vatzPluginManager) Get(name string) (VatzPlugin, error) {
 	}, nil
 }
 
-func (m *vatzPluginManager) Update(pluginID string, isEnabled bool) error {
+func (m *vatzPluginManager) SetEnabled(pluginID string, isEnabled bool) error {
 	dbWr, err := newWriter(fmt.Sprintf("%s/%s", m.home, pluginDBName))
 	if err != nil {
 		log.Error().Str("module", "plugin").Msgf("Update > newWriter Error: %s", err)

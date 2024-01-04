@@ -12,8 +12,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -126,4 +129,10 @@ func waitForConnection(ctx context.Context, conn *grpc.ClientConn) error {
 			time.Sleep(100 * time.Millisecond)
 		}
 	}
+}
+
+func InitializeChannel() chan os.Signal {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	return sigs
 }

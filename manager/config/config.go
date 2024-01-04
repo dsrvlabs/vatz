@@ -37,9 +37,8 @@ var (
 
 // Config is Vatz config structure.
 type Config struct {
-	Vatz VatzProtocolInfo `yaml:"vatz_protocol_info"`
-
-	PluginInfos PluginInfo `yaml:"plugins_infos"`
+	Vatz        VatzProtocolInfo `yaml:"vatz_protocol_info"`
+	PluginInfos PluginInfo       `yaml:"plugins_infos"`
 }
 
 // VatzProtocolInfo is VATZ information.

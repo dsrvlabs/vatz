@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-
-	"github.com/dsrvlabs/vatz/utils"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -135,11 +134,24 @@ var (
 
 			log.Debug().Str("module", "plugin").Msgf("Uninstall a plugin %s from %s", args[0], pluginDir)
 
-			// TODO: Handle already installed.
 			// TODO: Handle invalid repo name.
 			mgr := plugin.NewManager(pluginDir)
-			err = mgr.Uninstall(args[0])
+			pluginExist := false
+			plugins, err := mgr.List()
 			if err != nil {
+				return err
+			}
+			for _, plugin := range plugins {
+				if plugin.Name == args[0] {
+					pluginExist = true
+					break
+				}
+			}
+			if !pluginExist {
+				log.Error().Str("module", "plugin").Msgf("There's no plugin with the name %s from the installed plugin list. ", args[0])
+				return errors.New("Please confirm plugin name again.")
+			}
+			if err = mgr.Uninstall(args[0]); err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
 			}
@@ -209,26 +221,50 @@ var (
 
 	enableCommand = &cobra.Command{
 		Use:     "enable",
-		Short:   "Enabled or Disable plugin",
-		Args:    cobra.ExactArgs(2), // TODO: Can I check real git repo?
-		Example: "vatz plugin enable <pluginName> <true/false>",
+		Short:   "Enable plugin",
+		Example: "vatz plugin enable --plugin <pluginName>",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginName := viper.GetString("enable_plugin")
 			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
 			if err != nil {
 				return err
 			}
 
-			log.Debug().Str("module", "plugin").Msgf("enable installed plugin %s at %s", args[0], pluginDir)
+			log.Debug().Str("module", "plugin").Msgf("enable installed plugin %s at %s", pluginName, pluginDir)
 
-			// TODO: Handle already installed.
-			// TODO: Handle invalid repo name.
 			mgr := plugin.NewManager(pluginDir)
-			enableDisable := utils.ParseBool(args[1])
-			err = mgr.Update(args[0], enableDisable)
+			err = mgr.SetEnabled(pluginName, true)
+			if err != nil {
+				log.Error().Str("module", "plugin").Err(err)
+				return err
+			}
+			return nil
+		},
+	}
+
+	disableCommand = &cobra.Command{
+		Use:     "disable",
+		Short:   "Disable plugin",
+		Example: "vatz plugin disable --plugin <pluginName>",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			_, err := config.InitConfig(configFile)
+			return err
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			pluginName := viper.GetString("disable_plugin")
+			pluginDir, err := config.GetConfig().Vatz.AbsoluteHomePath()
+			if err != nil {
+				return err
+			}
+
+			log.Debug().Str("module", "plugin").Msgf("disable installed plugin %s at %s", pluginName, pluginDir)
+
+			mgr := plugin.NewManager(pluginDir)
+			err = mgr.SetEnabled(pluginName, false)
 			if err != nil {
 				log.Error().Str("module", "plugin").Err(err)
 				return err
@@ -314,13 +350,32 @@ func createPluginCommand() *cobra.Command {
 		log.Error().Str("module", "plugin").Err(err)
 	}
 
-	cmd.AddCommand(statusCommand)
-	cmd.AddCommand(installCommand)
-	cmd.AddCommand(uninstallCommand)
-	cmd.AddCommand(startCommand)
-	cmd.AddCommand(stopCommand)
-	cmd.AddCommand(enableCommand)
-	cmd.AddCommand(listCommand)
+	enableCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
+	err = viper.BindPFlag("enable_plugin", enableCommand.PersistentFlags().Lookup("plugin"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
+
+	disableCommand.PersistentFlags().StringP("plugin", "p", "", "Installed plugin name")
+	err = viper.BindPFlag("disable_plugin", disableCommand.PersistentFlags().Lookup("plugin"))
+	if err != nil {
+		log.Error().Str("module", "plugin").Err(err)
+	}
+
+	commands := []*cobra.Command{
+		statusCommand,
+		installCommand,
+		uninstallCommand,
+		startCommand,
+		stopCommand,
+		enableCommand,
+		disableCommand,
+		listCommand,
+	}
+
+	for _, pluginCmd := range commands {
+		cmd.AddCommand(pluginCmd)
+	}
 
 	return cmd
 }
