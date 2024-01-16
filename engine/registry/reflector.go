@@ -6,10 +6,10 @@ import (
 
 	"github.com/dsrvlabs/vatz/engine/bucket"
 	"github.com/jhump/protoreflect/grpcreflect"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection/grpc_reflection_v1"
-	"github.com/rs/zerolog/log"
 )
 
 type PluginReflector interface {
