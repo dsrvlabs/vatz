@@ -181,38 +181,28 @@ plugins_infos:
   $ ./vatz plugin start -p cpu_monitor -a "-port=9094 -urgent=80"
   ```
   If you see the following commands, you successfully started VATZ plugin.
-
   ```
-  2023-05-26T13:05:25+09:00 INF Load Config default.yaml module=config
-  2023-05-26T13:05:25+09:00 INF Start plugin cpu_monitor -port=9094 -urgent=80 module=plugin
-  2023-05-26T13:05:25+09:00 INF Plugin log redirect to /Users/user/.vatz/cpu_monitor.log module=plugin
-  2023-05-26T13:05:25+09:00 INF Create DB Instance module=db
-  2023-05-26T13:05:25+09:00 INF Start plugin cpu_monitor module=plugin
-  2023-05-26T13:05:25+09:00 INF Get cpu_monitor module=db
-  ```    
-
-
+  2024-01-17T01:01:32-06:00 INF Start plugin cpu_monitor  module=plugin
+  2024-01-17T01:01:32-06:00 INF Plugin cpu_monitor is successfully started. module=plugin
+  ```
 ### 2. Start VATZ
   
   ```
-  $ ./vatz start
+  ~$ ./vatz start
   ```
   If you see following logs you successfully started VATZ service.
   ```
-  % ./vatz start
-  2023-05-26T13:13:23+09:00 INF start module=main
-  2023-05-26T13:13:23+09:00 INF load config default.yaml module=main
-  2023-05-26T13:13:23+09:00 INF logfile  module=main
-  2023-05-26T13:13:23+09:00 INF Load Config default.yaml module=config
-  2023-05-26T13:13:23+09:00 INF Initialize Servers: VATZ Manager module=main
-  2023-05-26T13:13:23+09:00 INF VATZ Listening Port: :9090 module=main
-  2023-05-26T13:13:23+09:00 INF start metric server: 127.0.0.1:18080 module=main
-  2023-05-26T13:13:23+09:00 INF start rpc server module=rpc
-  2023-05-26T13:13:23+09:00 INF start gRPC gateway server 127.0.0.1:19091 module=rpc
-  2023-05-26T13:13:23+09:00 INF Create DB Instance module=db
-  2023-05-26T13:13:23+09:00 INF start gRPC server 127.0.0.1:19090 module=rpc
-  2023-05-26T13:13:23+09:00 INF Get cpu_monitor module=plugin
-  2023-05-26T13:13:23+09:00 INF Get cpu_monitor module=db
+  ~$ ./vatz start
+  2024-01-17T01:01:38-06:00 INF Initialize Server module=main
+  2024-01-17T01:01:38-06:00 INF Start VATZ Server on Listening Port: :9090 module=main
+  2024-01-17T01:01:38-06:00 INF Client successfully connected to localhost:9001 (plugin:cpu_monitor). module=util
+  2024-01-17T01:01:38-06:00 INF start metric server: 127.0.0.1:18080 module=main
+  2024-01-17T01:01:38-06:00 INF start rpc server module=rpc
+  2024-01-17T01:01:38-06:00 INF start gRPC gateway server 127.0.0.1:19091 module=rpc
+  2024-01-17T01:01:38-06:00 INF start gRPC server 127.0.0.1:19090 module=rpc
+  2024-01-17T01:01:38-06:00 INF Client successfully connected to localhost:9001 (plugin:cpu_monitor). module=util
+  2024-01-17T01:01:46-06:00 INF Executor send request to cpu_monitor module=executor
+  2024-01-17T01:01:46-06:00 INF response: SUCCESS module=executor
   ```
 
 

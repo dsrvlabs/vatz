@@ -1,4 +1,4 @@
-# VATZ Project Design
+# VATZ Project Design (v1)
 
 ![Vatz Project Design](https://user-images.githubusercontent.com/6308023/210964352-d7c59b6e-9219-4d96-bf78-ccf2a21d1be6.png)
 
@@ -119,3 +119,9 @@ and most of the validator teams have trouble managing logs from running nodes du
 ![monitoring_to_be](https://user-images.githubusercontent.com/6308023/210969235-4aa505ee-28cc-4e16-8129-843dbc4f2ca0.png)
 
 **VATZ** will support to more monitoring and analysis 3rd party apps tool as shown in the diagram above.
+
+---
+
+# VATZ Project Design (v2)
+TBD, Will be release on 2024.
+Please, contact us if you have any question or comment about `VATZ` v2

@@ -1,6 +1,6 @@
 # VATZ API Specs
 
-RPC service is available for managing VATZ. For now, this RPC serive is only available on local.
+RPC service is available for managing VATZ. For now, this RPC service is only available on local.
 
 ## Get Plugin's status
 
