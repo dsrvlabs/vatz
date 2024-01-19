@@ -24,7 +24,7 @@ Available Commands:
 Flags:
       --debug   Enable debug mode on Log.
   -h, --help    help for this command
-      --trace   Enable Trace mode on Log.
+      --trace   Enable trace mode on Log.
 
 Use " [command] --help" for more information about a command.
 ```
@@ -44,7 +44,7 @@ Flags:
 
 Global Flags:
       --debug   Enable debug mode on Log.
-      --trace   Enable Trace mode on Log.
+      --trace   Enable trace mode on Log.
 ```
 With `--all` flag, you create config file including all default setting of official plugins like below. If you use the default settings, make sure to name the plugin when you install it to match the <pluginName> of the setting.
 ```
@@ -118,7 +118,7 @@ Flags:
 
 Global Flags:
       --debug   Enable debug mode on Log.
-      --trace   Enable Trace mode on Log.
+      --trace   Enable trace mode on Log.
 
 ```
 You can simply start VATZ with command
@@ -146,7 +146,7 @@ Flags:
 
 Global Flags:
       --debug   Enable debug mode on Log.
-      --trace   Enable Trace mode on Log.
+      --trace   Enable trace mode on Log.
 ```
 You can simply stop VATZ with command
 ```
@@ -199,7 +199,7 @@ You can simply stop VATZ with command
   
   Global Flags:
         --debug   Enable debug mode on Log.
-        --trace   Enable Trace mode on Log.
+        --trace   Enable trace mode on Log.
   
   Use " plugin [command] --help" for more information about a command.
   ```
