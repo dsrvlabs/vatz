@@ -1,10 +1,10 @@
-# Vatz workflow
+# VATZ workflow
 
-## 1. contribution guide. 
-Please, follow the contribution guide if you have any PR that you would like to contribute. 
+## 1. Contribution guide. 
+Please adhere to the guidelines outlined in the [Contribution guide](contributing.md), if you have a pull request (PR) that you wish to contribute
 
-## 2. PR raised
-When PR is raised, there are 2 steps that must passed prior to review
+## 2. Pull request
+Upon submission of the pull request (PR), it is imperative to successfully complete two preliminary steps before the review process commences.
 
 <img alt="steps" src="https://github.com/dsrvlabs/vatz/assets/6308023/806550b0-4449-4af7-8403-5850f55ceef3">
 
@@ -15,21 +15,23 @@ When PR is raised, there are 2 steps that must passed prior to review
 <img alt="go_lint" src="https://github.com/dsrvlabs/vatz/assets/6308023/cd9f2420-d978-4fcd-a910-d691cb1b3098">
 
 ### 2.3 Notifications 
-Send a notification to VATZ maintainers once you raised PR.  
+VATZ maintainers will receive immediately after you have submitted the pull request.
 
 <img alt="notification" src="https://github.com/dsrvlabs/vatz/assets/6308023/fea9aad1-71c0-4942-b7e1-2fd7b3cadd4a">
 
 ## 3. Review
-> Maintainers will review the code and then will be merged if you get passed from two reviewer at least.
-> Please, make sure that select all followings
+> The maintainers will conduct a review of the code in the submitted pull request. It is required to obtain approval from at least two reviewers.
+> Please, ensure that you select to all of the following criteria
 > - Reviewers
 > - Assignees
 > - Project (You can leave it blank if you don't know)
+> - Development (issue that associate with raised PR)
 
 <img alt="image" src="https://github.com/dsrvlabs/vatz/assets/6308023/a8917189-cfe8-4565-9571-7fa43c744a50">
 
-## 4. Merged
-Your PR is going to be merged when all review is finished confirmed by at least two reviewers and PR will be closed.
+## 4. Merge
+Pull request will be merged and subsequently closed upon receiving the requisite number of approvals from the reviewers.
+
 > Example <br>
 > 
 > <img alt="image" src="https://github.com/dsrvlabs/vatz/assets/6308023/b3e01edc-3698-4d0f-a935-725d07bc6fb7">

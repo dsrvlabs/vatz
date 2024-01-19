@@ -123,5 +123,5 @@ and most of the validator teams have trouble managing logs from running nodes du
 ---
 
 # VATZ Project Design (v2)
-TBD, Will be release on 2024.
-Please, contact us if you have any question or comment about `VATZ` v2
+The comprehensive design of VATZ v2 is presently in the development stage, with an anticipated release scheduled for 2024. 
+Should you have any inquiries or feedback regarding VATZ v2, do not hesitate to contact us.

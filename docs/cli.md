@@ -6,7 +6,7 @@ Visit [Installation](./installation.md).
 
 
 ## Help
-For more details, you can query helps by adding `--help` flag.
+For example, the following command displays help for the general VATZ CLI options and the available top-level commands.
 ```
 ~$ ./vatz --help
 Usage:
@@ -31,7 +31,7 @@ Use " [command] --help" for more information about a command.
 
 
 ## Init
-To start VATZ you need to init first. Currently, there are 4 flags under `init`. 
+To initiate the VATZ, it is mandatory to first execute the `init` command, which incorporates four distinct flags.
 ```
 Usage:
    init [flags]
@@ -46,7 +46,12 @@ Global Flags:
       --debug   Enable debug mode on Log.
       --trace   Enable trace mode on Log.
 ```
-With `--all` flag, you create config file including all default setting of official plugins like below. If you use the default settings, make sure to name the plugin when you install it to match the <pluginName> of the setting.
+
+Utilizing the `--all` flag enables the creation of a configuration file encompassing the default settings for all official plugins. 
+Please make sure that the plugin's name corresponds with the <pluginName> in the settings when employing these defaults.
+<br>
+Here is a sample config file:
+
 ```
   default_verify_interval: 15
   default_execute_interval: 30
@@ -102,7 +107,8 @@ Also, You can set the home directory of VATZ (default "~/.vatz") with `--home` f
 And you can create the new config file with your disired name with `--output` flag
 
 ## Start
-You can start VATZ when you finish set up config default.yaml or your own config yaml file.
+Please, ensure completion of the configuration setup in either the `default.yaml` file or your custom configuration YAML file prior to initiating VATZ.
+
 ```
 ./vatz start --help                 
 start VATZ
@@ -125,8 +131,8 @@ You can simply start VATZ with command
 ```
 ~$ ./vatz start 
 ```
-This will start VATZ with default config, that's been created from previous command `vatz init`. <br>
-You can set exact config file with flag --config such as 
+This will start VATZ with the default config created from the previous vatz init command. 
+You can set the exact config file with the --config flag, such as:
 ```
 ~$ ./vatz start --config /root/User/vatz-config.yaml
 ```
@@ -308,7 +314,7 @@ You can simply stop VATZ with command
   ```
   ~$ ./vatz plugin start --plugin <pluginName> or vatz plugin start --plugin <pluginName> --args <arguments>
   ```
-  For certain plugins that necessitate arguments for the binary, these can be supplied using the --args flag. 
+  For certain plugins that necessitate arguments for the binary, these can be supplied using the `--args` flag. 
   The arguments should be enclosed within quotes as a single string. Details about the arguments are provided by the plugin itself. 
   For instance, in the case of the recently installed plugin, you can refer to https://github.com/dsrvlabs/vatz-plugin-cosmoshub for more information.
   
