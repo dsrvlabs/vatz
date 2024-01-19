@@ -22,9 +22,9 @@ Available Commands:
   version     VATZ Version
 
 Flags:
-      --debug   Enable debug mode on Log.
+      --debug   Enable debug mode on Log
   -h, --help    help for this command
-      --trace   Enable trace mode on Log.
+      --trace   Enable trace mode on Log
 
 Use " [command] --help" for more information about a command.
 ```

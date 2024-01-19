@@ -16,7 +16,7 @@ func createStopCommand() *cobra.Command {
 	log.Debug().Str("module", "cmd > stop").Msg("Stop command")
 	cmd := &cobra.Command{
 		Use:   "stop",
-		Short: "stop VATZ",
+		Short: "Stop VATZ",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			_, err := config.InitConfig(configFile)
 			return err
