@@ -136,8 +136,8 @@ You can set the exact config file with the --config flag, such as:
 ```
 ~$ ./vatz start --config /root/User/vatz-config.yaml
 ```
-You need to use absolute path. 
-You can also check your own log by its level, adding flag `--debug` or `--trace`.
+An absolute path is mandatory for this operation. 
+To view your logs based on their level, you can add the `--debug` or `--trace` flag accordingly.
 
 ## Stop
 You can stop(kill gracefully) VATZ when you want to terminate VATZ process. 
