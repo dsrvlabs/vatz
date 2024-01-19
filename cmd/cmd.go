@@ -52,6 +52,6 @@ func CreateRootCommand() *cobra.Command {
 		}
 	}}
 	rootCmd.PersistentFlags().BoolVarP(&isDebugLevel, "debug", "", false, "Enable debug mode on Log.")
-	rootCmd.PersistentFlags().BoolVarP(&isTraceLevel, "trace", "", false, "Enable Trace mode on Log.")
+	rootCmd.PersistentFlags().BoolVarP(&isTraceLevel, "trace", "", false, "Enable trace mode on Log.")
 	return rootCmd
 }
