@@ -102,7 +102,7 @@ Also, You can set the home directory of VATZ (default "~/.vatz") with `--home` f
 And you can create the new config file with your disired name with `--output` flag
 
 ## Start
-You can start Vatz when you finish set up config default.yaml or your own config yaml file.
+You can start VATZ when you finish set up config default.yaml or your own config yaml file.
 ```
 ./vatz start --help                 
 start VATZ
@@ -134,7 +134,7 @@ You need to use absolute path.
 You can also check your own log by its level, adding flag `--debug` or `--trace`.
 
 ## Stop
-You can stop(kill gracefully) Vatz when you want to terminate vatz process. 
+You can stop(kill gracefully) VATZ when you want to terminate VATZ process. 
 ```shell
 stop VATZ
 
@@ -315,7 +315,7 @@ You can simply stop VATZ with command
   ```
   ~$ ./vatz plugin start --plugin cosmos-status --args "--valoperAddr=5dsxaisdoifb2b194ajsllba7"
   ```
-
+  #### 5.1. Example(`start`)
   ```
   2024-01-17T00:28:10-06:00 INF Start plugin cosmos-status --valoperAddr=5dsxaisdoifb2b194ajsllba7 module=plugin
   2024-01-17T00:28:10-06:00 INF Plugin cosmos-status is successfully started. module=plugin
