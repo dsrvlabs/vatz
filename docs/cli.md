@@ -6,7 +6,8 @@ Visit [Installation](./installation.md).
 
 
 ## Help
-For example, the following command displays help for the general VATZ CLI options and the available top-level commands.
+You can see the general VATZ CLI options and the available top-level commands with --help flag.
+
 ```
 ~$ ./vatz --help
 Usage:
@@ -31,7 +32,9 @@ Use " [command] --help" for more information about a command.
 
 
 ## Init
-To initiate the VATZ, it is mandatory to first execute the `init` command, which incorporates four distinct flags.
+
+To initiate VATZ, it is mandatory to first execute `init` command, which includes four distinct flags.
+
 ```
 Usage:
    init [flags]
@@ -103,11 +106,11 @@ Here is a sample config file:
       executable_methods:
         - method_name: "node_governance_alarm"`
 ```
-Also, You can set the home directory of VATZ (default "~/.vatz") with `--home` flag.
+Also, you can set the home directory of VATZ (default "~/.vatz") with `--home` flag.
 And you can create the new config file with your disired name with `--output` flag
 
 ## Start
-Please, ensure completion of the configuration setup in either the `default.yaml` file or your custom configuration YAML file prior to initiating VATZ.
+Please ensure the configuration setup is completed in either the default.yaml file or your custom configuration YAML file before initiating VATZ.
 
 ```
 ./vatz start --help                 
@@ -131,7 +134,7 @@ You can simply start VATZ with command
 ```
 ~$ ./vatz start 
 ```
-This will start VATZ with the default config created from the previous vatz init command. 
+This will start VATZ with the default config created from the previous `vatz init` command. 
 You can set the exact config file with the --config flag, such as:
 ```
 ~$ ./vatz start --config /root/User/vatz-config.yaml
