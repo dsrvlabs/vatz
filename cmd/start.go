@@ -32,7 +32,7 @@ func createStartCommand() *cobra.Command {
 	log.Debug().Str("module", "cmd > start").Msg("start command")
 	cmd := &cobra.Command{
 		Use:   "start",
-		Short: "start VATZ",
+		Short: "Start VATZ",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			log.Debug().Str("module", "cmd start").Msgf("Set logfile %s", logfile)
 			return utils.SetLog(logfile, defaultFlagLog)

@@ -15,7 +15,7 @@ import (
 func createInitCommand(initializer tp.Initializer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "init",
+		Short: "Initialize VATZ",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			log.Debug().Str("module", "main").Msg("init")
 
