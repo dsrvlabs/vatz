@@ -109,4 +109,3 @@ func (s *handlerService) convert(d *desc.MessageDescriptor, fields []*v2.FieldSp
 
 func NewHandler() v2.RequestHandlerServer {
 	return &handlerService{}
-}
