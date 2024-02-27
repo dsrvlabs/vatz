@@ -110,6 +110,5 @@ func NewBucket() PluginBucket {
 	if bucket == nil {
 		_ = <-c
 	}
-
 	return bucket
 }
