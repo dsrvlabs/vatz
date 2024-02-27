@@ -45,6 +45,7 @@ type MethodArgDescriptor struct {
 type PluginBucket interface {
 	Set(newPlugin PluginDescriptor) error
 	Get(name string) (*PluginDescriptor, error)
+	List() []*PluginDescriptor
 }
 
 type pluginBucket struct {
@@ -81,10 +82,23 @@ func (b *pluginBucket) Get(name string) (*PluginDescriptor, error) {
 	return &p, nil
 }
 
+func (b *pluginBucket) List() []*PluginDescriptor {
+	descs := []*PluginDescriptor{}
+
+	for k := range b.plugins {
+		desc := b.plugins[k]
+		descs = append(descs, &desc)
+	}
+
+	return descs
+}
+
 func NewBucket() PluginBucket {
 	c := make(chan bool, 1)
 
 	once.Do(func() {
+		log.Info().Str("module", "bucket").Msg("new bucket")
+
 		bucket = &pluginBucket{
 			plugins: map[string]PluginDescriptor{},
 			lock:    sync.Mutex{},

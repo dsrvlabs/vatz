@@ -1,6 +1,7 @@
 package bucket
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,8 @@ func TestBucketAddNewError(t *testing.T) {
 }
 
 func TestBucketAddNew(t *testing.T) {
+	once = sync.Once{}
+
 	b := NewBucket()
 
 	p := PluginDescriptor{
@@ -76,6 +79,51 @@ func TestBucketAddNew(t *testing.T) {
 
 	assert.Nil(t, m)
 	assert.Equal(t, err, errNotExist)
+}
+
+func TestBucketList(t *testing.T) {
+	once = sync.Once{}
+
+	b := NewBucket()
+
+	// Set first
+	err := b.Set(
+		PluginDescriptor{
+			Address: "localhost:9090",
+			Name:    "service-1",
+			Methods: map[string]MethodArgDescriptor{
+				"SayHello": {},
+				"Greeting": {},
+			},
+		},
+	)
+
+	assert.Nil(t, err)
+
+	err = b.Set(
+		PluginDescriptor{
+			Address: "localhost:9091",
+			Name:    "service-2",
+			Methods: map[string]MethodArgDescriptor{
+				"SayHello": {},
+				"Greeting": {},
+			},
+		},
+	)
+
+	assert.Nil(t, err)
+
+	pluginList := b.List()
+
+	assert.Equal(t, 2, len(pluginList))
+
+	names := make([]string, len(pluginList))
+	for i := 0; i < len(pluginList); i++ {
+		names[i] = pluginList[i].Name
+	}
+
+	assert.Contains(t, names, "service-1")
+	assert.Contains(t, names, "service-2")
 }
 
 func TestBucketSingleton(t *testing.T) {

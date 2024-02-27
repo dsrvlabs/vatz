@@ -3,11 +3,13 @@ package main
 import (
 	"errors"
 	"net"
+	"time"
 
-	"google.golang.org/grpc"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
 
 	agent "github.com/dsrvlabs/vatz-proto/manager/v2"
+	"github.com/dsrvlabs/vatz/engine/endpoint"
 	"github.com/dsrvlabs/vatz/engine/handler"
 	"github.com/dsrvlabs/vatz/engine/registry"
 	"github.com/dsrvlabs/vatz/utils"
@@ -40,5 +42,10 @@ func main() {
 		}
 	}()
 
-	registry.StartRegistrationService(8080)
+	go registry.StartRegistrationService(8080)
+	go endpoint.StartEndpointService(9091)
+
+	for {
+		time.Sleep(10 * time.Second)
+	}
 }

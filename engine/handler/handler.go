@@ -9,13 +9,13 @@ import (
 	"github.com/dsrvlabs/vatz-proto/manager/v2"
 	"github.com/dsrvlabs/vatz/engine/bucket"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/dynamicpb"
 	anypb "google.golang.org/protobuf/types/known/anypb"
-	"github.com/rs/zerolog/log"
 )
 
 type handlerService struct {
@@ -66,7 +66,7 @@ func (s *handlerService) SendRequest(ctx context.Context, in *v2.UserRequest) (*
 
 	d, err := protojson.Marshal(outMsg)
 
-	//fmt.Printf("Marshal %s, %+v\n", string(d), err)
+	// fmt.Printf("Marshal %s, %+v\n", string(d), err)
 
 	anyMsg, err := anypb.New(outMsg)
 	if err != nil {
@@ -74,9 +74,9 @@ func (s *handlerService) SendRequest(ctx context.Context, in *v2.UserRequest) (*
 	}
 
 	resp := v2.UserResponse{
-		Plugin: in.Plugin,
-		Method: in.Method,
-		Result: anyMsg,
+		Plugin:    in.Plugin,
+		Method:    in.Method,
+		Result:    anyMsg,
 		StrResult: string(d),
 	}
 	return &resp, nil

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"github.com/rs/zerolog/log"
 
 	agent "github.com/dsrvlabs/vatz-proto/manager/v2"
 )
@@ -30,19 +30,6 @@ func (s *registrationServer) RegisterPlugin(ctx context.Context, in *agent.Regis
 	return &agent.RegisterResponse{
 		Msg: fmt.Sprintf("%s - %s:%d", in.Name, in.Address, in.Port),
 	}, nil
-}
-
-func (s *registrationServer) ListPlugins(ctx context.Context, in *agent.ListPluginRequest) (*agent.ListPluginResponse, error) {
-	// TODO: TBD
-	return nil, nil
-}
-
-func (s *registrationServer) DetailPlugin(
-	ctx context.Context,
-	in *agent.DetailPluginRequest,
-) (*agent.DetailPluginResponse, error) {
-	// TODO: TBD
-	return nil, nil
 }
 
 // StartRegistrationService starts registration service
