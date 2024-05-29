@@ -5,11 +5,17 @@ set -v
 DEFAULT_LOG_PATH=/var/log/vatz
 DEFAULT_VATZ_PATH=/root/vatz
 
-#Create vatz log folder
-mkdir $DEFAULT_LOG_PATH
+# Create vatz log folder
+## Check if $LOG_PATH exists
+if [ -d "$DEFAULT_LOG_PATH" ]; then
+  echo "$DEFAULT_LOG_PATH already exists. Skipping creation."
+else
+## Create $LOG_PATH if it doesn't exist
+  mkdir $DEFAULT_LOG_PATH
+fi
 
 # Compile VATZ
-cd DEFAULT_VATZ_PATH
+cd $DEFAULT_VATZ_PATH
 make
 
 ## You will see binary named vatz
