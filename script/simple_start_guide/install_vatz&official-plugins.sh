@@ -9,7 +9,7 @@ DEFAULT_VATZ_PATH=/root/vatz
 mkdir $DEFAULT_LOG_PATH
 
 # Compile VATZ
-cd `DEFAULT_VATZ_PATH`
+cd $DEFAULT_VATZ_PATH
 make
 
 ## You will see binary named vatz
