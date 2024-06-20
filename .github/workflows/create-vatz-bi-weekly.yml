@@ -24,6 +24,13 @@ jobs:
             echo "is_week=false" >> $GITHUB_OUTPUT
           fi
         shell: bash
+      - name: Get meeting date
+        if: steps.check_week.outputs.is_week == 'true'
+        id: check_meeting_date
+        run: |
+          meeting=`date -d "wed" +"%Y-%m-%d"`
+          echo "meet_date=$meeting" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Set env variable # Generate values for all steps
         run: |
