@@ -56,12 +56,13 @@ jobs:
         shell: bash
 
       - name: Generate new discussion
-        id: create-discussion
+        if: steps.check_latest_discussion.outputs.dis_num != ''
+        id: create_discussion
         uses: abirismyname/create-discussion@v1.1.0
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
         with:
-          title: "${{ env.NEXT_MILESTONE_NUMBER }}. VATZ biweekly meeting at ${{ env.DUE_DATE }}"
+          title: "${{ steps.check_latest_discussion.outputs.dis_num }}. VATZ biweekly meeting at ${{ steps.check_meeting_date.outputs.meet_date }}"
           body: |
             ### 1. Overall
             ### 2. Statistic Rate
@@ -69,17 +70,6 @@ jobs:
             Sprint | Issue fulfillment | progress rate(%)
             --: | :--: | :--:
             
-          repository-id: "${{ secrets.DISCUSSION_REPO_ID }}"
-          category-id: "${{ secrets.DISCUSSION_CATE_ID }}"
+          repository-id: "${{ secrets.REPOSITORY_ID }}"
+          category-id: "${{ secrets.CATEGORY_ID }}"
 
-      - name: Generate new milestone
-        id: create-milestone
-        run: |
-          echo "Due Date: ${{ env.DUE_DATE }}"
-          echo "Next milestone number: ${{ env.NEXT_MILESTONE_NUMBER }}"
-          curl -s \
-            -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ env.URL }}" \
-            -d '{"title":"Sprint '${{ env.NEXT_MILESTONE_NUMBER }}' (~ '${{ env.DUE_DATE }}')","description":" ","state":"open","due_on":"'${{ env.DUE_DATE_LONG }}'"}'
