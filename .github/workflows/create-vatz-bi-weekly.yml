@@ -3,8 +3,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 2 * * 1" # Every Monday at 11 a.m(KST).
-env:
-  URL: https://api.github.com/repos/dsrvlabs/vatz/milestones
+
 jobs:
   create-bi-weekly:
     runs-on: ubuntu-latest
