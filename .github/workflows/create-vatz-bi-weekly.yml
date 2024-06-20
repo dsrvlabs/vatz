@@ -2,7 +2,7 @@ name: Create a next vatz discussion & milestone
 on: 
   workflow_dispatch:
   schedule:
-    - cron: "0 14 * * 3" # Every Wednesday at 11 p.m.
+    - cron: "0 2 * * 1" # Every Monday at 11 a.m(KST).
 env:
   URL: https://api.github.com/repos/dsrvlabs/vatz/milestones
 jobs:
@@ -51,6 +51,7 @@ jobs:
             
           repository-id: "${{ secrets.DISCUSSION_REPO_ID }}"
           category-id: "${{ secrets.DISCUSSION_CATE_ID }}"
+
       - name: Generate new milestone
         id: create-milestone
         run: |
