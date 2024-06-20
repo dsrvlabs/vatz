@@ -24,12 +24,35 @@ jobs:
             echo "is_week=false" >> $GITHUB_OUTPUT
           fi
         shell: bash
+
       - name: Get meeting date
         if: steps.check_week.outputs.is_week == 'true'
         id: check_meeting_date
         run: |
           meeting=`date -d "wed" +"%Y-%m-%d"`
           echo "meet_date=$meeting" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Get next discussion number
+        if: steps.check_week.outputs.is_week == 'true'
+        id: check_latest_discussion
+        run: |
+          # GitHub GraphQL API Endpoint
+          URL="https://api.github.com/graphql"
+          
+          # GraphQL Query
+          QUERY='{
+            "query": "query { repository(owner: \"dsrvlabs\", name: \"vatz\") { discussions(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { title url createdAt author { login } } } } }"
+          }'
+          
+          # Sending the request using curl
+          response=$(curl -s -X POST -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$QUERY" $URL)
+  
+          LASTEST=`echo $response | jq .data.repository.discussions.nodes[0].title | awk '{print $1 }' | sed 's/\"//g' | sed 's/\.//g'`
+  
+          NEXT_NUM=$( expr $LASTEST + 1 )
+          
+          echo "dis_num=$NEXT_NUM" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Set env variable # Generate values for all steps
