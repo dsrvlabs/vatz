@@ -8,7 +8,6 @@ jobs:
   create-bi-weekly:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - name: Check creation date # Step to determine if this is the second week because you have to create a 'Discussion' every two weeks
         id: check_week
         run: |
