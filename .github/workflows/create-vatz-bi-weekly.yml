@@ -2,63 +2,76 @@ name: Create a next vatz discussion & milestone
 on: 
   workflow_dispatch:
   schedule:
-    - cron: "0 14 * * 3" # Every Wednesday at 11 p.m.
-env:
-  URL: https://api.github.com/repos/dsrvlabs/vatz/milestones
+    - cron: "0 2 * * 1" # Every Monday at 10:00:00.
+  push:
+    branches:
+      - main
+
 jobs:
-  create-bi-weekly:
+  create_bi_weekly:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Check creation date # Step to determine if this is the second week because you have to create a 'Discussion & Milestone' every two weeks
-        run: |
-          due_date=`curl -Ls \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "${{ env.URL }}" | jq 'sort_by(.id)' | jq .[length-1].due_on | sed 's/"//g'`
-          target_date=$(date -d "$due_date" +%Y-%m-%d)
-          today=$(date +%Y-%m-%d)
-          if [[ "$target_date" == "$today" ]]; then
-            echo "The dates are equal."
-          else 
-            echo "The dates are different."
-            exit 1
-          fi
-      - name: Set env variable # Generate values for all steps
-        run: |
-          echo "DUE_DATE=$(date --date='+14 days' +%Y-%m-%d)" >> $GITHUB_ENV
-          echo "DUE_DATE_LONG=$(date --date='+14 days' +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
-          current_number=`curl -Ls \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "${{ env.URL }}" | jq 'sort_by(.id)' | jq .[length-1].title | sed 's/"//g' | awk '{print $2}'`
-          echo "NEXT_MILESTONE_NUMBER=$(( current_number + 1 ))" >> $GITHUB_ENV
-      - name: Generate new discussion
-        id: create-discussion
-        uses: abirismyname/create-discussion@v1.1.0
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
-        with:
-          title: "${{ env.NEXT_MILESTONE_NUMBER }}. VATZ biweekly meeting at ${{ env.DUE_DATE }}"
-          body: |
-            ### 1. Overall
-            ### 2. Statistic Rate
-             
-            Sprint | Issue fulfillment | progress rate(%)
-            --: | :--: | :--:
-            
-          repository-id: "${{ secrets.DISCUSSION_REPO_ID }}"
-          category-id: "${{ secrets.DISCUSSION_CATE_ID }}"
-      - name: Generate new milestone
-        id: create-milestone
-        run: |
-          echo "Due Date: ${{ env.DUE_DATE }}"
-          echo "Next milestone number: ${{ env.NEXT_MILESTONE_NUMBER }}"
-          curl -s \
-            -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "${{ env.URL }}" \
-            -d '{"title":"Sprint '${{ env.NEXT_MILESTONE_NUMBER }}' (~ '${{ env.DUE_DATE }}')","description":" ","state":"open","due_on":"'${{ env.DUE_DATE_LONG }}'"}'
+    - name: Check creation date # Step to determine if this is the second week because you have to create a 'Discussion & Milestone' every two weeks
+      id: check_week
+      run: |
+        WEEK_NUM=`date -d ${{ env.START_DATE }} +%U`
+        THIS_WEEK_NUM=`date +%U`
+        DIFF_WEEK_NUM=$( expr $WEEK_NUM - $THIS_WEEK_NUM )
+        if [ $(( DIFF_WEEK_NUM % 2)) -eq 0 ]; then
+          echo "This is the correct week"
+          echo "::set-output name=run_job::true"
+        else
+          echo "This is not the correct week"
+          echo "::set-output name=run_job::false"
+        fi
+      shell: bash
+
+    - name: Get latest discussion number
+      if: steps.check_week.outputs.run_job == 'true'
+      id: check_latest_discussion
+      run: |
+        # GitHub GraphQL API Endpoint
+        URL="https://api.github.com/graphql"
+        
+        # GraphQL Query
+        QUERY='{
+          "query": "query { repository(owner: \"dsrvlabs\", name: \"vatz\") { discussions(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { title url createdAt author { login } } } } }"
+        }'
+        
+        # Sending the request using curl
+        response=$(curl -s -X POST -H "Authorization: bearer ${{ secrets.GITHUB_TOKEN }}" -H "Content-Type: application/json" -d "$QUERY" $URL)
+
+        LASTEST=`echo $response | jq .data.repository.discussions.nodes[0].title | awk '{print $1 }' | sed 's/\"//g' | sed 's/\.//g'`
+
+        NEXT_NUM=$( expr $LASTEST + 1 )
+        
+        echo "::set-output name=dis_num::$NEXT_NUM"
+      shell: bash
+
+    - name: Get meeting date
+      if: steps.check_week.outputs.run_job == 'true'
+      id: check_meeting_date
+      run: |
+        meeting=`date -d "wed" +"%Y-%m-%d"`
+        echo "::set-output name=meet_date::$meeting"
+      shell: bash
+
+    - name: Generate new discussion
+      if: steps.check_latest_discussion.outputs.dis_num != ''
+      id: create_discussion
+      uses: abirismyname/create-discussion@v1.1.0
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REPOSITORY_ID: ${{ secrets.REPOSITORY_ID }}
+        CATEGORY_ID: ${{ secrets.CATEGORY_ID }}
+      with:
+        title: "${{ steps.check_latest_discussion.outputs.dis_num }}. VATZ biweekly meeting at ${{ steps.check_meeting_date.outputs.meet_date }}"
+        body: |
+          ## 1. Overall
+          ### 2. Statistic Rate
+           
+          Sprint | Issue fulfillment | progress rate(%)
+          --: | :--: | :--:
+          
+        repository-id: "${{ REPOSITORY_ID }}"
+        category-id: "${{ CATEGORY_ID }}"
