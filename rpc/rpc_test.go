@@ -3,6 +3,7 @@ package rpc
 import (
 	"encoding/json"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/types"
 	"io"
 	"net/http"
 	"testing"
@@ -14,7 +15,6 @@ import (
 
 	pb "github.com/dsrvlabs/vatz-proto/rpc/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/mocks"
 )
 

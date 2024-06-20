@@ -7,7 +7,7 @@ import (
 
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"

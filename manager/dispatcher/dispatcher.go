@@ -2,13 +2,13 @@ package dispatcher
 
 import (
 	"errors"
+	tp "github.com/dsrvlabs/vatz/types"
 	"strings"
 	"sync"
 	"time"
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"

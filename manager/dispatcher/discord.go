@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/types"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
 )

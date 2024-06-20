@@ -1,13 +1,17 @@
 package types
 
 import (
-	"time"
-
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/robfig/cron/v3"
+	"time"
+
+	"github.com/dsrvlabs/vatz/manager/config"
 )
 
-// DiscordColor is color for a discord alert.
+/*
+ * Discord Types
+ *
+ */
 type DiscordColor int
 
 // ReqMsg is Setup message into GRPC Type.
@@ -123,3 +127,24 @@ const (
 	HANG Reminder = "HANG"
 	OFF  Reminder = "OFF"
 )
+
+/*
+ * HealthCheck Types
+ *
+ */
+// AliveStatus is aliveness of plugin.
+
+type AliveStatus string
+
+// AliveStatus is type that describes aliveness flags.
+const (
+	AliveStatusUp   AliveStatus = "UP"
+	AliveStatusDown AliveStatus = "DOWN"
+)
+
+// PluginStatus describes detail status of plugin.
+type PluginStatus struct {
+	Plugin    config.Plugin `json:"plugin"`
+	IsAlive   AliveStatus   `json:"is_alive"`
+	LastCheck time.Time     `json:"last_check"`
+}

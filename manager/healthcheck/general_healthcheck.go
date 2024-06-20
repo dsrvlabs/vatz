@@ -3,13 +3,13 @@ package healthcheck
 import (
 	"context"
 	"fmt"
+	"github.com/dsrvlabs/vatz/types"
 	"sync"
 	"time"
 
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
@@ -22,19 +22,19 @@ var (
 )
 
 type healthChecker struct {
-	healthMSG    tp.ReqMsg
+	healthMSG    types.ReqMsg
 	pluginStatus sync.Map
 }
 
-func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (tp.AliveStatus, error) {
-	isAlive := tp.AliveStatusUp
+func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.PluginClient, plugin config.Plugin, dispatchers []dp.Dispatcher) (types.AliveStatus, error) {
+	isAlive := types.AliveStatusUp
 	sendMSG := false
 	pUnique := utils.MakeUniqueValue(plugin.Name, plugin.Address, plugin.Port)
 	verify, err := gClient.Verify(ctx, new(emptypb.Empty))
 
 	option := map[string]interface{}{"pUnique": pUnique}
 
-	deliverMSG := tp.ReqMsg{
+	deliverMSG := types.ReqMsg{
 		FuncName:     "isPluginUp",
 		State:        pb.STATE_FAILURE,
 		Msg:          "Plugin is DOWN!!",
@@ -45,19 +45,19 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 
 	if _, ok := h.pluginStatus.Load(pUnique); !ok {
 		if err != nil || verify == nil {
-			isAlive = tp.AliveStatusDown
+			isAlive = types.AliveStatusDown
 			sendMSG = true
 		}
 	} else {
 		plStat, _ := h.pluginStatus.Load(pUnique)
-		pStruct := plStat.(*tp.PluginStatus)
+		pStruct := plStat.(*types.PluginStatus)
 		if err != nil || verify == nil {
-			isAlive = tp.AliveStatusDown
-			if pStruct.IsAlive == tp.AliveStatusUp {
+			isAlive = types.AliveStatusDown
+			if pStruct.IsAlive == types.AliveStatusUp {
 				sendMSG = true
 			}
 		} else {
-			if pStruct.IsAlive == tp.AliveStatusDown {
+			if pStruct.IsAlive == types.AliveStatusDown {
 				sendMSG = true
 				deliverMSG.UpdateSeverity(pb.SEVERITY_INFO)
 				deliverMSG.UpdateState(pb.STATE_SUCCESS)
@@ -82,7 +82,7 @@ func (h *healthChecker) PluginHealthCheck(ctx context.Context, gClient pb.Plugin
 		}
 	}
 
-	h.pluginStatus.Store(pUnique, &tp.PluginStatus{
+	h.pluginStatus.Store(pUnique, &types.PluginStatus{
 		Plugin:    plugin,
 		IsAlive:   isAlive,
 		LastCheck: time.Now(),
@@ -111,11 +111,11 @@ func (h *healthChecker) VATZHealthCheck(healthCheckerSchedule []string, dispatch
 	return nil
 }
 
-func (h *healthChecker) PluginStatus(ctx context.Context) []tp.PluginStatus {
-	status := make([]tp.PluginStatus, 0)
+func (h *healthChecker) PluginStatus(ctx context.Context) []types.PluginStatus {
+	status := make([]types.PluginStatus, 0)
 
 	h.pluginStatus.Range(func(k, value any) bool {
-		curStatus := value.(*tp.PluginStatus)
+		curStatus := value.(*types.PluginStatus)
 		status = append(status, *curStatus)
 		return true
 	})

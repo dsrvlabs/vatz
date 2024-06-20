@@ -9,7 +9,7 @@ import (
 
 	"github.com/dsrvlabs/vatz/manager/config"
 	"github.com/dsrvlabs/vatz/manager/plugin"
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 )
 
 func createInitCommand(initializer tp.Initializer) *cobra.Command {
@@ -47,6 +47,15 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
     grpc_port: 19090
     http_port: 19091
   monitoring_info:
+    gcp:
+      gcp_cloud_logging_info:
+      	enabled: true
+		cloud_logging_credential_info:
+          project_id: "Please, Set your GCP Project id"
+          credentials_type: "Check the Credential Type: ADC: Application, SAC: Default Credentials, Service Account Credentials, APIKey: API Key, OAuth: OAuth2"
+          credentials: "Put your credential Info"
+          checker_schedule:
+            - "* * * * *"
     prometheus:
       enabled: true
       address: "127.0.0.1"
