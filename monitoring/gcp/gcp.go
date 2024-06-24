@@ -66,6 +66,9 @@ func getClient(ctx context.Context, projectID string, credType tp.CredentialOpti
 			return nil, err
 		}
 		client, err = logging.NewClient(ctx, projectID, option.WithTokenSource(tokenSource))
+		if err != nil {
+			return nil, err
+		}
 	default:
 		err = errors.New("invalid credential type")
 	}
