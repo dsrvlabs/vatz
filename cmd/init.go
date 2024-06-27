@@ -129,8 +129,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_address: "localhost"
       plugin_port: 10005
       executable_methods:
-        - method_name: "node_governance_alarm"
-`
+        - method_name: "node_governance_alarm"`
 
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
