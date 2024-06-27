@@ -28,17 +28,19 @@ type cloudLogging struct {
 }
 
 func (gl *cloudLogging) Prep(cfg *config.Config) error {
-	pluginStatus, err := utils.GetPluginStatus(defaultRPCAddr)
-	if err != nil {
-		return err
-	}
-	periodicCloudLog = setLogMessage(cfg.Vatz.ProtocolIdentifier, cfg.Vatz.NotificationInfo.HostName, pluginStatus)
+	periodicCloudLog = setLogMessage(cfg.Vatz.ProtocolIdentifier, cfg.Vatz.NotificationInfo.HostName, tp.PluginState{})
 	return nil
 }
 
 func (gl *cloudLogging) Process() error {
 	for _, schedule := range gl.reminderSchedule {
 		_, err := gl.reminderCron.AddFunc(schedule, func() {
+			pluginStatus, pluginStatusErr := utils.GetPluginStatus(defaultRPCAddr)
+			periodicCloudLog.PluginState = pluginStatus
+			if pluginStatusErr != nil {
+				log.Error().Str("module", "monitoring > gcp > cloud_logging").Msgf(" Execute(GetPluginStatus) error: %v", pluginStatusErr)
+				return // Log the error and continue the function execution
+			}
 			err := gl.storeLog(periodicCloudLog)
 			if err != nil {
 				log.Error().Str("module", "monitoring > gcp > cloud_logging").Msgf(" Execute(Storing Log) error: %v", err)
@@ -55,12 +57,12 @@ func (gl *cloudLogging) Process() error {
 
 func (gl *cloudLogging) storeLog(logEntry *gcpCloudLoggingEntry) error {
 	gcpLogger := gl.client.Logger(tp.MonitoringIdentifier)
-
-	// Log the entry
-	gcpLogger.Log(logging.Entry{
+	messageToSend := logging.Entry{
 		Payload:  logEntry,
 		Severity: logging.Info,
-	})
+	}
+
+	gcpLogger.Log(messageToSend)
 
 	log.Info().Str("module", "monitoring").Msgf("Store Logs into Cloud logging for %s, %s", logEntry.Protocol, logEntry.HostName)
 	return nil
