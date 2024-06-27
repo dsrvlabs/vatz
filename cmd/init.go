@@ -49,8 +49,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
   monitoring_info:
     gcp:
       gcp_cloud_logging_info:
-      	enabled: true
-		cloud_logging_credential_info:
+        enabled: true
+        cloud_logging_credential_info:
           project_id: "Please, Set your GCP Project id"
           credentials_type: "Check the Credential Type: ADC: Application, SAC: Default Credentials, Service Account Credentials, APIKey: API Key, OAuth: OAuth2"
           credentials: "Put your credential Info"
@@ -79,6 +79,7 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       executable_methods:
         - method_name: "sampleMethod2"
 `
+
 			defaultPluginOptionTemplate := `plugins_infos:
   default_verify_interval: 15
   default_execute_interval: 30
@@ -128,7 +129,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_address: "localhost"
       plugin_port: 10005
       executable_methods:
-        - method_name: "node_governance_alarm"`
+        - method_name: "node_governance_alarm"
+`
 
 			filename, err := cmd.Flags().GetString("output")
 			if err != nil {
