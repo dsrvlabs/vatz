@@ -4,14 +4,13 @@ package mocks
 
 import (
 	context "context"
+	"github.com/dsrvlabs/vatz/types"
 
 	config "github.com/dsrvlabs/vatz/manager/config"
 
 	dispatcher "github.com/dsrvlabs/vatz/manager/dispatcher"
 
 	mock "github.com/stretchr/testify/mock"
-
-	types "github.com/dsrvlabs/vatz/manager/types"
 
 	v1 "github.com/dsrvlabs/vatz-proto/plugin/v1"
 )

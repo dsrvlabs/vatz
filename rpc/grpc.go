@@ -7,7 +7,7 @@ import (
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dsrvlabs/vatz/manager/healthcheck"
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 )
 
 type grpcService struct {

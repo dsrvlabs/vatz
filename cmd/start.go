@@ -16,9 +16,10 @@ import (
 	config "github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	pl "github.com/dsrvlabs/vatz/manager/plugin"
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/monitoring/gcp"
 	"github.com/dsrvlabs/vatz/monitoring/prometheus"
 	"github.com/dsrvlabs/vatz/rpc"
+	tp "github.com/dsrvlabs/vatz/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -110,6 +111,19 @@ func initiateServer(ch <-chan os.Signal) error {
 	}()
 
 	monitoringInfo := cfg.Vatz.MonitoringInfo
+	if monitoringInfo.GCP.GCPCloudLogging.Enabled {
+		gcpServices := gcp.GetGCP(monitoringInfo)
+		for _, svc := range gcpServices {
+			err := svc.Prep(cfg)
+			if err != nil {
+				log.Error().Str("module", "gcp").Msgf("Fail to set Log Message: %s", err)
+			}
+			err = svc.Process()
+			if err != nil {
+				log.Error().Str("module", "gcp").Msgf("Fail to store Message in gcp Cloud logging : %s", err)
+			}
+		}
+	}
 	if monitoringInfo.Prometheus.Enabled {
 		var prometheusPort string
 		if defaultPromPort == promPort {

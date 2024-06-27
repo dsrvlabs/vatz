@@ -3,11 +3,11 @@ package executor
 import (
 	"context"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/types"
 	"sync"
 	"testing"
 
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"

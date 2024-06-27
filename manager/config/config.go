@@ -93,11 +93,26 @@ type RPCInfo struct {
 
 // MonitoringInfo is structure for RPC service configuration.
 type MonitoringInfo struct {
+	GCP struct {
+		GCPCloudLogging GCPCloudLoggingInfo `yaml:"gcp_cloud_logging_info"`
+	} `yaml:"gcp"`
 	Prometheus struct {
 		Enabled bool   `yaml:"enabled"`
 		Address string `yaml:"address"`
 		Port    int    `yaml:"port"`
 	} `yaml:"prometheus"`
+}
+
+type GCPCloudLoggingInfo struct {
+	Enabled           bool                       `yaml:"enabled"`
+	GCPCredentialInfo CloudLoggingCredentialInfo `yaml:"cloud_logging_credential_info"`
+}
+
+type CloudLoggingCredentialInfo struct {
+	ProjectID       string   `yaml:"project_id"`
+	CredentialsType string   `yaml:"credentials_type"`
+	Credentials     string   `yaml:"credentials"`
+	CheckerSchedule []string `yaml:"checker_schedule"`
 }
 
 // PluginInfo contains general plugin info.

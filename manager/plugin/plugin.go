@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/types"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,7 +14,6 @@ import (
 	"github.com/shirou/gopsutil/process"
 
 	"github.com/dsrvlabs/vatz/manager/config"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 )
 
 const (

@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	tp "github.com/dsrvlabs/vatz/types"
 	"os"
 	"sync"
 
@@ -10,7 +11,6 @@ import (
 	pluginpb "github.com/dsrvlabs/vatz-proto/plugin/v1"
 	"github.com/dsrvlabs/vatz/manager/config"
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/protobuf/types/known/structpb"

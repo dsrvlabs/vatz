@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 	"os"
 	"testing"
 

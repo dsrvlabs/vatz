@@ -2,7 +2,7 @@ package dispatcher
 
 import (
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

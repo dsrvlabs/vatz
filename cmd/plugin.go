@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
+	"github.com/dsrvlabs/vatz/utils"
 	"os"
 
 	"github.com/rs/zerolog/log"
@@ -37,46 +35,14 @@ var (
 			return err
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			statusRequest := fmt.Sprintf("%s/v1/plugin_status", vatzRPC)
-			req, err := http.NewRequest(http.MethodGet, statusRequest, nil)
+			pluginStatus, err := utils.GetPluginStatus(vatzRPC)
 			if err != nil {
 				return err
 			}
-
-			cli := http.Client{}
-			resp, err := cli.Do(req)
-			if err != nil {
-				log.Error().Str("module", "plugin").Err(err)
-				return err
-			}
-
-			log.Debug().Str("module", "plugin").Msgf("Plugin(s) status is requested to  %s.", statusRequest)
-
-			respData, err := io.ReadAll(resp.Body)
-			if err != nil {
-				log.Error().Str("module", "plugin").Err(err)
-				return err
-			}
-
-			statusResp := struct {
-				Status       string `json:"status"`
-				PluginStatus []struct {
-					Status     string `json:"status"`
-					PluginName string `json:"pluginName"`
-				} `json:"pluginStatus"`
-			}{}
-
-			err = json.Unmarshal(respData, &statusResp)
-			if err != nil {
-				log.Error().Str("module", "plugin").Err(err)
-				return err
-			}
-
 			fmt.Println("***** Plugin Status *****")
-			for i, plugin := range statusResp.PluginStatus {
+			for i, plugin := range pluginStatus.PluginStatus {
 				fmt.Printf("%d: %s [%s]\n", i+1, plugin.PluginName, plugin.Status)
 			}
-
 			return nil
 		},
 	}
