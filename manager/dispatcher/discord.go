@@ -24,8 +24,12 @@ const (
 	discordYellow        tp.DiscordColor = 16705372
 	discordGreen         tp.DiscordColor = 65340
 	discordGray          tp.DiscordColor = 9807270
-	discordWebhookFormat string          = "https://discord.com/api/webhooks/"
 )
+
+var discordWebhookFormats = []string{
+    "https://discord.com/api/webhooks/",
+    "https://discordapp.com/api/webhooks/",
+}
 
 type discord struct {
 	host             string
@@ -34,6 +38,15 @@ type discord struct {
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
+}
+
+func containsAny(s string, substrings []string) bool {
+    for _, substr := range substrings {
+        if strings.Contains(s, substr) {
+            return true
+        }
+    }
+    return false
 }
 
 func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
@@ -86,7 +99,7 @@ func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyIn
 }
 
 func (d *discord) SendNotification(msg tp.ReqMsg) error {
-	if strings.Contains(d.secret, discordWebhookFormat) {
+	if containsAny(d.secret, discordWebhookFormats) {
 		sendingMsg := tp.DiscordMsg{Embeds: make([]tp.Embed, 1)}
 		sendingMsg.Embeds[0].Color = discordGray
 		emoji := emojiER
