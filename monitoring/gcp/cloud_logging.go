@@ -22,9 +22,21 @@ type gcpCloudLoggingEntry struct {
 }
 
 type cloudLogging struct {
-	client           *logging.Client
+	client           Logger
 	reminderSchedule []string
 	reminderCron     *cron.Cron
+}
+
+type Logger interface {
+	Log(entry LogEntry) error
+	Close() error
+}
+
+type LogEntry struct {
+	Payload   interface{}
+	Severity  logging.Severity
+	Labels    map[string]string
+	Timestamp time.Time
 }
 
 func (gl *cloudLogging) Prep(cfg *config.Config) error {
@@ -56,13 +68,18 @@ func (gl *cloudLogging) Process() error {
 }
 
 func (gl *cloudLogging) storeLog(logEntry *gcpCloudLoggingEntry) error {
-	gcpLogger := gl.client.Logger(tp.MonitoringIdentifier)
-	messageToSend := logging.Entry{
-		Payload:  logEntry,
-		Severity: logging.Info,
+	messageToSend := LogEntry{
+		Payload:   logEntry,
+		Severity:  logging.Info,
+		Labels:    map[string]string{"module": "vatz"},
+		Timestamp: time.Now(),
 	}
 
-	gcpLogger.Log(messageToSend)
+	err := gl.client.Log(messageToSend)
+	if err != nil {
+		log.Error().Str("module", "monitoring").Msgf("Failed to store log: %v", err)
+		return err
+	}
 
 	log.Info().Str("module", "monitoring").Msgf("Store Logs into Cloud logging for %s, %s", logEntry.Protocol, logEntry.HostName)
 	return nil

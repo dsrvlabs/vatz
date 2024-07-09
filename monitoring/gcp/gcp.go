@@ -49,23 +49,23 @@ func GetGCP(cfg config.MonitoringInfo) []GCP {
 	return gcpSingletons
 }
 
-func getClient(ctx context.Context, projectID string, credType tp.CredentialOption, credentials string) (*logging.Client, error) {
-	var client *logging.Client
+func getClient(ctx context.Context, projectID string, credType tp.CredentialOption, credentials string) (Logger, error) {
+	var client Logger
 	var err error
 
 	switch credType {
 	case tp.ApplicationDefaultCredentials:
-		client, err = logging.NewClient(ctx, projectID)
+		client, err = NewGCPLoggingClient(ctx, projectID, nil)
 	case tp.ServiceAccountCredentials:
-		client, err = logging.NewClient(ctx, projectID, option.WithCredentialsFile(credentials))
+		client, err = NewGCPLoggingClient(ctx, projectID, option.WithCredentialsFile(credentials))
 	case tp.APIKey:
-		client, err = logging.NewClient(ctx, projectID, option.WithAPIKey(credentials))
+		client = NewHTTPLoggingClient(credentials, projectID)
 	case tp.OAuth2:
 		tokenSource, err := google.DefaultTokenSource(ctx, logging.WriteScope)
 		if err != nil {
 			return nil, err
 		}
-		client, err = logging.NewClient(ctx, projectID, option.WithTokenSource(tokenSource))
+		client, err = NewGCPLoggingClient(ctx, projectID, option.WithTokenSource(tokenSource))
 		if err != nil {
 			return nil, err
 		}
