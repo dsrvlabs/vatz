@@ -4,8 +4,10 @@ import (
 	"cloud.google.com/go/logging"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/dsrvlabs/vatz/manager/config"
 	tp "github.com/dsrvlabs/vatz/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2/google"
@@ -52,12 +54,20 @@ func GetGCP(cfg config.MonitoringInfo) []GCP {
 func getClient(ctx context.Context, projectID string, credType tp.CredentialOption, credentials string) (*logging.Client, error) {
 	var client *logging.Client
 	var err error
-
 	switch credType {
 	case tp.ApplicationDefaultCredentials:
 		client, err = logging.NewClient(ctx, projectID)
 	case tp.ServiceAccountCredentials:
-		client, err = logging.NewClient(ctx, projectID, option.WithCredentialsFile(credentials))
+		var serviceAccountJSON []byte
+		if utils.IsURL(credentials) {
+			serviceAccountJSON, err = utils.DownloadFileWithWgetOrCurl(credentials)
+			if err != nil {
+				return nil, fmt.Errorf("failed to download service account JSON: %v", err)
+			}
+			client, err = logging.NewClient(ctx, projectID, option.WithCredentialsJSON(serviceAccountJSON))
+		} else {
+			client, err = logging.NewClient(ctx, projectID, option.WithCredentialsFile(credentials))
+		}
 	case tp.APIKey:
 		client, err = logging.NewClient(ctx, projectID, option.WithAPIKey(credentials))
 	case tp.OAuth2:

@@ -60,6 +60,7 @@ func (gl *cloudLogging) storeLog(logEntry *gcpCloudLoggingEntry) error {
 	messageToSend := logging.Entry{
 		Payload:  logEntry,
 		Severity: logging.Info,
+		Labels:   map[string]string{"module": "vatz"},
 	}
 
 	gcpLogger.Log(messageToSend)
