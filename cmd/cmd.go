@@ -4,7 +4,7 @@ import (
 	dp "github.com/dsrvlabs/vatz/manager/dispatcher"
 	ex "github.com/dsrvlabs/vatz/manager/executor"
 	health "github.com/dsrvlabs/vatz/manager/healthcheck"
-	tp "github.com/dsrvlabs/vatz/manager/types"
+	tp "github.com/dsrvlabs/vatz/types"
 	"github.com/dsrvlabs/vatz/utils"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"

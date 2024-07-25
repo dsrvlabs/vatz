@@ -3,7 +3,7 @@
 package dispatcher
 
 import (
-	types "github.com/dsrvlabs/vatz/manager/types"
+	"github.com/dsrvlabs/vatz/types"
 	mock "github.com/stretchr/testify/mock"
 )
 

@@ -3,12 +3,12 @@ package dispatcher
 import (
 	"context"
 	"fmt"
+	tp "github.com/dsrvlabs/vatz/types"
 	"sync"
 	"time"
 
 	pd "github.com/PagerDuty/go-pagerduty"
 	pb "github.com/dsrvlabs/vatz-proto/plugin/v1"
-	tp "github.com/dsrvlabs/vatz/manager/types"
 	"github.com/rs/zerolog/log"
 )
 
