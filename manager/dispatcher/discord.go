@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	tp "github.com/dsrvlabs/vatz/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"net/http"
 	"strings"
 	"sync"
@@ -20,47 +21,49 @@ import (
 type DiscordColor int
 
 const (
-	discordRed           tp.DiscordColor = 15548997
-	discordYellow        tp.DiscordColor = 16705372
-	discordGreen         tp.DiscordColor = 65340
-	discordGray          tp.DiscordColor = 9807270
+	discordRed    tp.DiscordColor = 15548997
+	discordYellow tp.DiscordColor = 16705372
+	discordGreen  tp.DiscordColor = 65340
+	discordGray   tp.DiscordColor = 9807270
 )
 
 var discordWebhookFormats = []string{
-    "https://discord.com/api/webhooks/",
-    "https://discordapp.com/api/webhooks/",
+	"https://discord.com/api/webhooks/",
+	"https://discordapp.com/api/webhooks/",
 }
 
 type discord struct {
 	host             string
 	channel          tp.Channel
 	secret           string
+	notificationFlag string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
 }
 
 func containsAny(s string, substrings []string) bool {
-    for _, substr := range substrings {
-        if strings.Contains(s, substr) {
-            return true
-        }
-    }
-    return false
-}
-
-func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
-	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	pUnique := deliverMessage.Options["pUnique"].(string)
-
-	if reqToNotify {
-		err := d.SendNotification(deliverMessage)
-		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
-			return err
+	for _, substr := range substrings {
+		if strings.Contains(s, substr) {
+			return true
 		}
 	}
+	return false
+}
 
+func (d *discord) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
+	pUnique := deliverMessage.Options["pUnique"].(string)
+	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(d.notificationFlag, pluginNotificationFlag)
+	if !flagEnabled || flagEnabled && sameFlagExists {
+		if reqToNotify {
+			err := d.SendNotification(deliverMessage)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("Channel(Discord): Send notification error: %s", err)
+				return err
+			}
+		}
+	}
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
 		/*

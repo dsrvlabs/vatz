@@ -34,7 +34,7 @@ var (
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
 type Dispatcher interface {
-	SetDispatcher(firstExecution bool, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
+	SetDispatcher(firstExecution bool, notificationFlag string, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
 	SendNotification(request tp.ReqMsg) error
 }
 
@@ -47,45 +47,55 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 	}
 
 	dispatcherOnce.Do(func() {
-		for _, chanInfo := range cfg.DispatchChannels {
-			if len(chanInfo.ReminderSchedule) == 0 {
-				chanInfo.ReminderSchedule = cfg.DefaultReminderSchedule
+		for _, chainInfo := range cfg.DispatchChannels {
+			var chainNotificationFlag = ""
+			if len(chainInfo.ReminderSchedule) == 0 {
+				chainInfo.ReminderSchedule = cfg.DefaultReminderSchedule
 			}
-			switch channel := chanInfo.Channel; {
+
+			if chainInfo.Flag != "" {
+				log.Debug().Str("module", "dispatcher").Msgf("plugin Flag exists!: %s", chainInfo.Flag)
+				chainNotificationFlag = chainInfo.Flag
+			}
+			switch channel := chainInfo.Channel; {
 			case strings.EqualFold(channel, string(tp.Discord)):
 				dispatcherSingletons = append(dispatcherSingletons, &discord{
 					host:             cfg.HostName,
 					channel:          tp.Discord,
-					secret:           chanInfo.Secret,
+					secret:           chainInfo.Secret,
+					notificationFlag: chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.Telegram)):
 				dispatcherSingletons = append(dispatcherSingletons, &telegram{
 					host:             cfg.HostName,
 					channel:          tp.Telegram,
-					secret:           chanInfo.Secret,
-					chatID:           chanInfo.ChatID,
+					secret:           chainInfo.Secret,
+					chatID:           chainInfo.ChatID,
+					notificationFlag: chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.Slack)):
 				dispatcherSingletons = append(dispatcherSingletons, &slack{
 					host:             cfg.HostName,
 					channel:          tp.Slack,
-					secret:           chanInfo.Secret,
+					secret:           chainInfo.Secret,
+					notificationFlag: chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.PagerDuty)):
 				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
-					host:       cfg.HostName,
-					channel:    tp.PagerDuty,
-					secret:     chanInfo.Secret,
-					pagerEntry: sync.Map{},
+					host:             cfg.HostName,
+					channel:          tp.PagerDuty,
+					secret:           chainInfo.Secret,
+					notificationFlag: chainNotificationFlag,
+					pagerEntry:       sync.Map{},
 				})
 			}
 		}

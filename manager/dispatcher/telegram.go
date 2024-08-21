@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	tp "github.com/dsrvlabs/vatz/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"io"
 	"net/http"
 	"sync"
@@ -21,24 +22,26 @@ type telegram struct {
 	channel          tp.Channel
 	secret           string
 	chatID           string
+	notificationFlag string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
 }
 
-func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (t *telegram) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
+	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(t.notificationFlag, pluginNotificationFlag)
+	if !flagEnabled || flagEnabled && sameFlagExists {
+		if reqToNotify {
+			err := t.SendNotification(deliverMessage)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
+				return err
+			}
 
-	if reqToNotify {
-		err := t.SendNotification(deliverMessage)
-		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Telegram): Send notification error: %s", err)
-			return err
 		}
-
 	}
-
 	if reminderState == tp.ON {
 		newEntries := []cron.EntryID{}
 		/*

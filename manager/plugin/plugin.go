@@ -38,9 +38,7 @@ type VatzPluginManager interface {
 	Install(repo, name, version string) error
 	Uninstall(name string) error
 	List() ([]VatzPlugin, error)
-
 	SetEnabled(pluginID string, isEnabled bool) error
-
 	Start(name, args string, logfile *os.File) error
 	Stop(name string) error
 }

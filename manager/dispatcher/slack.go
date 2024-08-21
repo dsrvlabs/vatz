@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	tp "github.com/dsrvlabs/vatz/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"net/http"
 	"sync"
 
@@ -19,6 +20,7 @@ type slack struct {
 	host             string
 	channel          tp.Channel
 	secret           string
+	notificationFlag string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
@@ -28,17 +30,19 @@ type SlackRequestBody struct {
 	Text string `json:"text"`
 }
 
-func (t *slack) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (s *slack) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
+	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(s.notificationFlag, pluginNotificationFlag)
+	if !flagEnabled || flagEnabled && sameFlagExists {
+		if reqToNotify {
+			err := s.SendNotification(deliverMessage)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("Channel(Slack): Send notification error: %s", err)
+				return err
+			}
 
-	if reqToNotify {
-		err := t.SendNotification(deliverMessage)
-		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Slack): Send notification error: %s", err)
-			return err
 		}
-
 	}
 
 	if reminderState == tp.ON {
@@ -48,36 +52,36 @@ func (t *slack) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo
 			e.g.) CRITICAL -> WARNING
 			e.g.) ERROR -> INFO -> ERROR
 		*/
-		if entries, ok := t.entry.Load(pUnique); ok {
+		if entries, ok := s.entry.Load(pUnique); ok {
 			for _, entry := range entries.([]cron.EntryID) {
-				t.reminderCron.Remove(entry)
+				s.reminderCron.Remove(entry)
 			}
-			t.reminderCron.Stop()
+			s.reminderCron.Stop()
 		}
-		for _, schedule := range t.reminderSchedule {
-			id, _ := t.reminderCron.AddFunc(schedule, func() {
-				err := t.SendNotification(deliverMessage)
+		for _, schedule := range s.reminderSchedule {
+			id, _ := s.reminderCron.AddFunc(schedule, func() {
+				err := s.SendNotification(deliverMessage)
 				if err != nil {
 					log.Error().Str("module", "dispatcher").Msgf("Channel(Slack): Send notification error: %s", err)
 				}
 			})
 			newEntries = append(newEntries, id)
 		}
-		t.entry.Store(pUnique, newEntries)
-		t.reminderCron.Start()
+		s.entry.Store(pUnique, newEntries)
+		s.reminderCron.Start()
 	} else if reminderState == tp.OFF {
-		entries, _ := t.entry.Load(pUnique)
+		entries, _ := s.entry.Load(pUnique)
 		if _, ok := entries.([]cron.EntryID); ok {
 			for _, entity := range entries.([]cron.EntryID) {
-				t.reminderCron.Remove(entity)
+				s.reminderCron.Remove(entity)
 			}
-			t.reminderCron.Stop()
+			s.reminderCron.Stop()
 		}
 	}
 	return nil
 }
 
-func (t *slack) SendNotification(msg tp.ReqMsg) error {
+func (s *slack) SendNotification(msg tp.ReqMsg) error {
 	var (
 		err   error
 		emoji = emojiER
@@ -98,9 +102,9 @@ func (t *slack) SendNotification(msg tp.ReqMsg) error {
 > 
 Host: *%s*
 Plugin Name: _%s_
-%s`, emoji, msg.Severity.String(), emoji, t.host, msg.ResourceType, msg.Msg)
+%s`, emoji, msg.Severity.String(), emoji, s.host, msg.ResourceType, msg.Msg)
 	slackBody, _ := json.Marshal(SlackRequestBody{Text: sendingText})
-	req, err := http.NewRequest(http.MethodPost, t.secret, bytes.NewBuffer(slackBody))
+	req, err := http.NewRequest(http.MethodPost, s.secret, bytes.NewBuffer(slackBody))
 	if err != nil {
 		return err
 	}

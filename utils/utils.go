@@ -136,3 +136,15 @@ func InitializeChannel() chan os.Signal {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	return sigs
 }
+
+func IsNotifiedEnabledAndSend(dispatcherNotificationFlag string, pluginNotificationFlag string) (bool, bool) {
+	isNotifiedEnabled := false
+	isSameFlagExists := false
+	if dispatcherNotificationFlag != "" {
+		isNotifiedEnabled = true
+		if dispatcherNotificationFlag == pluginNotificationFlag {
+			isSameFlagExists = true
+		}
+	}
+	return isNotifiedEnabled, isSameFlagExists
+}
