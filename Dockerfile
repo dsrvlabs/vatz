@@ -14,7 +14,7 @@ RUN make build
 RUN ./vatz init
 
 # Start a new stage from scratch
-FROM debian:buster-slim
+FROM alpine:latest
 
 WORKDIR /root/
 
