@@ -36,7 +36,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
         secret: "Put your PagerDuty's Integration Key (Events API v2)"
       - channel: "slack"
         secret: "Put Your Slack Webhook url"
-        flag: "Set your flag to send notifications per plugins individually."
+        subscription:
+		  - "Please, put pluginName that you would like subscribes for notifications"
       - channel: "telegram"
         secret: "Put Your Bot's Token"
         chat_id: "Put Your Chat's chat_id"
@@ -79,7 +80,6 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
       plugin_port: 10002
       executable_methods:
         - method_name: "sampleMethod2"
-          flag: "set notification flag to dispatchers you want set."
 `
 
 			defaultPluginOptionTemplate := `plugins_infos:

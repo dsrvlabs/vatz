@@ -22,17 +22,17 @@ type telegram struct {
 	channel          tp.Channel
 	secret           string
 	chatID           string
-	notificationFlag string
+	subscriptions    []string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
 }
 
-func (t *telegram) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (t *telegram) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
-	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(t.notificationFlag, pluginNotificationFlag)
-	if !flagEnabled || flagEnabled && sameFlagExists {
+	subscriptionEnabled, isSubscriptionIncluded := utils.IsSubscribeSpecific(t.subscriptions, notifyInfo.Plugin)
+	if !subscriptionEnabled || subscriptionEnabled && isSubscriptionIncluded {
 		if reqToNotify {
 			err := t.SendNotification(deliverMessage)
 			if err != nil {

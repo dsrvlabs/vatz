@@ -79,7 +79,7 @@ type NotificationInfo struct {
 		Channel          string   `yaml:"channel"`
 		Secret           string   `yaml:"secret"`
 		ChatID           string   `yaml:"chat_id"`
-		Flag             string   `yaml:"flag,omitempty"`
+		Subscriptions    []string `yaml:"subscriptions,omitempty"`
 		ReminderSchedule []string `yaml:"reminder_schedule"`
 	} `yaml:"dispatch_channels"`
 }
@@ -133,7 +133,6 @@ type Plugin struct {
 	Port              int    `yaml:"plugin_port"`
 	ExecutableMethods []struct {
 		Name string `yaml:"method_name"`
-		Flag string `yaml:"flag,omitempty"`
 	} `yaml:"executable_methods"`
 }
 

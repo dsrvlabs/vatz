@@ -66,7 +66,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		firstExe, preStatus := s.updateState(pUnique, resp)
 
 		for _, dpSingle := range dispatchers {
-			err = dpSingle.SetDispatcher(firstExe, method.Flag, preStatus, tp.NotifyInfo{
+			err = dpSingle.SetDispatcher(firstExe, preStatus, tp.NotifyInfo{
 				Plugin:     plugin.Name,
 				Method:     method.Name,
 				Address:    plugin.Address,

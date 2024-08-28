@@ -20,7 +20,7 @@ type slack struct {
 	host             string
 	channel          tp.Channel
 	secret           string
-	notificationFlag string
+	subscriptions    []string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
@@ -30,11 +30,11 @@ type SlackRequestBody struct {
 	Text string `json:"text"`
 }
 
-func (s *slack) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (s *slack) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
-	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(s.notificationFlag, pluginNotificationFlag)
-	if !flagEnabled || flagEnabled && sameFlagExists {
+	subscriptionEnabled, isSubscriptionIncluded := utils.IsSubscribeSpecific(s.subscriptions, notifyInfo.Plugin)
+	if !subscriptionEnabled || subscriptionEnabled && isSubscriptionIncluded {
 		if reqToNotify {
 			err := s.SendNotification(deliverMessage)
 			if err != nil {

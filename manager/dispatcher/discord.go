@@ -36,7 +36,7 @@ type discord struct {
 	host             string
 	channel          tp.Channel
 	secret           string
-	notificationFlag string
+	subscriptions    []string
 	reminderSchedule []string
 	reminderCron     *cron.Cron
 	entry            sync.Map
@@ -51,11 +51,11 @@ func containsAny(s string, substrings []string) bool {
 	return false
 }
 
-func (d *discord) SetDispatcher(firstRunMsg bool, pluginNotificationFlag string, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
+func (d *discord) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, reminderState, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
 	pUnique := deliverMessage.Options["pUnique"].(string)
-	flagEnabled, sameFlagExists := utils.IsNotifiedEnabledAndSend(d.notificationFlag, pluginNotificationFlag)
-	if !flagEnabled || flagEnabled && sameFlagExists {
+	subscriptionEnabled, isSubscriptionIncluded := utils.IsSubscribeSpecific(d.subscriptions, notifyInfo.Plugin)
+	if !subscriptionEnabled || subscriptionEnabled && isSubscriptionIncluded {
 		if reqToNotify {
 			err := d.SendNotification(deliverMessage)
 			if err != nil {

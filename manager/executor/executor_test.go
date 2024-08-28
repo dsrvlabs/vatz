@@ -55,10 +55,7 @@ func TestExecutorSuccess(t *testing.T) {
 			Port:    testPluginPort,
 			ExecutableMethods: []struct {
 				Name string `yaml:"method_name"`
-				Flag string `yaml:"flag,omitempty"`
-			}{
-				{testMethodName, "flag1"},
-			},
+			}{},
 		}
 
 		// Mocks.
@@ -179,10 +176,7 @@ func TestExecutorFailure(t *testing.T) {
 			Name: testPluginName,
 			ExecutableMethods: []struct {
 				Name string `yaml:"method_name"`
-				Flag string `yaml:"flag,omitempty"`
-			}{
-				{testMethodName, "flag2"},
-			},
+			}{},
 		}
 
 		// Mocks.

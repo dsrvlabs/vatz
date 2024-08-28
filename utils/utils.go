@@ -137,14 +137,17 @@ func InitializeChannel() chan os.Signal {
 	return sigs
 }
 
-func IsNotifiedEnabledAndSend(dispatcherNotificationFlag string, pluginNotificationFlag string) (bool, bool) {
-	isNotifiedEnabled := false
+func IsSubscribeSpecific(subscriptionList []string, PluginName string) (bool, bool) {
+	doesSpecificSubscribe := false
+	if len(subscriptionList) > 0 {
+		doesSpecificSubscribe = true
+	}
 	isSameFlagExists := false
-	if dispatcherNotificationFlag != "" {
-		isNotifiedEnabled = true
-		if dispatcherNotificationFlag == pluginNotificationFlag {
+	for _, v := range subscriptionList {
+		if v == PluginName {
 			isSameFlagExists = true
+			break
 		}
 	}
-	return isNotifiedEnabled, isSameFlagExists
+	return doesSpecificSubscribe, isSameFlagExists
 }

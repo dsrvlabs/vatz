@@ -34,7 +34,7 @@ var (
 
 // Dispatcher Notification provides interfaces to send alert dispatcher message with variable channel.
 type Dispatcher interface {
-	SetDispatcher(firstExecution bool, notificationFlag string, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
+	SetDispatcher(firstExecution bool, previousFlag tp.StateFlag, notifyInfo tp.NotifyInfo) error
 	SendNotification(request tp.ReqMsg) error
 }
 
@@ -48,22 +48,23 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 
 	dispatcherOnce.Do(func() {
 		for _, chainInfo := range cfg.DispatchChannels {
-			var chainNotificationFlag = ""
+			var chainNotificationFlag []string
 			if len(chainInfo.ReminderSchedule) == 0 {
 				chainInfo.ReminderSchedule = cfg.DefaultReminderSchedule
 			}
 
-			if chainInfo.Flag != "" {
-				log.Debug().Str("module", "dispatcher").Msgf("plugin Flag exists!: %s", chainInfo.Flag)
-				chainNotificationFlag = chainInfo.Flag
+			if len(chainInfo.Subscriptions) > 0 {
+				log.Debug().Str("module", "dispatcher").Msgf("SubscribingPlugins %s", chainInfo.Subscriptions)
+				chainNotificationFlag = chainInfo.Subscriptions
 			}
+
 			switch channel := chainInfo.Channel; {
 			case strings.EqualFold(channel, string(tp.Discord)):
 				dispatcherSingletons = append(dispatcherSingletons, &discord{
 					host:             cfg.HostName,
 					channel:          tp.Discord,
 					secret:           chainInfo.Secret,
-					notificationFlag: chainNotificationFlag,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
@@ -74,7 +75,7 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 					channel:          tp.Telegram,
 					secret:           chainInfo.Secret,
 					chatID:           chainInfo.ChatID,
-					notificationFlag: chainNotificationFlag,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
@@ -84,18 +85,18 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 					host:             cfg.HostName,
 					channel:          tp.Slack,
 					secret:           chainInfo.Secret,
-					notificationFlag: chainNotificationFlag,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
 					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.PagerDuty)):
 				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
-					host:             cfg.HostName,
-					channel:          tp.PagerDuty,
-					secret:           chainInfo.Secret,
-					notificationFlag: chainNotificationFlag,
-					pagerEntry:       sync.Map{},
+					host:          cfg.HostName,
+					channel:       tp.PagerDuty,
+					secret:        chainInfo.Secret,
+					subscriptions: chainNotificationFlag,
+					pagerEntry:    sync.Map{},
 				})
 			}
 		}
