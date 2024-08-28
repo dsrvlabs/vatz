@@ -36,8 +36,8 @@ func createInitCommand(initializer tp.Initializer) *cobra.Command {
         secret: "Put your PagerDuty's Integration Key (Events API v2)"
       - channel: "slack"
         secret: "Put Your Slack Webhook url"
-        subscription:
-		  - "Please, put pluginName that you would like subscribes for notifications"
+        subscriptions:
+          - "Please, put Plugin Name that you specifically subscribe to send notification."
       - channel: "telegram"
         secret: "Put Your Bot's Token"
         chat_id: "Put Your Chat's chat_id"
