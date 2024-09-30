@@ -79,6 +79,7 @@ type NotificationInfo struct {
 		Channel          string   `yaml:"channel"`
 		Secret           string   `yaml:"secret"`
 		ChatID           string   `yaml:"chat_id"`
+		Subscriptions    []string `yaml:"subscriptions,omitempty"`
 		ReminderSchedule []string `yaml:"reminder_schedule"`
 	} `yaml:"dispatch_channels"`
 }

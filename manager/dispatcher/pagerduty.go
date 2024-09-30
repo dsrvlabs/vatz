@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	tp "github.com/dsrvlabs/vatz/types"
+	"github.com/dsrvlabs/vatz/utils"
 	"sync"
 	"time"
 
@@ -21,19 +22,23 @@ type pagerdutyMSGEvent struct {
 }
 
 type pagerduty struct {
-	host       string
-	channel    tp.Channel
-	secret     string
-	pagerEntry sync.Map
+	host          string
+	channel       tp.Channel
+	secret        string
+	subscriptions []string
+	pagerEntry    sync.Map
 }
 
 func (p *pagerduty) SetDispatcher(firstRunMsg bool, preStat tp.StateFlag, notifyInfo tp.NotifyInfo) error {
 	reqToNotify, _, deliverMessage := messageHandler(firstRunMsg, preStat, notifyInfo)
-	if reqToNotify {
-		err := p.SendNotification(deliverMessage)
-		if err != nil {
-			log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Send notification error: %s", err)
-			return err
+	subscriptionEnabled, isSubscriptionIncluded := utils.IsSubscribeSpecific(p.subscriptions, notifyInfo.Plugin)
+	if !subscriptionEnabled || subscriptionEnabled && isSubscriptionIncluded {
+		if reqToNotify {
+			err := p.SendNotification(deliverMessage)
+			if err != nil {
+				log.Error().Str("module", "dispatcher").Msgf("Channel(Pagerduty): Send notification error: %s", err)
+				return err
+			}
 		}
 	}
 	return nil

@@ -47,45 +47,56 @@ func GetDispatchers(cfg config.NotificationInfo) []Dispatcher {
 	}
 
 	dispatcherOnce.Do(func() {
-		for _, chanInfo := range cfg.DispatchChannels {
-			if len(chanInfo.ReminderSchedule) == 0 {
-				chanInfo.ReminderSchedule = cfg.DefaultReminderSchedule
+		for _, chainInfo := range cfg.DispatchChannels {
+			var chainNotificationFlag []string
+			if len(chainInfo.ReminderSchedule) == 0 {
+				chainInfo.ReminderSchedule = cfg.DefaultReminderSchedule
 			}
-			switch channel := chanInfo.Channel; {
+
+			if len(chainInfo.Subscriptions) > 0 {
+				log.Debug().Str("module", "dispatcher").Msgf("SubscribingPlugins %s", chainInfo.Subscriptions)
+				chainNotificationFlag = chainInfo.Subscriptions
+			}
+
+			switch channel := chainInfo.Channel; {
 			case strings.EqualFold(channel, string(tp.Discord)):
 				dispatcherSingletons = append(dispatcherSingletons, &discord{
 					host:             cfg.HostName,
 					channel:          tp.Discord,
-					secret:           chanInfo.Secret,
+					secret:           chainInfo.Secret,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.Telegram)):
 				dispatcherSingletons = append(dispatcherSingletons, &telegram{
 					host:             cfg.HostName,
 					channel:          tp.Telegram,
-					secret:           chanInfo.Secret,
-					chatID:           chanInfo.ChatID,
+					secret:           chainInfo.Secret,
+					chatID:           chainInfo.ChatID,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.Slack)):
 				dispatcherSingletons = append(dispatcherSingletons, &slack{
 					host:             cfg.HostName,
 					channel:          tp.Slack,
-					secret:           chanInfo.Secret,
+					secret:           chainInfo.Secret,
+					subscriptions:    chainNotificationFlag,
 					reminderCron:     cron.New(cron.WithLocation(time.UTC)),
-					reminderSchedule: chanInfo.ReminderSchedule,
+					reminderSchedule: chainInfo.ReminderSchedule,
 					entry:            sync.Map{},
 				})
 			case strings.EqualFold(channel, string(tp.PagerDuty)):
 				dispatcherSingletons = append(dispatcherSingletons, &pagerduty{
-					host:       cfg.HostName,
-					channel:    tp.PagerDuty,
-					secret:     chanInfo.Secret,
-					pagerEntry: sync.Map{},
+					host:          cfg.HostName,
+					channel:       tp.PagerDuty,
+					secret:        chainInfo.Secret,
+					subscriptions: chainNotificationFlag,
+					pagerEntry:    sync.Map{},
 				})
 			}
 		}

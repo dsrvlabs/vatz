@@ -35,6 +35,7 @@ func (s *executor) Execute(ctx context.Context, gClient pluginpb.PluginClient, p
 		}
 
 		//TODO: Please, add new logic to add param into Map.
+
 		methodMap := map[string]interface{}{
 			"execute_method": method.Name,
 		}

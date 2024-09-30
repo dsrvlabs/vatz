@@ -136,3 +136,18 @@ func InitializeChannel() chan os.Signal {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	return sigs
 }
+
+func IsSubscribeSpecific(subscriptionList []string, PluginName string) (bool, bool) {
+	doesSpecificSubscribe := false
+	if len(subscriptionList) > 0 {
+		doesSpecificSubscribe = true
+	}
+	isSameFlagExists := false
+	for _, v := range subscriptionList {
+		if v == PluginName {
+			isSameFlagExists = true
+			break
+		}
+	}
+	return doesSpecificSubscribe, isSameFlagExists
+}
