@@ -264,7 +264,7 @@ Below are examples of both modes, along with the list of installed plugins:
 +-------------------+------------+---------------------+-----------------------------------------------------------------+---------+
 |     NAME          | IS ENABLED | INSTALL DATE        | REPOSITORY                                                      | VERSION |
 +-------------------+------------+---------------------+-----------------------------------------------------------------+---------+
-| cosmos_watcher   | true       | 2024-08-28 18:50:38 | github.com/dsrvlabs/vatz-plugin-watchers/plugins/watcher_cosmos  | latest  |
+| cosmos_watcher    | true       | 2024-08-28 18:50:38 | github.com/dsrvlabs/vatz-plugin-watchers/plugins/watcher_cosmos | latest  |
 | shentu_watcher    | true       | 2024-08-28 18:50:44 | github.com/dsrvlabs/vatz-plugin-watchers/plugins/watcher_cosmos | latest  |
 | osmosis_watcher   | true       | 2024-08-28 18:50:44 | github.com/dsrvlabs/vatz-plugin-watchers/plugins/watcher_cosmos | latest  |
 +-------------------+------------+---------------------+-----------------------------------------------------------------+---------+
