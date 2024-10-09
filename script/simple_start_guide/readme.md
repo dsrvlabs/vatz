@@ -13,14 +13,13 @@ bash install_vatz&official-plugins.sh
 ```
 
 ### 3. default_config.yaml
-> Please, refer to [installation guide](../../docs/installation.md) for more details confisgs. 
+> Please, refer to [installation guide](../../docs/installation.md) for more detailed configs. 
 - Replace default.yaml with this file after execute `install_vatz&official-plugins.sh`.
 - You must enter hostname and webhook or add more dispatchers such as telegram, pagerduty
 - Change the port if necessary.
 ```
 cp default_config.yaml /<vatz_path>/default.yaml
 ```
-
 
 ### 4. vatz_start.sh
 - Running this script will run vatz and vatz-plugin-sei.

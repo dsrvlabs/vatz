@@ -92,7 +92,7 @@ For example,
 # 4. Set VATZ configs for your own use
 
 ## 4.1. Modify default.yaml (VATZ)
-There's yaml file as config, and the default config must be updated by yourself to set up VATZ service and clients
+There's a YAML file for configuration, and you'll need to update the default settings yourself to properly set up the VATZ service and clients.
 sample:
 > This is default.yaml, please update secrets, and etc for your node use.
 ```
@@ -282,7 +282,7 @@ Below are examples of both modes, along with the list of installed plugins:
 ```
   In this mode, there is no need to set any specific subscriptions. If any plugin’s alert conditions are met, the alert messages will be sent to both Discord and PagerDuty.
 
-2. **Subscription-based mode**: This mode allows you to subscribe to specific plugins, ensuring that you receive notifications only from the plugins you have explicitly subscribed to. Only the subscribed plugins’ alert messages will be delivered through the dispatcher channel.
+2. **Subscription-based mode**: This mode allows you to subscribe to specific plugins, ensuring that you receive notifications only from those you select. In this case, only alert messages from your subscribed plugins will be delivered through the dispatcher channel.
 ```
     dispatch_channels:
       - channel: "discord"
