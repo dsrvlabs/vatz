@@ -42,6 +42,10 @@ vatz_protocol_info:
         secret: "Put your Discord Webhook"
       - channel: "pagerduty"
         secret: "Put your PagerDuty's Integration Key (Events API v2)"
+      - channel: "slack"
+        secret: "Put Your Slack Webhook url"
+        subscriptions:
+          - "Please, put Plugin Name that you specifically subscribe to send notification."
       - channel: "telegram"
         secret: "Put Your Bot's Token"
         chat_id: "Put Your Chat's chat_id"
@@ -53,6 +57,15 @@ vatz_protocol_info:
     grpc_port: 19090
     http_port: 19091
   monitoring_info:
+      gcp:
+          gcp_cloud_logging_info:
+            enabled: true
+            cloud_logging_credential_info:
+              project_id: "Please, Set your GCP Project id"
+              credentials_type: "Check the Credential Type: ADC: Application, SAC: Default Credentials, Service Account Credentials, APIKey: API Key, OAuth: OAuth2"
+              credentials: "Put your credential Info"
+              checker_schedule:
+                - "* * * * *"
     prometheus:
       enabled: true
       address: "127.0.0.1"
