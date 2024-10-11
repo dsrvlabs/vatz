@@ -13,6 +13,7 @@ bash install_vatz&official-plugins.sh
 ```
 
 ### 3. default_config.yaml
+> Please, refer to [installation guide](../../docs/installation.md) for more detailed configs. 
 - Replace default.yaml with this file after execute `install_vatz&official-plugins.sh`.
 - You must enter hostname and webhook or add more dispatchers such as telegram, pagerduty
 - Change the port if necessary.

@@ -4,5 +4,5 @@ Share your own plugins with everyone by adding to the list at [vatz-community-pl
 Other contribution policies are available at [contribution guide](https://github.com/dsrvlabs/vatz/blob/main/docs/contributing.md). 
 
 <a href="https://github.com/dsrvlabs/vatz-community-plugins">
-	<img alt="Qries" src="https://github.com/dsrvlabs/vatz/assets/6308023/22c1a2cd-8abb-4ce6-813b-c173704ac80e">
+	<img alt="Qries" src="https://github.com/user-attachments/assets/337d4350-0648-4c8e-bfbc-ad0eba1376f6">
 </a>
