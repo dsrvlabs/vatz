@@ -6,7 +6,7 @@
 
   <p> 
     <br>
-    <img alt="Version"  src="https://img.shields.io/badge/version-v1.1.0-blue.svg?cacheSeconds=2592000"  />    
+    <img alt="Version"  src="https://img.shields.io/badge/version-v1.2.0-blue.svg?cacheSeconds=2592000"  />    
     <a href="https://www.gnu.org/licenses/lgpl-3.0.en.html"  target="_blank"><img alt="License: GPL 3.0"  src="https://img.shields.io/badge/License-GPL 3.0-yellow.svg" /></a> 
   </p> 
 </div> 
