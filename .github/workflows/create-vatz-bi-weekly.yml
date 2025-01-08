@@ -1,8 +1,6 @@
 name: Create a next vatz discussion & milestone
 on: 
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * 1" # Every Monday at 11 a.m(KST).
 
 jobs:
   create-bi-weekly:
