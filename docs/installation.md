@@ -46,7 +46,7 @@ You can also use `--all` flag to add all default setting of [official plugins](h
   >   - vatz_mem_monitor
   >   - vatz_disk_monitor
   >   - vatz_net_monitor
-  > - [vztz-cosmos-hub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
+  > - [vatz-cosmos-hub](https://github.com/dsrvlabs/vatz-plugin-cosmoshub)
   >   - vatz_block_sync
   >   - vatz_node_is_alived
   >   - vatz_peer_count
@@ -163,7 +163,7 @@ plugins_infos:
 
 1. `port`: Check your machine used port number. If you set it to a port number that is already in use, an error will occur.
 2. `health_checker_schedule`: Use cron expression to set the time to check if vatz is alive. 
-3. `notificaiton_info`:
+3. `notificaition_info`:
    - `dispatch_channels`: Add infos to receive alerts through discord, pagerduty, and telegram. 
    - `reminder_schedule`: Use cron expression to set the time to resend the alert if it is not confirmed.
 4. `rpc_info`: Check address and port to connect with plugins.
@@ -207,7 +207,7 @@ plugins_infos:
 ### 5.1. Start VATZ plugin
 
   ```
-  $ ./vatz plugin start --plugin <name> --args <argumnets> --log <logfile>
+  $ ./vatz plugin start --plugin <name> --args <arguments> --log <logfile>
   ```
   Put the plugin name you want to start.
 
@@ -248,7 +248,7 @@ plugins_infos:
   ```
   You can set your own path for config file such as 
   ```
-  ~$ ./vatz start --config <paht_to_your_own_file_at/config_file.yaml>
+  ~$ ./vatz start --config <path_to_your_own_file_at/config_file.yaml>
   ```
 
 ### 5.3. Notification
