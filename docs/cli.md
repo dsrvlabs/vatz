@@ -107,7 +107,7 @@ Here is a sample config file:
         - method_name: "node_governance_alarm"`
 ```
 Also, you can set the home directory of VATZ (default "~/.vatz") with `--home` flag.
-And you can create the new config file with your disired name with `--output` flag
+And you can create the new config file with your desired name with `--output` flag
 
 ## Start
 Please ensure the configuration setup is completed in either the default.yaml file or your custom configuration YAML file before initiating VATZ.
