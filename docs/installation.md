@@ -163,7 +163,7 @@ plugins_infos:
 
 1. `port`: Check your machine used port number. If you set it to a port number that is already in use, an error will occur.
 2. `health_checker_schedule`: Use cron expression to set the time to check if vatz is alive. 
-3. `notificaition_info`:
+3. `notification_info`:
    - `dispatch_channels`: Add infos to receive alerts through discord, pagerduty, and telegram. 
    - `reminder_schedule`: Use cron expression to set the time to resend the alert if it is not confirmed.
 4. `rpc_info`: Check address and port to connect with plugins.
