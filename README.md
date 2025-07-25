@@ -124,7 +124,7 @@ Please don’t hesitate to contact [us](mailto:validator@dsrvlabs.com) if you ne
 
 A leading blockchain technology company, **[DSRV](https://www.dsrvlabs.com/)** validates for 40+ global networks and provides infrastructure solutions for next-level building. This includes All That Node (enterprise-grade NaaS supporting 24+ protocols) and WELLDONE Studio (multi-chain product suite for developers and retail users alike).
 
-Our ethos is to adapt to what the market and community need; our mission is to advance the next internet and enable every player to build what they envision.
+Our ethos is to adapt to what the market and community need; our mission to advance the next internet and enable every player to build what they envision.
 
 [<img alt="Homepage" src="https://user-images.githubusercontent.com/63234878/210315637-2d30efdd-5b9e-463e-8731-571916a6e1e3.svg" width="50" height="50" />](https://www.dsrvlabs.com/)
 [<img alt="Medium" src="https://user-images.githubusercontent.com/6308023/176984456-f82c5c67-ebf3-455c-8494-c64ebfd66c58.svg" width="50" height="50" />](https://medium.com/dsrv)
